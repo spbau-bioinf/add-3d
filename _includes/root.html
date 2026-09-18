@@ -1,0 +1,10 @@
+{%- comment -%}
+  Задаёт переменную root — путь от текущей страницы до корня сайта
+  («» для главной, «../» для task_1/task_1-3.html). Благодаря этому
+  ссылки работают при любом адресе сайта, без настройки baseurl.
+{%- endcomment -%}
+{%- assign root = "" -%}
+{%- assign root_depth = page.url | split: "/" | size | minus: 2 -%}
+{%- if root_depth > 0 -%}
+  {%- for i in (1..root_depth) -%}{%- assign root = root | append: "../" -%}{%- endfor -%}
+{%- endif -%}

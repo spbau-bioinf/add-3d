@@ -1,0 +1,60 @@
+{%- comment -%}
+  Боковое меню: все занятия из _data/nav.yml.
+  Щелчок по «task N» раскрывает и скрывает страницы занятия;
+  занятие, в котором находится открытая страница, раскрыто сразу.
+{%- endcomment -%}
+<aside class="sidebar">
+  <div class="sidebar__brand">
+    <a class="sidebar__home" href="{{ root | default: './' }}">
+      <span class="sidebar__brand-title">{{ site.brand_title }}</span>
+      <span class="sidebar__brand-sub">{{ site.brand_sub }}</span>
+    </a>
+  </div>
+  <nav class="menu" aria-label="Практические работы">
+    <ul class="menu__list menu__list--groups">
+{%- for w in site.data.nav %}
+  {%- if w.soon or w.pages == nil or w.pages.size == 0 %}{% continue %}{% endif %}
+  {%- assign is_current = false %}
+  {%- if page.work and w.work == page.work %}{% assign is_current = true %}{% endif %}
+      <li class="menu__group">
+        <details class="menu-group"{% if is_current %} open{% endif %}>
+          <summary class="menu__link menu-group__summary{% if is_current %} menu-group__summary--current{% endif %}">
+            <span class="menu__code">{{ w.pages[0].code }}</span>
+            <span class="menu__title">{{ w.title }}</span>
+          </summary>
+          <ul class="menu__list menu-group__list">
+  {%- for item in w.pages %}
+            <li class="menu__item menu__item--sub{% if item.extra %} menu__item--extra{% endif %}">
+              <a class="menu__link{% if item.url == here %} menu__link--current{% endif %}" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %}>
+                <span class="menu__code">{{ item.code }}</span>
+                <span class="menu__title">{{ item.menu_title | default: item.title }}</span>
+              </a>
+            </li>
+  {%- endfor %}
+          </ul>
+        </details>
+      </li>
+{%- endfor %}
+{%- if site.tools %}
+      <li class="menu__group">
+        <details class="menu-group" open>
+          <summary class="menu__link menu-group__summary{% if page.tool %} menu-group__summary--current{% endif %}">
+            <span class="menu__code">tools</span>
+            <span class="menu__title">Инструменты</span>
+          </summary>
+          <ul class="menu__list menu-group__list">
+  {%- for item in site.tools %}
+            <li class="menu__item menu__item--sub">
+              <a class="menu__link{% if item.url == here %} menu__link--current{% endif %}" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %}>
+                <span class="menu__code">{{ item.code }}</span>
+                <span class="menu__title">{{ item.title }}</span>
+              </a>
+            </li>
+  {%- endfor %}
+          </ul>
+        </details>
+      </li>
+{%- endif %}
+    </ul>
+  </nav>
+</aside>

@@ -1,0 +1,477 @@
+/* ==========================================================================
+   tools.css — дополнение к style.css / markdown.css / site.css для курса
+   «Цифровой конвейер 3D-производства».
+   Здесь только новые классы; исходные таблицы стилей не меняются.
+
+   Метки ........ tag--ext (сведения вне учебного корпуса)
+   Источники .... sources, sources__list
+   Иллюстрации .. figure-src, figure-src__caption
+   Файлы ........ files, files__link
+   Схемы ........ d-road, d-road--fill, d-road--prev, d-road--butt, d-seam, d-travel,
+                  d-plate, d-dim, d-box--nozzle
+   Просмотрщик .. gv, gv__bar, gv__grid, gv__text, gv__canvas, gv__empty,
+                  gv__opts, gv__ctrls, gv__val, gv__line, gv__legend,
+                  gv__stats, gv__stat, gv__warns, gv__fil, tool-btn
+   Калькулятор .. calc, calc__in, calc__out
+   ========================================================================== */
+
+/* ---------- 1. Метка «вне источников» ---------- */
+
+.tag--ext {
+  color: var(--c-muted);
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.tag--ext:hover {
+  color: var(--c-link);
+  border-color: var(--c-link);
+}
+
+/* ---------- 2. Список источников в конце страницы ---------- */
+
+.sources {
+  font-size: 0.9rem;
+  color: var(--c-text-soft);
+}
+
+.sources__list > li {
+  margin: 0.25rem 0;
+}
+
+/* ---------- 3. Иллюстрация из источника ---------- */
+
+.figure-src {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #fbfcfd;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.figure-src img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.figure-src__caption {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--c-muted);
+}
+
+/* ---------- 4. Файлы для скачивания ---------- */
+
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.files > li {
+  margin: 0;
+}
+
+.files__link {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--c-accent-strong);
+  background: var(--c-accent-soft);
+  border: 1px solid #bfe3c9;
+  border-radius: var(--radius);
+}
+
+.files__link:hover {
+  color: var(--c-accent-strong);
+  background: #d6efdd;
+}
+
+/* ---------- 5. Дополнительные элементы схем ---------- */
+
+.d-road {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.d-road--fill {
+  stroke: #7cc690;
+}
+
+.d-road--prev {
+  stroke: #cfe9d6;
+}
+
+.d-road--butt {
+  stroke-linecap: butt;
+}
+
+.d-seam {
+  fill: none;
+  stroke: var(--c-bad);
+  stroke-width: 3;
+}
+
+.d-travel {
+  fill: none;
+  stroke: #8a95a3;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+
+.d-plate {
+  stroke: #8a95a3;
+  stroke-width: 3;
+}
+
+.d-dim {
+  fill: none;
+  stroke: #8a95a3;
+  stroke-width: 1.2;
+}
+
+.d-box--nozzle {
+  fill: #dfe4ea;
+  stroke: #8a95a3;
+}
+
+/* ---------- 6. Кнопки инструментов ---------- */
+
+.tool-btn {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--c-accent-strong);
+  background: #ffffff;
+  border: 1px solid #9fd0ad;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.tool-btn:hover {
+  color: var(--c-accent-strong);
+  background: var(--c-accent-soft);
+}
+
+.tool-btn--main {
+  color: #0b2a14;
+  background: var(--c-accent-bright);
+  border-color: #28a444;
+}
+
+.tool-btn--main:hover {
+  color: #0b2a14;
+  background: #5fdc77;
+}
+
+.tool-btn:focus-visible {
+  outline: 3px solid var(--c-accent-strong);
+  outline-offset: 2px;
+}
+
+/* ---------- 7. Просмотрщик G-кода ---------- */
+
+.gv {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.gv__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.gv__spacer {
+  flex: 1;
+}
+
+.gv__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.gv__grid > * {
+  min-width: 0;
+}
+
+.gv__text {
+  width: 100%;
+  min-height: 12rem;
+  height: 14rem;
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--c-text);
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-code-border);
+  border-radius: var(--radius);
+  white-space: pre;
+  overflow: auto;
+  resize: vertical;
+}
+
+.gv__canvas-wrap {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.gv__canvas {
+  display: block;
+  width: 100%;
+}
+
+.gv__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  font-size: 0.95rem;
+  text-align: center;
+  color: var(--c-muted);
+}
+
+.gv__opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+}
+
+.gv__opts label {
+  cursor: pointer;
+}
+
+.gv__ctrls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.4rem 0.8rem;
+  align-items: center;
+  margin-top: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.gv__ctrls input[type="range"] {
+  width: 100%;
+  accent-color: var(--c-accent);
+}
+
+.gv__val {
+  min-width: 7.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-muted);
+}
+
+.gv__line {
+  min-height: 2rem;
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow-x: auto;
+  color: var(--c-term-text);
+  background: var(--c-term-bg);
+  border-radius: var(--radius);
+}
+
+.gv__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.1rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--c-muted);
+}
+
+.gv__legend i {
+  display: inline-block;
+  width: 1.4rem;
+  height: 0;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+  border-top: 4px solid var(--c-accent);
+}
+
+.gv__legend i.gv__lg-travel {
+  border-top: 2px dashed #8a95a3;
+}
+
+.gv__legend i.gv__lg-seam {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2.5px solid var(--c-bad);
+  border-radius: 50%;
+}
+
+.gv__legend i.gv__lg-head {
+  width: 0.65rem;
+  height: 0.65rem;
+  background: var(--c-text);
+  border: 0;
+  border-radius: 50%;
+}
+
+.gv__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.gv__stat {
+  padding: 0.45rem 0.75rem;
+  background: var(--c-bg-soft);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.gv__stat-k {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--c-muted);
+}
+
+.gv__stat-v {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gv__fil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  align-items: center;
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+  color: var(--c-muted);
+}
+
+.gv__fil input,
+.calc__in input {
+  width: 5.5rem;
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+  color: var(--c-text);
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: 4px;
+}
+
+.gv__warns {
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gv__warns li {
+  margin: 0.35rem 0;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.95rem;
+  color: var(--c-bad);
+  background: var(--c-bad-bg);
+  border: 1px solid #e5b3b3;
+  border-radius: var(--radius);
+}
+
+.gv__warns li.gv__ok {
+  color: var(--c-good);
+  background: var(--c-good-bg);
+  border-color: #aed8ba;
+}
+
+@media (min-width: 62rem) {
+  .gv__grid {
+    grid-template-columns: minmax(15rem, 1fr) minmax(0, 1.6fr);
+  }
+
+  .gv__text {
+    height: 100%;
+    min-height: 22rem;
+  }
+}
+
+@media (max-width: 36rem) {
+  .gv__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- 8. Калькулятор ---------- */
+
+.calc {
+  margin: 1.5rem 0;
+  padding: 1rem 1.2rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-top: 3px solid var(--c-accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.calc__in {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.6rem 1rem;
+}
+
+.calc__in label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--c-muted);
+}
+
+.calc__in input {
+  width: 100%;
+  font-size: 1rem;
+}
+
+.calc__out {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+/* ---------- 9. Печать ---------- */
+
+@media print {
+  .gv,
+  .calc {
+    display: none;
+  }
+}

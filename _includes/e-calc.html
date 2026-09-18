@@ -1,0 +1,10 @@
+{%- comment -%}
+  Калькулятор подачи нити E и пористости решётки: {% include e-calc.html %}
+  Внутри нет пустых строк и отступов: иначе kramdown разберёт разметку как Markdown.
+{%- endcomment -%}
+{%- include root.html -%}
+<div class="calc">
+<div class="calc__in"><label>d, нить, мм<input type="number" id="calc-d" value="1.75" step="0.05" min="0.1"></label><label>W, дорожка, мм<input type="number" id="calc-w" value="0.4" step="0.05" min="0.05"></label><label>H, слой, мм<input type="number" id="calc-h" value="0.2" step="0.05" min="0.01"></label><label>L, отрезок, мм<input type="number" id="calc-l" value="20" step="1" min="0"></label><label>s, шаг решётки, мм<input type="number" id="calc-s" value="1.2" step="0.1" min="0.05"></label></div>
+<div class="calc__out"><div class="gv__stat"><span class="gv__stat-k">сечение нити, мм²</span><span class="gv__stat-v" id="calc-a">—</span></div><div class="gv__stat"><span class="gv__stat-k">E на 1 мм пути</span><span class="gv__stat-v" id="calc-e1">—</span></div><div class="gv__stat"><span class="gv__stat-k">E на отрезок L</span><span class="gv__stat-v" id="calc-el">—</span></div><div class="gv__stat"><span class="gv__stat-k">пористость 1 − W/s</span><span class="gv__stat-v" id="calc-p">—</span></div></div>
+</div>
+<script src="{{ root }}assets/js/e-calc.js"></script>

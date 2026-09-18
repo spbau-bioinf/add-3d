@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{%- comment -%}
+  Шаблон страниц занятий. Меню берётся из _data/nav.yml,
+  кнопки «Предыдущая / Следующая» считаются по порядку страниц в меню.
+{%- endcomment -%}
+{%- include root.html -%}
+{%- assign work = nil -%}
+{%- if page.work -%}
+  {%- assign work = site.data.nav | where: "work", page.work | first -%}
+{%- endif -%}
+{%- assign here = page.url | remove_first: "/" -%}
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.head_title %}{{ page.head_title }}{% else %}{{ page.code | capitalize }}. {{ page.title | strip_html }}{% endif %} | {{ site.title }}</title>
+  <link rel="stylesheet" href="{{ root }}assets/css/style.css">
+  <link rel="stylesheet" href="{{ root }}assets/css/markdown.css">
+  <link rel="stylesheet" href="{{ root }}assets/css/site.css">
+  <link rel="stylesheet" href="{{ root }}assets/css/tools.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Перейти к содержанию</a>
+
+  <div class="layout">
+
+    {% include sidebar.html %}
+
+    <div class="page">
+      <header class="page-header">
+        <p class="page-header__kicker">{% if page.kicker %}{{ page.kicker }}{% else %}{{ work.title }} · {{ page.code }}{% endif %}</p>
+        <h1 class="page-header__title">{{ page.title }}</h1>
+      </header>
+
+      <main id="content" class="content">
+{%- comment -%}
+  Обработка текста страницы:
+  1) каждая таблица оборачивается в прокручиваемый блок;
+  2) текст между @@ и @@ выделяется (ввод пользователя / новая папка).
+{%- endcomment -%}
+{%- assign html = content | replace: "<table", '<div class="table-scroll"><table' | replace: "</table>", "</table></div>" -%}
+{%- assign parts = html | split: "@@" -%}
+{%- for part in parts -%}
+  {%- assign odd = forloop.index0 | modulo: 2 -%}
+  {%- if odd == 1 -%}<span class="user-input">{{ part }}</span>{%- else -%}{{ part }}{%- endif -%}
+{%- endfor %}
+
+{%- unless page.show_author == false %}
+        <p class="author">{{ site.author }}</p>
+{%- endunless %}
+
+{%- if work %}
+  {%- assign is_first = true -%}
+  {%- assign is_last = true -%}
+  {%- for item in work.pages -%}
+    {%- if item.url == here -%}
+      {%- assign prev_i = forloop.index0 | minus: 1 -%}
+      {%- assign next_i = forloop.index0 | plus: 1 -%}
+      {%- assign is_first = forloop.first -%}
+      {%- assign is_last = forloop.last -%}
+    {%- endif -%}
+  {%- endfor %}
+
+        <nav class="pager" aria-label="Переход между страницами">
+{%- unless is_first %}
+          <a class="btn btn--prev" href="{{ root }}{{ work.pages[prev_i].url }}">&lt; Предыдущая страница</a>
+{%- endunless %}
+{%- unless is_last %}
+          <a class="btn btn--next" href="{{ root }}{{ work.pages[next_i].url }}">Следующая страница &gt;</a>
+{%- endunless %}
+        </nav>
+{%- endif %}
+
+      </main>
+
+      {% include footer.html %}
+    </div>
+
+  </div>
+</body>
+</html>

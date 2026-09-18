@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+{%- comment -%}
+  Главная страница: шапка с описанием курса и карточки занятий.
+  Тексты — в _config.yml (раздел home), карточки — из _data/nav.yml.
+{%- endcomment -%}
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.title }}{% if site.home.subtitle %} · {{ site.home.subtitle | strip_html }}{% endif %}</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/tools.css">
+</head>
+<body class="home">
+  <a class="skip-link" href="#content">Перейти к содержанию</a>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="topbar__brand" href="./">{{ site.brand_title }}</a>
+      <nav class="topbar__nav" aria-label="Разделы">
+{%- for l in site.home.topnav %}
+        <a class="topbar__link" href="{{ l.url }}">{{ l.title }}</a>
+{%- endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <main id="content" class="home-main">
+
+    <section class="hero">
+{%- if site.home.avatar and site.home.avatar != "" %}
+      <img class="hero__avatar" src="{{ site.home.avatar }}" alt="">
+{%- else %}
+      <div class="hero__avatar hero__avatar--emoji" aria-hidden="true">{{ site.home.emoji | default: "🐍" }}</div>
+{%- endif %}
+      <h1 class="hero__title">{{ site.home.title }}</h1>
+{%- if site.home.subtitle %}
+      <p class="hero__subtitle">{{ site.home.subtitle }}</p>
+{%- endif %}
+      <p class="hero__intro">{{ site.home.intro }}</p>
+{%- if site.home.links %}
+      <ul class="hero__links">
+  {%- for l in site.home.links %}
+        <li><a class="pill" href="{{ l.url }}">{% include icon.html name=l.icon %}<span>{{ l.title }}</span></a></li>
+  {%- endfor %}
+      </ul>
+{%- endif %}
+    </section>
+
+    <section class="works" id="works" aria-labelledby="works-title">
+      <h2 class="works__title" id="works-title">{{ site.home.works_title | default: "Практические занятия" }}</h2>
+      <ul class="cards">
+{%- for w in site.data.nav %}
+  {%- assign ready = true %}
+  {%- if w.soon or w.pages == nil or w.pages.size == 0 %}{% assign ready = false %}{% endif %}
+  {%- assign num = w.work | prepend: "0" | slice: -2, 2 %}
+        <li class="card{% unless ready %} card--soon{% endunless %}">
+          {% if ready %}<a class="card__link" href="{{ w.pages[0].url }}">{% else %}<div class="card__link">{% endif %}
+            <div class="card__cover{% if w.image %} card__cover--image{% endif %}"{% if w.image %} style="background-image: url('{{ w.image }}')"{% endif %}>
+{%- unless w.image %}
+              <span class="card__num" aria-hidden="true">{{ num }}</span>
+              <span class="card__code">task {{ w.work }}</span>
+{%- endunless %}
+            </div>
+            <div class="card__body">
+              <h3 class="card__title">{{ w.title }}</h3>
+              <p class="card__meta">
+{%- if ready -%}
+  {%- assign n = w.pages.size | minus: 1 -%}
+                Страниц: {{ n }}
+{%- else -%}
+                Скоро
+{%- endif -%}
+              </p>
+{%- if w.description %}
+              <p class="card__desc">{{ w.description }}</p>
+{%- endif %}
+{%- if w.tags %}
+              <p class="card__tags">{% for t in w.tags %}<span class="tag">{{ t }}</span>{% endfor %}</p>
+{%- endif %}
+            </div>
+          {% if ready %}</a>{% else %}</div>{% endif %}
+        </li>
+{%- endfor %}
+      </ul>
+    </section>
+
+  </main>
+
+  {% include footer.html %}
+</body>
+</html>

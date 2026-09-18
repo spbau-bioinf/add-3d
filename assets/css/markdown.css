@@ -1,0 +1,215 @@
+/* ==========================================================================
+   markdown.css — дополнение к style.css для страниц на Markdown.
+   style.css не меняется; здесь только то, что нужно блокам,
+   которые Jekyll строит из Markdown.
+
+   Блок кода в Markdown:           ```python ... ```
+   Jekyll превращает его в:        <div class="language-python highlighter-rouge">
+                                     <div class="highlight"><pre>...</pre></div>
+                                   </div>
+   Классы и подпись добавляются строкой под блоком:
+                                   {: .output data-label="Требуемый вывод"}
+   ========================================================================== */
+
+/* ---------- 1. Блок кода по умолчанию (как .code-block) ---------- */
+
+/* :where() обнуляет специфичность, чтобы .output и .folder-tree
+   из style.css перекрывали эти правила */
+:where(.content div.highlighter-rouge) {
+  margin: 0.75rem 0 1rem;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-code-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+:where(.content div.highlighter-rouge) pre {
+  padding: 0.9rem 1rem;
+  color: #1f2328;
+}
+
+.highlight {
+  margin: 0;
+}
+
+/* Код сразу под кодом/выводом — без лишнего зазора, как в оригинале */
+.highlighter-rouge + .output {
+  margin-top: -0.5rem;
+}
+
+/* ---------- 2. Подписи блоков (вместо <span class="...__label">) ---------- */
+
+/* Порядок важен: подпись по умолчанию < подпись варианта < своя подпись */
+
+:where(.content) div.highlighter-rouge::before {
+  content: "Код";
+  display: block;
+  padding: 0.3rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-code-label);
+  background: #eaeef2;
+  border-bottom: 1px solid var(--c-code-border);
+}
+
+.code-block--bad.highlighter-rouge::before {
+  content: "✗ Неверно";
+  color: var(--c-bad);
+  background: #fbe3e3;
+  border-bottom-color: #e5b3b3;
+}
+
+.code-block--good.highlighter-rouge::before {
+  content: "✓ Верно";
+  color: var(--c-good);
+  background: #dff2e5;
+  border-bottom-color: #aed8ba;
+}
+
+.output.highlighter-rouge::before {
+  content: "Вывод терминала";
+  color: var(--c-term-label);
+  background: #242a31;
+  border-bottom: 1px solid var(--c-term-border);
+}
+
+.output--error.highlighter-rouge::before {
+  color: #ffb4b4;
+}
+
+.output--file.highlighter-rouge::before {
+  color: #7a6320;
+  background: #f7efd4;
+  border-bottom: 1px dashed var(--c-file-border);
+}
+
+.folder-tree.highlighter-rouge::before {
+  content: none;
+}
+
+/* Своя подпись: {: data-label="..."} */
+div.highlighter-rouge[data-label]::before {
+  content: attr(data-label);
+}
+
+.code-block--bad.highlighter-rouge[data-label]::before {
+  content: "✗ " attr(data-label);
+}
+
+.code-block--good.highlighter-rouge[data-label]::before {
+  content: "✓ " attr(data-label);
+}
+
+/* ---------- 3. Дерево папок ---------- */
+
+.folder-tree.highlighter-rouge pre {
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* @@папка@@ в дереве выделяется как новая папка (.tree-new) */
+.folder-tree .user-input {
+  padding: 0;
+  font-weight: 700;
+  color: var(--c-accent-strong);
+  background: #e2f4e7;
+  border-bottom: 0;
+  border-radius: 2px;
+}
+
+/* ---------- 4. Таблицы из Markdown (как .data-table) ---------- */
+
+.content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.content table caption {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--c-muted);
+  caption-side: top;
+}
+
+.content table th,
+.content table td {
+  padding: 0.5rem 0.9rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.content table thead th {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--c-text-soft);
+  background: var(--c-bg-soft);
+  border-bottom: 2px solid var(--c-border);
+}
+
+.content table tbody tr:last-child th,
+.content table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.content table code {
+  overflow-wrap: normal;
+}
+
+.content table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+/* ---------- 5. Подсветка синтаксиса (цвета из style.css, раздел 10) ---------- */
+
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .ch,
+.highlight .cs, .highlight .cp, .highlight .cpf {
+  color: #6e7781;
+  font-style: italic;
+}
+
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sa,
+.highlight .sb, .highlight .sc, .highlight .sd, .highlight .se,
+.highlight .sh, .highlight .si, .highlight .sx, .highlight .sr,
+.highlight .ss, .highlight .dl {
+  color: #0a3069;
+}
+
+.highlight .k, .highlight .kc, .highlight .kd, .highlight .kn,
+.highlight .kp, .highlight .kr, .highlight .kt, .highlight .ow {
+  color: #a0111f;
+  font-weight: 600;
+}
+
+.highlight .m, .highlight .mi, .highlight .mf, .highlight .mh,
+.highlight .mo, .highlight .mb, .highlight .il {
+  color: #0550ae;
+}
+
+.highlight .nb, .highlight .bp {
+  color: #6f42c1;
+}
+
+/* Вывод терминала не подсвечивается */
+.output .highlight span:not(.user-input),
+.folder-tree .highlight span:not(.user-input) {
+  color: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+}
+
+/* ---------- 6. Печать ---------- */
+
+@media print {
+  .output.highlighter-rouge::before {
+    color: #000000;
+    background: #ffffff;
+  }
+}

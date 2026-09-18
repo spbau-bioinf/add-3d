@@ -1,0 +1,28 @@
+{%- comment -%}
+  Просмотрщик G-кода. Вставка в страницу:
+    {% include gcode-viewer.html %}
+    {% include gcode-viewer.html presets="two,broken" default="two" %}
+  presets — кнопки готовых файлов (two, broken, square, scaffold);
+  default — файл, который открывается, если на странице ещё ничего не сохранено.
+  На одной странице — не больше одного просмотрщика.
+  Внутри нет пустых строк и отступов: иначе kramdown разберёт разметку как Markdown.
+{%- endcomment -%}
+{%- include root.html -%}
+<div class="gv" id="gv" data-presets="{{ include.presets | default: 'two,square,scaffold' }}" data-default="{{ include.default }}">
+<div class="gv__bar" id="gv-presets"><span class="gv__spacer" style="order:99"></span><label class="tool-btn" for="gv-file" style="order:100">Открыть файл…</label><input type="file" id="gv-file" accept=".gcode,.gco,.g,.nc,.txt" hidden><button type="button" class="tool-btn tool-btn--main" id="gv-draw" style="order:101">Отрисовать</button></div>
+<div class="gv__grid">
+<textarea class="gv__text" id="gv-text" wrap="off" spellcheck="false" aria-label="Текст G-кода" placeholder="; вставьте сюда G-код и нажмите «Отрисовать»"></textarea>
+<div>
+<div class="gv__canvas-wrap"><canvas class="gv__canvas" id="gv-canvas" aria-label="Траектории из G-кода"></canvas><div class="gv__empty" id="gv-empty">Здесь появятся траектории. Нажмите кнопку с готовым файлом, откройте свой файл или вставьте G-код в поле.</div></div>
+<div class="gv__opts"><label><input type="radio" name="gv-view" value="top" checked> Слой сверху</label><label><input type="radio" name="gv-view" value="iso"> Изометрия</label><label><input type="checkbox" id="gv-travel" checked> Холостые ходы</label></div>
+<div class="gv__ctrls"><label for="gv-layer">Слой</label><input type="range" id="gv-layer" min="0" max="0" value="0"><span class="gv__val" id="gv-layer-v">—</span><label for="gv-prog">Прогресс</label><input type="range" id="gv-prog" min="0" max="0" value="0"><span class="gv__val" id="gv-prog-v">—</span></div>
+<div class="gv__line" id="gv-line" aria-live="polite"></div>
+<div class="gv__legend"><span><i></i>печать</span><span><i class="gv__lg-travel"></i>холостой ход</span><span><i class="gv__lg-seam"></i>начало слоя</span><span><i class="gv__lg-head"></i>сопло</span></div>
+</div>
+</div>
+<div class="gv__stats" id="gv-stats"></div>
+<div class="gv__fil"><span>Для массы:</span><label>диаметр нити, мм <input type="number" id="gv-fd" value="1.75" step="0.05" min="0.5"></label><label>плотность, г/см³ <input type="number" id="gv-rho" value="1.24" step="0.01" min="0.5"></label><span class="tag tag--ext">вне источников: плотность PLA — техлист Prusament PLA</span></div>
+<ul class="gv__warns" id="gv-warns"></ul>
+</div>
+<script src="{{ root }}assets/js/gcode-core.js"></script>
+<script src="{{ root }}assets/js/gcode-viewer.js"></script>

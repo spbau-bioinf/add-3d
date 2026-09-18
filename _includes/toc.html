@@ -1,0 +1,16 @@
+{%- comment -%}
+  Оглавление занятия (страница task_N): строится из _data/nav.yml,
+  первая страница меню (сама навигация) пропускается.
+{%- endcomment -%}
+{%- include root.html -%}
+{%- assign toc_work = site.data.nav | where: "work", page.work | first -%}
+<ol class="toc">
+{%- for item in toc_work.pages offset: 1 %}
+  <li class="toc__item{% if item.extra %} toc__item--extra{% endif %}">
+    <span class="toc__num">{{ item.code | split: "-" | last }}.</span>
+    <span class="toc__title">{{ item.title }}{% if item.tag %}<span class="tag toc__tag">{{ item.tag }}</span>{% endif %}</span>
+    <span class="toc__dash" aria-hidden="true">—</span>
+    <a class="toc__link" href="{{ root }}{{ item.url }}">{{ item.code }}</a>
+  </li>
+{%- endfor %}
+</ol>
