@@ -1,0 +1,23 @@
+{%- comment -%} Учебный слайсер. Вставка: {% include slicer.html %} (на странице должен быть и просмотрщик).
+  data-sample-b64 — модель t_bracket.stl в base64, чтобы кнопка работала и при открытии с диска;
+  при замене модели пересоздайте строку: python3 -c "import base64;print(base64.b64encode(open('assets/files/t_bracket.stl','rb').read()).decode())". {%- endcomment -%}
+{%- include root.html -%}
+<div class="sl" id="sl" data-sample="{{ root }}assets/files/t_bracket.stl" data-sample-b64="dF9icmFja2V0OiBwb3N0IDEyeDEyeDE4IG1tLCBzaGVsZiAzNngxMng0IG1tICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAcAAAAAAAAAAAAgL8AAAAAAABAQQAAAAAAAAAAAADAQQAAAAAAAAAAAADAQQAAAAAAAJBBAAAAAAAAAACAPwAAAAAAAEBBAABAQQAAAAAAAMBBAABAQQAAkEEAAMBBAABAQQAAAAAAAAAAAAAAAIC/AAAAAAAAQEEAAAAAAAAAAAAAwEEAAAAAAACQQQAAQEEAAAAAAACQQQAAAAAAAAAAgD8AAAAAAABAQQAAQEEAAAAAAABAQQAAQEEAAJBBAADAQQAAQEEAAJBBAAAAAACAAACAvwAAAAAAABBCAAAAAAAAsEEAAAAAAAAAAAAAsEEAAAAAAAAAAAAAkEEAAAAAAAAAAIA/AAAAAAAAEEIAAEBBAACwQQAAAAAAAEBBAACQQQAAAAAAAEBBAACwQQAAAAAAAAAAgL8AAAAAAAAQQgAAAAAAALBBAAAAAAAAAAAAAJBBAABAQQAAAAAAAJBBAAAAAAAAAACAPwAAAAAAABBCAABAQQAAsEEAAEBBAABAQQAAkEEAAAAAAABAQQAAkEEAAAAAAAAAAIC/AAAAAAAAEEIAAAAAAACwQQAAQEEAAAAAAACQQQAAwEEAAAAAAACQQQAAAAAAAAAAgD8AAAAAAAAQQgAAQEEAALBBAADAQQAAQEEAAJBBAABAQQAAQEEAAJBBAAAAAAAAAACAvwAAAIAAABBCAAAAAAAAsEEAAMBBAAAAAAAAkEEAABBCAAAAAAAAkEEAAAAAAAAAAIA/AAAAAAAAEEIAAEBBAACwQQAAEEIAAEBBAACQQQAAwEEAAEBBAACQQQAAAAAAAAAAAAAAAIC/AABAQQAAAAAAAAAAAABAQQAAQEEAAAAAAADAQQAAQEEAAAAAAAAAAAAAAAAAAAAAgL8AAEBBAAAAAAAAAAAAAMBBAABAQQAAAAAAAMBBAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAwEEAAAAAAAAAAAAAwEEAAEBBAAAAAAAAwEEAAEBBAACQQQAAAACAPwAAAAAAAAAAAADAQQAAAAAAAAAAAADAQQAAQEEAAJBBAADAQQAAAAAAAJBBAAAAAAAAAAAAAAAAgL8AAMBBAAAAAAAAkEEAAMBBAABAQQAAkEEAABBCAABAQQAAkEEAAAAAAAAAAAAAAACAvwAAwEEAAAAAAACQQQAAEEIAAEBBAACQQQAAEEIAAAAAAACQQQAAAACAPwAAAAAAAAAAAAAQQgAAAAAAAJBBAAAQQgAAQEEAAJBBAAAQQgAAQEEAALBBAAAAAIA/AAAAAAAAAAAAABBCAAAAAAAAkEEAABBCAABAQQAAsEEAABBCAAAAAAAAsEEAAAAAAAAAAACAAACAPwAAEEIAAAAAAACwQQAAEEIAAEBBAACwQQAAAAAAAEBBAACwQQAAAAAAAAAAAAAAAIA/AAAQQgAAAAAAALBBAAAAAAAAQEEAALBBAAAAAAAAAAAAALBBAAAAAIC/AAAAAAAAAAAAAAAAAAAAAAAAsEEAAAAAAABAQQAAsEEAAAAAAABAQQAAkEEAAAAAgL8AAAAAAAAAAAAAAAAAAAAAAACwQQAAAAAAAEBBAACQQQAAAAAAAAAAAACQQQAAAAAAAAAAAAAAAIC/AAAAAAAAAAAAAJBBAAAAAAAAQEEAAJBBAABAQQAAQEEAAJBBAAAAAAAAAAAAAAAAgL8AAAAAAAAAAAAAkEEAAEBBAABAQQAAkEEAAEBBAAAAAAAAkEEAAAAAgL8AAAAAAAAAAAAAQEEAAAAAAACQQQAAQEEAAEBBAACQQQAAQEEAAEBBAAAAAAAAAACAvwAAAAAAAAAAAABAQQAAAAAAAJBBAABAQQAAQEEAAAAAAABAQQAAAAAAAAAAAAA=">
+<div class="gv__bar"><button type="button" class="tool-btn" id="sl-sample">Кронштейн t_bracket.stl</button><label class="tool-btn" for="sl-file">Открыть свой STL…</label><input type="file" id="sl-file" accept=".stl" hidden></div>
+<p class="sl__status" id="sl-status">Загрузите модель: кнопкой слева — кронштейн из task 1-6, или свой файл STL.</p>
+<div class="sl__params">
+<label>Высота слоя H, мм <output id="sl-h-v"></output><input type="range" id="sl-h" min="0.1" max="0.3" step="0.05" value="0.2"></label>
+<label>Ширина дорожки W, мм <output id="sl-w-v"></output><input type="range" id="sl-w" min="0.3" max="0.6" step="0.05" value="0.4"></label>
+<label>Периметров <output id="sl-p-v"></output><input type="range" id="sl-p" min="1" max="4" step="1" value="2"></label>
+<label>Плотность заполнения <output id="sl-inf-v"></output><input type="range" id="sl-inf" min="0" max="100" step="5" value="20"></label>
+<label>Сплошных слоев снизу и сверху <output id="sl-solid-v"></output><input type="range" id="sl-solid" min="0" max="5" step="1" value="3"></label>
+</div>
+<div class="gv__bar"><button type="button" class="tool-btn tool-btn--main tool-btn--off" id="sl-run">Нарезать</button></div>
+<div id="sl-out" hidden>
+<div class="gv__stats" id="sl-result"></div>
+<div class="gv__bar"><button type="button" class="tool-btn" id="sl-view">Показать в просмотрщике</button><button type="button" class="tool-btn" id="sl-dl">Скачать G-код</button></div>
+</div>
+</div>
+<script src="{{ root }}assets/js/clipper.js"></script>
+<script src="{{ root }}assets/js/slicer-core.js"></script>
+<script src="{{ root }}assets/js/slicer-ui.js"></script>

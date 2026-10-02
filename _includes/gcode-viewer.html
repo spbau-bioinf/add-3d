@@ -3,13 +3,13 @@
     {% include gcode-viewer.html %}
     {% include gcode-viewer.html presets="two,broken" default="two" %}
   presets — кнопки готовых файлов (two, broken, square, scaffold);
-  default — файл, который открывается, если на странице ещё ничего не сохранено.
+  default — файл, который открывается, если на странице еще ничего не сохранено.
   На одной странице — не больше одного просмотрщика.
-  Внутри нет пустых строк и отступов: иначе kramdown разберёт разметку как Markdown.
+  Внутри нет пустых строк и отступов: иначе kramdown разберет разметку как Markdown.
 {%- endcomment -%}
 {%- include root.html -%}
 <div class="gv" id="gv" data-presets="{{ include.presets | default: 'two,square,scaffold' }}" data-default="{{ include.default }}">
-<div class="gv__bar" id="gv-presets"><span class="gv__spacer" style="order:99"></span><label class="tool-btn" for="gv-file" style="order:100">Открыть файл…</label><input type="file" id="gv-file" accept=".gcode,.gco,.g,.nc,.txt" hidden><button type="button" class="tool-btn tool-btn--main" id="gv-draw" style="order:101">Отрисовать</button></div>
+<div class="gv__bar" id="gv-presets"><span class="gv__actions"><button type="button" class="tool-btn" id="gv-clear" title="Очистить поле и удалить сохраненный в браузере текст">Очистить</button><label class="tool-btn" for="gv-file">Открыть файл…</label><input type="file" id="gv-file" accept=".gcode,.gco,.g,.nc,.txt" hidden><button type="button" class="tool-btn tool-btn--main" id="gv-draw">Отрисовать</button></span></div>
 <div class="gv__grid">
 <textarea class="gv__text" id="gv-text" wrap="off" spellcheck="false" aria-label="Текст G-кода" placeholder="; вставьте сюда G-код и нажмите «Отрисовать»"></textarea>
 <div>
@@ -21,7 +21,7 @@
 </div>
 </div>
 <div class="gv__stats" id="gv-stats"></div>
-<div class="gv__fil"><span>Для массы:</span><label>диаметр нити, мм <input type="number" id="gv-fd" value="1.75" step="0.05" min="0.5"></label><label>плотность, г/см³ <input type="number" id="gv-rho" value="1.24" step="0.01" min="0.5"></label><span class="tag tag--ext">вне источников: плотность PLA — техлист Prusament PLA</span></div>
+<div class="gv__fil"><span>Для массы:</span><label>диаметр нити, мм <input type="number" id="gv-fd" value="1.75" step="0.05" min="0.5"></label><label>плотность, г/см³ <input type="number" id="gv-rho" value="1.24" step="0.01" min="0.5"></label><span class="gv__note">1,24 г/см³ — плотность PLA по техническому паспорту <a href="https://www.prusa3d.com/product/prusament-pla-filament" target="_blank" rel="noopener">Prusament PLA</a></span></div>
 <ul class="gv__warns" id="gv-warns"></ul>
 </div>
 <script src="{{ root }}assets/js/gcode-core.js"></script>

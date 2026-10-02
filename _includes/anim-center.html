@@ -1,0 +1,129 @@
+{%- comment -%} Анимация «Координаты — это центр сопла» (task 1-3, раздел 1): план с осями сопла,
+  разрез стенки, список и ползунок смещения второго контура, обход контуров по кнопке. {%- endcomment -%}
+<div class="anim" id="anim-center">
+<svg viewBox="0 0 640 345" role="img" aria-label="Слева вид сверху: два квадратных контура, дорожки полупрозрачные, по середине каждой осевая линия центра сопла с координатами. Справа разрез стенки: две дорожки прямоугольниками, над ними сопло, размеры W, W/2 и расстояние между осями.">
+<defs>
+<marker id="m" markerHeight="6" markerWidth="6" orient="auto-start-reverse" refX="5" refY="3" viewBox="0 0 6 6"><path d="M0,0 L6,3 L0,6 z" fill="var(--c-muted)"/></marker>
+<clipPath id="clipPlan"><rect x="30" y="40" width="250" height="250"/></clipPath>
+</defs>
+<!-- ===== план ===== -->
+<text class="d-text" x="155" y="26" text-anchor="middle">вид сверху: слой 1 из задания 1</text>
+<g id="plan" clip-path="url(#clipPlan)"></g>
+<g id="plan-axes"></g>
+<g id="plan-noz" style="display:none"><circle id="pn-ring" r="12" fill="none" stroke="var(--c-text)" stroke-width="1.8"/><line id="pn-h" stroke="var(--c-text)" stroke-width="1.2"/><line id="pn-v" stroke="var(--c-text)" stroke-width="1.2"/></g>
+<rect id="lupa-box" x="236" y="150" width="46" height="30" fill="none" stroke="var(--c-bad)" stroke-width="1.5" stroke-dasharray="3 3"/>
+<path id="lupa-link" class="dim" d="M282,165 L360,165" stroke-dasharray="3 3"/>
+<text class="d-text d-text--small d-muted" x="30" y="306">пунктир — оси сопла; красный пунктир — зона разреза</text>
+<text class="d-text--mono d-text" x="30" y="322">наружный контур: X, Y = 90 … 110</text>
+<text class="d-text--mono d-text" x="30" y="338" id="plan-inner-label">внутренний контур: X, Y = 90,4 … 109,6</text>
+<!-- ===== разрез ===== -->
+<text class="d-text" x="500" y="26" text-anchor="middle">разрез стенки: увеличение участка</text>
+<g id="sect"></g>
+</svg>
+<div class="anim__panel">
+<label>Смещение второго контура:
+<select id="preset"><option value="1">на W: вплотную</option><option value="0.5">на W / 2: наложение</option><option value="2">на 2W: зазор</option><option value="custom">свое значение</option></select></label>
+<label>Расстояние между осями контуров: <output id="off-v">1,00</output> W<input type="range" id="off" min="0.5" max="2" step="0.05" value="1"></label>
+<label>Ширина дорожки W: <output id="w-v">0,40</output> мм<input type="range" id="w" min="0.3" max="0.6" step="0.05" value="0.4"></label>
+<div class="diag ok" id="diag">Касание: дорожки лежат вплотную.</div>
+<div id="nums" style="font-size:.85rem;color:var(--c-muted)"></div>
+<button type="button" class="tool-btn" id="walk">Показать обход</button>
+</div>
+<p class="anim__caption">Точка траектории — это центр сопла; дорожка шириной W ложится на W / 2 в обе стороны от осевой линии. Поэтому оси соседних контуров должны отстоять ровно на W: при меньшем расстоянии дорожки накладываются (красная зона в разрезе), при большем между ними остается зазор (серая зона). Ширина дорожки на плане увеличена, чтобы ее было видно.</p>
+</div>
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function el(t, a, txt) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (txt) e.textContent = txt; return e; }
+  var plan = document.getElementById("plan"), axes = document.getElementById("plan-axes"), sect = document.getElementById("sect");
+  var offIn = document.getElementById("off"), wIn = document.getElementById("w"), noz = document.getElementById("plan-noz");
+  var X0 = 40, Y0 = 50, S = 230, KP = 36;                 // план: 230 px = 20 мм; ширина дорожки увеличена: KP px на 1 мм
+  var SX = 360, SY = 60, KS = 230;                        // разрез: KS px на 1 мм
+  var walking = false, phase = 0, last = null;
+  function ring(off) { var o = off * KP; return [[X0 + o, Y0 + o], [X0 + S - o, Y0 + o], [X0 + S - o, Y0 + S - o], [X0 + o, Y0 + S - o]]; }
+  function pts(p) { return p.map(function (q) { return q.join(","); }).join(" "); }
+  function draw() {
+    var W = +wIn.value, k = +offIn.value, dist = k * W, wpx = W * KP;
+    var outer = ring(W / 2), inner = ring(W / 2 + dist);
+    plan.innerHTML = ""; axes.innerHTML = ""; sect.innerHTML = "";
+    // план: полупрозрачные дорожки
+    [[outer, "#1b7f3b", "наружный"], [inner, "#5aa86f", "внутренний"]].forEach(function (c) {
+      plan.appendChild(el("polygon", {points: pts(c[0]), fill: "none", stroke: c[1], "stroke-width": wpx, "stroke-linejoin": "round", opacity: 0.55}));
+    });
+    // зона наложения на плане: пересечение полос (приближенно: между осями, если dist < W)
+    if (dist < W - 1e-9) {
+      var o = (W / 2 + W / 2) * KP, oi = (W / 2 + dist - W / 2) * KP;   // внутренний край наружной дорожки и наружный край внутренней
+      plan.appendChild(el("path", {d: "M" + [X0 + oi, Y0 + oi] + " L" + [X0 + S - oi, Y0 + oi] + " L" + [X0 + S - oi, Y0 + S - oi] + " L" + [X0 + oi, Y0 + S - oi] + "Z M" + [X0 + o, Y0 + o] + " L" + [X0 + S - o, Y0 + o] + " L" + [X0 + S - o, Y0 + S - o] + " L" + [X0 + o, Y0 + S - o] + "Z", fill: "#b42f2f", "fill-rule": "evenodd", opacity: 0.55}));
+    }
+    [[outer, "90"], [inner, (90 + W / 2 + dist - W / 2).toFixed(1).replace(".", ",")]].forEach(function (c, i) {
+      axes.appendChild(el("polygon", {points: pts(c[0]), fill: "none", stroke: "var(--c-text)", "stroke-width": 1, "stroke-dasharray": "6 3"}));
+    });
+    document.getElementById("plan-inner-label").textContent = "внутренний контур: X, Y = " + (90 + dist).toFixed(2).replace(/\.?0+$/, "").replace(".", ",") + " … " + (110 - dist).toFixed(2).replace(/\.?0+$/, "").replace(".", ",");
+    // разрез: платформа, две дорожки, сопла, размеры
+    var baseY = SY + 180, h = 0.2 * KS, x1 = SX + 60, x2 = x1 + dist * KS;
+    sect.appendChild(el("line", {x1: SX, y1: baseY, x2: SX + 270, y2: baseY, stroke: "#8a95a3", "stroke-width": 3}));
+    sect.appendChild(el("text", {x: SX + 135, y: baseY + 16, "class": "d-text d-text--small d-muted", "text-anchor": "middle"}, "платформа"));
+    sect.appendChild(el("rect", {x: x1 - W / 2 * KS, y: baseY - h, width: W * KS, height: h, fill: "#1b7f3b", opacity: 0.6}));
+    sect.appendChild(el("rect", {x: x2 - W / 2 * KS, y: baseY - h, width: W * KS, height: h, fill: "#5aa86f", opacity: 0.6}));
+    if (dist < W - 1e-9) sect.appendChild(el("rect", {x: x2 - W / 2 * KS, y: baseY - h, width: (W - dist) * KS, height: h, fill: "#b42f2f", opacity: 0.6}));
+    if (dist > W + 1e-9) sect.appendChild(el("rect", {x: x1 + W / 2 * KS, y: baseY - h, width: (dist - W) * KS, height: h, fill: "#8a95a3", opacity: 0.35}));
+    [x1, x2].forEach(function (x, i) {
+      sect.appendChild(el("path", {d: "M" + (x - 14) + "," + (baseY - h - 40) + " L" + (x + 14) + "," + (baseY - h - 40) + " L" + (x + 4) + "," + (baseY - h - 4) + " L" + (x - 4) + "," + (baseY - h - 4) + "Z", fill: "#dfe4ea", stroke: "#8a95a3", "stroke-width": 1.2, opacity: i ? 0.9 : 1}));
+      sect.appendChild(el("line", {x1: x, y1: baseY - h - 58, x2: x, y2: baseY + 6, stroke: "var(--c-text)", "stroke-width": 1, "stroke-dasharray": "4 3"}));
+      sect.appendChild(el("circle", {cx: x, cy: baseY - h / 2, r: 2.5, fill: "var(--c-text)"}));
+    });
+    sect.appendChild(el("text", {x: x1, y: baseY - h - 64, "class": "d-text d-text--small", "text-anchor": "middle"}, "ось сопла"));
+    // размер W под первой дорожкой
+    var dy = baseY + 30;
+    sect.appendChild(el("path", {d: "M" + (x1 - W / 2 * KS) + "," + dy + " L" + (x1 + W / 2 * KS) + "," + dy, "class": "dim", "marker-start": "url(#m)", "marker-end": "url(#m)"}));
+    sect.appendChild(el("text", {x: x1, y: dy + 14, "class": "d-text d-text--mono", "text-anchor": "middle"}, "W = " + W.toFixed(2).replace(".", ",")));
+    // размер W/2 от оси до края
+    var dy2 = baseY - h - 12;
+    sect.appendChild(el("path", {d: "M" + x1 + "," + dy2 + " L" + (x1 + W / 2 * KS) + "," + dy2, "class": "dim", "marker-start": "url(#m)", "marker-end": "url(#m)"}));
+    sect.appendChild(el("text", {x: x1 + W / 4 * KS, y: dy2 - 4, "class": "d-text d-text--small", "text-anchor": "middle"}, "W / 2"));
+    // расстояние между осями
+    var dy3 = SY + 10;
+    sect.appendChild(el("path", {d: "M" + x1 + "," + dy3 + " L" + x2 + "," + dy3, "class": "dim", "marker-start": "url(#m)", "marker-end": "url(#m)"}));
+    sect.appendChild(el("text", {x: (x1 + x2) / 2, y: dy3 - 4, "class": "d-text d-text--mono", "text-anchor": "middle"}, "между осями " + dist.toFixed(2).replace(".", ",") + " мм = " + k.toFixed(2).replace(".", ",") + " W"));
+    // диагноз
+    var d = document.getElementById("diag");
+    if (Math.abs(k - 1) < 1e-9) { d.className = "diag ok"; d.textContent = "Касание: дорожки лежат вплотную, без зазора и наложения."; }
+    else if (k < 1) { d.className = "diag bad"; d.textContent = "Наложение: дорожки перекрываются на " + ((1 - k) * W).toFixed(2).replace(".", ",") + " мм, материал выдавится наружу."; }
+    else { d.className = "diag gap"; d.textContent = "Зазор " + ((k - 1) * W).toFixed(2).replace(".", ",") + " мм: стенка не сплошная."; }
+    document.getElementById("off-v").textContent = k.toFixed(2).replace(".", ","); document.getElementById("w-v").textContent = W.toFixed(2).replace(".", ",");
+    document.getElementById("nums").textContent = "Внутренний контур в G-коде: X и Y от " + (90 + dist).toFixed(2).replace(/\.?0+$/, "").replace(".", ",") + " до " + (110 - dist).toFixed(2).replace(/\.?0+$/, "").replace(".", ",");
+    // обход: положение сопла на осях
+    if (walking) {
+      var polys = [outer, inner], total = 8 * S, budget = phase * total, hx = outer[0][0], hy = outer[0][1];
+      plan.querySelectorAll("polygon").forEach(function (pg) { pg.setAttribute("opacity", "0.15"); });
+      polys.forEach(function (poly, pi) {
+        var col = pi ? "#5aa86f" : "#1b7f3b", d = "M" + poly[0].join(","), done = true;
+        for (var i = 0; i < 4; i++) {
+          var a = poly[i], b = poly[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+          if (budget <= 0) { done = false; break; }
+          var f = Math.min(1, budget / L); hx = a[0] + (b[0] - a[0]) * f; hy = a[1] + (b[1] - a[1]) * f; d += " L" + hx + "," + hy; budget -= L;
+        }
+        if (d.indexOf(" L") > 0) plan.appendChild(el("path", {d: d + (done && budget >= 0 ? "Z" : ""), fill: "none", stroke: col, "stroke-width": wpx, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0.85}));
+      });
+      noz.style.display = ""; noz.setAttribute("transform", "translate(" + hx + "," + hy + ")");
+      document.getElementById("pn-ring").setAttribute("r", wpx / 2 + 3);
+      ["pn-h", "pn-v"].forEach(function (id, i) { var l = document.getElementById(id); var r = wpx / 2 + 7; l.setAttribute(i ? "y1" : "x1", -r); l.setAttribute(i ? "y2" : "x2", r); l.setAttribute(i ? "x1" : "y1", 0); l.setAttribute(i ? "x2" : "y2", 0); });
+    } else noz.style.display = "none";
+  }
+  function frame(t) { if (walking) { if (last !== null) phase += (t - last) / 7000; if (phase >= 1) { walking = false; phase = 0; btn.textContent = "Показать обход"; } draw(); } last = t; requestAnimationFrame(frame); }
+  var btn = document.getElementById("walk");
+  btn.addEventListener("click", function () { walking = !walking; phase = 0; btn.textContent = walking ? "Остановить" : "Показать обход"; draw(); });
+  var preset = document.getElementById("preset");
+  preset.addEventListener("change", function () { if (preset.value !== "custom") { offIn.value = preset.value; } draw(); });
+  offIn.addEventListener("input", function () {                     // ползунок: список показывает совпадающий пункт или «свое значение»
+    var v = +offIn.value, hit = [...preset.options].find(function (o) { return o.value !== "custom" && Math.abs(+o.value - v) < 1e-9; });
+    preset.value = hit ? hit.value : "custom"; draw();
+  });
+  wIn.addEventListener("input", draw);
+  draw(); requestAnimationFrame(frame);
+  document.getElementById("anim-center").__anim = {
+    set: function (p) { walking = p > 0 && p < 1; phase = p; draw(); },
+    moving: function () { return [plan, noz]; }
+  };
+})();
+</script>

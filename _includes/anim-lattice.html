@@ -1,0 +1,45 @@
+{%- comment -%} Анимация решетки 0°/90° (task 1-5, раздел 1): слои ложатся друг на друга, шаг задает поры. {%- endcomment -%}
+<div class="anim" id="anim-lattice">
+<svg viewBox="0 0 480 300" role="img" aria-label="Вид сверху на решетку: дорожки слоя 0° и слоя 90° укладываются по очереди; промежутки между дорожками образуют поры.">
+<g id="al-layers"></g>
+<text class="d-text d-text--small" x="200" y="282" text-anchor="middle">образец 10 × 10 мм; светлые — слой 0°, темные — слой 90°</text>
+</svg>
+<div class="anim__panel">
+<label>Шаг дорожек s: <output id="al-s-v">1,20</output> мм<input type="range" id="al-s" min="0.8" max="2.4" step="0.1" value="1.2"></label>
+<label>Ширина дорожки W: <output id="al-w-v">0,40</output> мм<input type="range" id="al-w" min="0.3" max="0.6" step="0.05" value="0.4"></label>
+<div id="al-out" class="d-text--small"></div>
+<button type="button" class="tool-btn" id="al-pause">Пауза</button>
+</div>
+<p class="anim__caption">Дорожки каждого слоя кладутся с шагом s; следующий слой повернут на 90°. Пористость по модели равна 1 − W / s, пористость образца учитывает, что в 10 мм помещается целое число линий.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-lattice"), g = document.getElementById("al-layers");
+  var sIn = document.getElementById("al-s"), wIn = document.getElementById("al-w");
+  var NS = "http://www.w3.org/2000/svg", X0 = 90, Y0 = 20, SIZE = 220, K = SIZE / 10, lines = [], paused = false, phase = 0, last = null, period = 6000;
+  var fmt = function (v, n) { return (+v).toFixed(n).replace(".", ","); };
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function plan() {
+    var s = +sIn.value, W = +wIn.value, span = 10 - W, n = Math.floor(span / s + 1e-9) + 1, first = W / 2 + (span - (n - 1) * s) / 2;
+    lines = [];
+    for (var layer = 0; layer < 4; layer++) for (var i = 0; i < n; i++) {
+      var t = X0 + (first + i * s) * K, along = layer % 2 === 0;
+      lines.push(along ? {x1: X0, y1: Y0 + (t - X0), x2: X0 + SIZE, y2: Y0 + (t - X0), layer: layer} : {x1: t, y1: Y0, x2: t, y2: Y0 + SIZE, layer: layer});
+    }
+    document.getElementById("al-s-v").textContent = fmt(s, 2); document.getElementById("al-w-v").textContent = fmt(W, 2);
+    document.getElementById("al-out").textContent = "Линий в слое: " + n + "; пористость модели " + fmt((1 - W / s) * 100, 1) + " %, образца " + fmt((1 - n * W / 10) * 100, 1) + " %";
+  }
+  function set(p) {
+    phase = p; g.innerHTML = ""; var W = +wIn.value, k = Math.floor(p * lines.length), f = p * lines.length - k;
+    for (var i = 0; i <= k && i < lines.length; i++) {
+      var q = lines[i], fr = i < k ? 1 : f, x2 = q.x1 + (q.x2 - q.x1) * fr, y2 = q.y1 + (q.y2 - q.y1) * fr;
+      g.appendChild(el("line", {x1: q.x1, y1: q.y1, x2: x2, y2: y2, stroke: q.layer % 2 ? "#1b7f3b" : "#7cc690", "stroke-width": W * K, "stroke-linecap": "butt", opacity: q.layer < 2 ? 0.55 : 1}));
+    }
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  sIn.addEventListener("input", function () { plan(); phase = 0; }); wIn.addEventListener("input", function () { plan(); phase = 0; });
+  plan(); requestAnimationFrame(frame);
+  var pb = document.getElementById("al-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [g]; }};
+})();
+</script>

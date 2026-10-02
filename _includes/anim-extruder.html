@@ -1,0 +1,67 @@
+{%- comment -%}
+  Анимированная схема экструзионной печати (task 1-0, раздел 4).
+  Параметры справа: высота слоя, ширина дорожки, скорость головки.
+  Внутри нет пустых строк: иначе kramdown разберет разметку как Markdown.
+{%- endcomment -%}
+<div class="anim" id="anim-extruder" style="--dur:6s;--road:12;--step:14">
+<svg viewBox="0 0 480 270" role="img" aria-label="Нить подается роликами в нагревательную камеру, расплав выходит из сопла и ложится дорожкой на платформу; головка движется по X, после каждого слоя поднимается по Z.">
+<style>
+#anim-extruder .ax-head { animation: ax-head var(--dur) ease-in-out infinite; }
+@keyframes ax-head { 0% { transform: translate(0,0); } 45% { transform: translate(160px,0); } 50% { transform: translate(160px, calc(var(--step) * -1px)); } 95% { transform: translate(0, calc(var(--step) * -1px)); } 100% { transform: translate(0, calc(var(--step) * -1px)); } }
+#anim-extruder .ax-road { stroke: var(--c-accent); stroke-width: var(--road); stroke-linecap: round; stroke-dasharray: 160; stroke-dashoffset: 160; }
+#anim-extruder .ax-road--1 { animation: ax-lay1 var(--dur) ease-in-out infinite; }
+#anim-extruder .ax-road--2 { animation: ax-lay2 var(--dur) ease-in-out infinite; }
+@keyframes ax-lay1 { 0% { stroke-dashoffset: 160; } 45% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+@keyframes ax-lay2 { 0%, 50% { stroke-dashoffset: 160; } 95% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+#anim-extruder .ax-prev { stroke: var(--c-accent-soft); stroke-width: var(--road); stroke-linecap: round; }
+#anim-extruder .d-fil { animation-duration: calc(var(--dur) / 5); }
+#anim-extruder .d-roller { animation-duration: calc(var(--dur) / 5); }
+</style>
+<g class="ax-head">
+<line class="d-fil" x1="200" y1="10" x2="200" y2="78"/>
+<circle class="d-roller" cx="182" cy="72" r="12"/>
+<circle class="d-roller d-roller--ccw" cx="218" cy="72" r="12"/>
+<rect class="d-box" x="175" y="92" width="50" height="58" rx="4"/>
+<path class="d-box d-box--nozzle" d="M182,150 L218,150 L204,174 L196,174 Z"/>
+<text class="d-text d-text--small" x="162" y="68" text-anchor="end">подающие ролики</text>
+<text class="d-text d-text--small" x="162" y="124" text-anchor="end">нагревательная камера</text>
+<text class="d-text d-text--small" x="162" y="170" text-anchor="end">сопло</text>
+</g>
+<line class="ax-prev" x1="200" y1="212" x2="360" y2="212"/>
+<line class="ax-road ax-road--1" x1="200" y1="212" x2="360" y2="212"/>
+<line class="ax-road ax-road--2" id="ax-road2" x1="360" y1="198" x2="200" y2="198"/>
+<line class="d-plate" x1="120" y1="222" x2="440" y2="222"/>
+<text class="d-text d-text--small" x="280" y="244" text-anchor="middle">платформа</text>
+</svg>
+<div class="anim__panel">
+<label>Высота слоя H: <output id="ax-h-v">0,20</output> мм<input type="range" id="ax-h" min="0.1" max="0.3" step="0.05" value="0.2"></label>
+<label>Ширина дорожки W: <output id="ax-w-v">0,40</output> мм<input type="range" id="ax-w" min="0.3" max="0.6" step="0.05" value="0.4"></label>
+<label>Скорость головки: <output id="ax-s-v">×1,0</output><input type="range" id="ax-s" min="0.5" max="2" step="0.25" value="1"></label>
+<button type="button" class="tool-btn" id="ax-pause">Пауза</button>
+</div>
+<p class="anim__caption"><code>E</code> — подача нити (штриховка), <code>X</code>, <code>Y</code> — движение головки, <code>Z</code> — подъем на слой; полоса — уложенная дорожка. Головка движется по X и кладет дорожку; после слоя поднимается по Z на высоту слоя. Чем выше слой и шире дорожка, тем толще полоса и тем быстрее должны крутиться ролики при той же скорости головки: за секунду нужно подать больше материала.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-extruder"), r2 = document.getElementById("ax-road2");
+  var h = document.getElementById("ax-h"), w = document.getElementById("ax-w"), s = document.getElementById("ax-s");
+  var fmt = function (v, d) { return (+v).toFixed(d).replace(".", ","); };
+  function apply() {
+    var H = +h.value, W = +w.value, S = +s.value;
+    document.getElementById("ax-h-v").textContent = fmt(H, 2);
+    document.getElementById("ax-w-v").textContent = fmt(W, 2);
+    document.getElementById("ax-s-v").textContent = "×" + fmt(S, 1);
+    box.style.setProperty("--road", String(Math.round(W * 30)));
+    box.style.setProperty("--step", String(Math.round(H * 70)));
+    box.style.setProperty("--dur", (6 / S) + "s");
+    r2.setAttribute("y1", String(212 - Math.round(H * 70))); r2.setAttribute("y2", String(212 - Math.round(H * 70)));
+    /* скорость роликов: пропорциональна W·H·скорости головки (баланс объема, task 1-2) */
+    var feed = (6 / S) / 5 * (0.4 * 0.2) / (W * H);
+    box.querySelectorAll(".d-fil, .d-roller").forEach(function (el) { el.style.animationDuration = feed + "s"; });
+  }
+  [h, w, s].forEach(function (el) { el.addEventListener("input", apply); });
+  apply();
+  var pb = document.getElementById("ax-pause");
+  pb.addEventListener("click", function () { box.classList.toggle("anim--paused"); pb.textContent = box.classList.contains("anim--paused") ? "Продолжить" : "Пауза"; });
+})();
+</script>

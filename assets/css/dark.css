@@ -1,0 +1,412 @@
+/* ==========================================================================
+   dark.css — темная тема и стили новых блоков занятия.
+   Тема включается атрибутом data-theme="dark" у <html> (assets/js/theme.js);
+   без атрибута действует светлая тема, системная настройка не учитывается. Ниже:
+     1. переменные темной темы и переопределение цветов, заданных в других
+        файлах явно;
+     2. кнопка темы (theme-btn);
+     3. формулы с расшифровкой (formula, where);
+     4. блок «Проверьте себя» (check);
+     5. мини-тест, собирающий комментарий (quiz);
+     6. окно запуска Python (pyrun);
+     7. анимированные схемы с параметрами (anim).
+   ========================================================================== */
+
+/* ---------- 1. Темная тема ---------- */
+
+[data-theme="dark"] {
+  --c-text: #e4e8ec;
+  --c-text-soft: #c3cad3;
+  --c-muted: #98a3af;
+  --c-bg: #15191e;
+  --c-bg-soft: #1c2229;
+  --c-border: #313a44;
+
+  --c-accent: #45bf63;
+  --c-accent-strong: #7fdd96;
+  --c-accent-bright: #3fcf5c;
+  --c-accent-soft: #1d3326;
+
+  --c-link: #6cb4f5;
+  --c-link-hover: #9ccdfb;
+
+  --c-code-bg: #1f262e;
+  --c-code-border: #333d48;
+  --c-code-label: #a9b4bf;
+
+  --c-term-bg: #0d1116;
+  --c-term-border: #2b333c;
+
+  --c-file-bg: #262215;
+  --c-file-border: #7d6a35;
+
+  --c-hint-bg: #16222f;
+  --c-hint-border: #4d8ad8;
+  --c-warn-bg: #2d2416;
+  --c-warn-border: #d98200;
+  --c-imp-bg: #2f1b1b;
+  --c-imp-border: #d04b4b;
+
+  --c-overview-bg: #221f31;
+  --c-overview-border: #8c7bd4;
+  --c-overview-text: #c5b8f3;
+
+  --c-then-bg: #2a2714;
+  --c-then-border: #b89a2f;
+
+  --c-bad: #ff8686;
+  --c-bad-bg: #2d1b1b;
+  --c-good: #45bf63;
+  --c-good-bg: #1a2a1e;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
+
+/* Цвета, заданные в style.css, site.css, markdown.css и tools.css явно */
+[data-theme="dark"] kbd { background: #2a323b; border-color: #4a5560; color: var(--c-text); }
+[data-theme="dark"] code { border-color: #333d48; color: #8fe0a4; }
+[data-theme="dark"] .menu__link:hover { background: #262e37; }
+[data-theme="dark"] .menu__link { background: var(--c-bg); }
+[data-theme="dark"] .menu__link--current,
+[data-theme="dark"] .menu__link--current:hover { background: #2a4a35; border-color: #2a4a35; color: #ffffff; }
+[data-theme="dark"] .menu-group__summary { background: var(--c-bg); }
+[data-theme="dark"] .goal { border-color: #2f5a3b; }
+[data-theme="dark"] .definition,
+[data-theme="dark"] .task,
+[data-theme="dark"] .flow__step,
+[data-theme="dark"] .folder-tree,
+[data-theme="dark"] .pill,
+[data-theme="dark"] .card__link,
+[data-theme="dark"] .home .site-footer,
+[data-theme="dark"] .gv,
+[data-theme="dark"] .gv__canvas-wrap,
+[data-theme="dark"] .calc,
+[data-theme="dark"] .gv__fil input,
+[data-theme="dark"] .calc__in input,
+[data-theme="dark"] .tool-btn,
+[data-theme="dark"] .files__link { background: var(--c-bg); color: var(--c-text); }
+[data-theme="dark"] .task { border-color: #2f5a3b; }
+[data-theme="dark"] .task--star { background: var(--c-bg-soft); border-color: #3b4654; }
+[data-theme="dark"] .syntax,
+[data-theme="dark"] .analysis,
+[data-theme="dark"] .diagram,
+[data-theme="dark"] .figure-src,
+[data-theme="dark"] .final-task { background: var(--c-bg-soft); border-color: #3b4654; }
+[data-theme="dark"] .capstone { background: var(--c-bg-soft); box-shadow: none; }
+[data-theme="dark"] .folder-tree { border-color: #6b5f2a; }
+[data-theme="dark"] .tree-new { background: #1d3326; }
+[data-theme="dark"] .code-block__label,
+[data-theme="dark"] .content div.highlighter-rouge::before { background: #2a323b; color: var(--c-code-label); }
+[data-theme="dark"] .code-block pre,
+[data-theme="dark"] :where(.content div.highlighter-rouge) pre { color: var(--c-text); }
+[data-theme="dark"] .code-block--bad,
+[data-theme="dark"] .code-block--bad.highlighter-rouge { border-color: #6b3a3a; }
+[data-theme="dark"] .code-block--bad .code-block__label,
+[data-theme="dark"] .code-block--bad.highlighter-rouge::before { background: #3a2222; border-bottom-color: #6b3a3a; }
+[data-theme="dark"] .code-block--good,
+[data-theme="dark"] .code-block--good.highlighter-rouge { border-color: #2f5a3b; }
+[data-theme="dark"] .code-block--good .code-block__label,
+[data-theme="dark"] .code-block--good.highlighter-rouge::before { background: #1d3326; border-bottom-color: #2f5a3b; }
+[data-theme="dark"] .output--file .output__label,
+[data-theme="dark"] .output--file.highlighter-rouge::before { color: #e2c66a; background: #2a2714; }
+[data-theme="dark"] .hl-comment, [data-theme="dark"] .highlight .c, [data-theme="dark"] .highlight .c1, [data-theme="dark"] .highlight .cm { color: #8b949e; }
+[data-theme="dark"] .hl-string, [data-theme="dark"] .highlight .s, [data-theme="dark"] .highlight .s1, [data-theme="dark"] .highlight .s2, [data-theme="dark"] .highlight .sa, [data-theme="dark"] .highlight .se, [data-theme="dark"] .highlight .si { color: #a5d6ff; }
+[data-theme="dark"] .hl-keyword, [data-theme="dark"] .highlight .k, [data-theme="dark"] .highlight .kc, [data-theme="dark"] .highlight .kd, [data-theme="dark"] .highlight .kn, [data-theme="dark"] .highlight .kr, [data-theme="dark"] .highlight .ow { color: #ff7b72; }
+[data-theme="dark"] .hl-number, [data-theme="dark"] .highlight .m, [data-theme="dark"] .highlight .mi, [data-theme="dark"] .highlight .mf { color: #79c0ff; }
+[data-theme="dark"] .hl-builtin, [data-theme="dark"] .highlight .nb, [data-theme="dark"] .highlight .bp { color: #d2a8ff; }
+[data-theme="dark"] .content .user-input, [data-theme="dark"] p .user-input { color: #ffd866; background: #3a3212; border-bottom-color: #d9a400; }
+[data-theme="dark"] .callout--hint { border-color: #2d4f78; }
+[data-theme="dark"] .callout--warning { border-color: #6b4f1f; }
+[data-theme="dark"] .callout--important { border-color: #6b3434; }
+[data-theme="dark"] .level--1 { color: #9ad8aa; background: #1d3326; }
+[data-theme="dark"] .level--2 { color: #9ad4e6; background: #1b3340; }
+[data-theme="dark"] .level--3 { color: #aabdf0; background: #1e2a4a; }
+[data-theme="dark"] .level--4 { color: #cdb0ec; background: #2f2444; }
+[data-theme="dark"] .level--5 { color: #f0b48f; background: #3d2718; }
+[data-theme="dark"] .data-table tbody tr:nth-child(even),
+[data-theme="dark"] .content table tbody tr:nth-child(even) { background: var(--c-bg-soft); }
+[data-theme="dark"] .d-box { fill: var(--c-bg-soft); stroke: #9aa5b1; }
+[data-theme="dark"] .d-box--name { fill: #3a3212; stroke: #c79a1e; }
+[data-theme="dark"] .d-box--object { fill: #1d3326; }
+[data-theme="dark"] .d-box--nozzle { fill: #3a4654; stroke: #9aa5b1; }
+[data-theme="dark"] .d-arrow { stroke: #b4bec8; }
+[data-theme="dark"] .d-arrowhead { fill: #b4bec8; }
+[data-theme="dark"] .d-road--fill { stroke: #5aa86f; }
+[data-theme="dark"] .d-road--prev { stroke: #2a4a35; }
+[data-theme="dark"] .d-text { fill: var(--c-text); }
+[data-theme="dark"] .tool-btn { border-color: #3b7a4b; }
+[data-theme="dark"] .files__link { border-color: #3b7a4b; }
+[data-theme="dark"] .files__link:hover { background: #1d3326; }
+[data-theme="dark"] .tool-btn--main { color: #0b2a14; }
+[data-theme="dark"] .btn { color: #0b2a14; }
+[data-theme="dark"] .gv__warns li { border-color: #6b3a3a; }
+[data-theme="dark"] .gv__warns li.gv__ok { border-color: #2f5a3b; }
+[data-theme="dark"] .topbar { background: rgba(21, 25, 30, 0.92); }
+[data-theme="dark"] .hero__avatar { box-shadow: 0 0 0 4px var(--c-bg), 0 0 0 5px var(--c-border); }
+[data-theme="dark"] .card:not(.card--soon) .card__link:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
+[data-theme="dark"] img.figure-src__img, [data-theme="dark"] .figure-src img { filter: brightness(0.85); }
+
+/* ---------- 2. Кнопка темы ---------- */
+
+.theme-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+}
+.theme-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.theme-btn:focus-visible { outline: 2px solid var(--c-accent-bright); outline-offset: 2px; }
+.theme-btn svg { width: 1.3rem; height: 1.3rem; }
+.theme-btn__sun { display: none; }
+[data-theme="dark"] .theme-btn__sun { display: block; }
+[data-theme="dark"] .theme-btn__moon { display: none; }
+.page-header { position: relative; }
+.topbar .theme-btn { position: static; border-color: var(--c-border); background: var(--c-bg); color: var(--c-text); }
+.topbar .theme-btn:hover { border-color: var(--c-accent); background: var(--c-bg-soft); }
+.page--tool .theme-btn { color: #ffffff; }
+@media print { .theme-btn { display: none; } }
+
+/* ---------- 3. Формулы ---------- */
+
+.formula {
+  margin: 1.25rem 0 0.5rem;
+  text-align: center;
+  font-family: "Times New Roman", Times, "Liberation Serif", serif;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+.formula i, .formula var { font-style: italic; }
+.formula sub, .formula sup { font-size: 0.72em; }
+.formula + .where { margin-top: 0; }
+.where {
+  margin: 0 0 1.25rem;
+  padding-left: 1.4rem;
+  font-size: 0.93rem;
+  color: var(--c-text-soft);
+}
+.where > div { margin: 0.15rem 0; }
+.where dt, .where dd { display: inline; margin: 0; }
+.where dt::after { content: " — "; }
+.where dd::after { content: ";"; }
+.where > div:last-child dd::after { content: "."; }
+.where dt i, .where dt var {
+  font-family: "Times New Roman", Times, "Liberation Serif", serif;
+  font-style: italic;
+  font-size: 1.1em;
+  color: var(--c-text);
+}
+
+/* ---------- 4. Проверьте себя ---------- */
+
+.check {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1.2rem;
+  background: var(--c-good-bg);
+  border: 1px solid var(--c-border);
+  border-left: 4px solid var(--c-accent);
+  border-radius: var(--radius);
+}
+.check__title { margin: 0 0 0.4rem; font-weight: 700; }
+.check > p { margin: 0.3rem 0; }
+.content .check table { margin: 0.5rem 0 0; font-size: 0.93rem; }
+.content .check .table-scroll { margin: 0.5rem 0 0; }
+.check table th, .check table td { padding: 0.3rem 0.6rem; }
+
+/* ---------- 5. Мини-тест ---------- */
+
+.quiz {
+  margin: 1.25rem 0;
+  padding: 0.9rem 1.2rem 1rem;
+  background: var(--c-bg-soft);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+.quiz__title { margin: 0 0 0.5rem; font-weight: 700; }
+.quiz__intro { margin: 0 0 0.8rem; color: var(--c-text-soft); font-size: 0.95rem; }
+.quiz__q { margin: 0.9rem 0; }
+.quiz__q > p:first-child { margin: 0 0 0.35rem; font-weight: 600; }
+.quiz__q label {
+  display: block;
+  margin: 0.3rem 0;
+  padding: 0.45rem 0.75rem;
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.quiz__q label:hover { border-color: var(--c-accent); }
+.quiz__q label.is-ok { background: var(--c-good-bg); border-color: var(--c-accent); }
+.quiz__q label.is-bad { background: var(--c-bad-bg); border-color: var(--c-bad); }
+.quiz__exp { margin: 0.3rem 0 0 0.75rem; font-size: 0.9rem; color: var(--c-text-soft); }
+.quiz__exp[hidden] { display: none; }
+.quiz__bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-top: 0.8rem; }
+.quiz__status { font-size: 0.9rem; color: var(--c-muted); }
+.quiz__result { margin-top: 0.8rem; }
+.quiz__result[hidden] { display: none; }
+.quiz__result pre {
+  margin: 0.4rem 0;
+  padding: 0.7rem 0.9rem;
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-code-border);
+  border-radius: var(--radius);
+}
+
+/* ---------- 6. Запуск Python: окно редактора и окно вывода ---------- */
+/* Светлая тема: светлое поле кода и темная полоса заголовка (вариант «Темная шапка»);
+   темная тема: темное поле. Подсветку синтаксиса рисует pyrun.js поверх textarea. */
+
+:root {
+  --win-code-bg: #f8f9fb; --win-code-border: #d0d7de; --win-code-text: #1f2328; --win-code-gutter: #8c959f;
+  --win-head-bg: #1b1f24; --win-head-text: #c9d1d9;
+  --win-btn-bg: #eef1f4; --win-btn-border: #cfd6de; --win-btn-text: #24292f;
+  --win-out-bg: #ffffff; --win-out-border: #d0d7de; --win-out-text: #1f2328; --win-out-title: #57606a; --win-link: #9aa4ad;
+  --win-dot-1: #ff5f57; --win-dot-2: #febc2e; --win-dot-3: #28c840;
+  --win-shadow: 0 1px 2px rgba(20, 30, 45, 0.06), 0 6px 20px rgba(20, 30, 45, 0.08);
+  --hl-kw: #a0111f; --hl-str: #0a3069; --hl-num: #0550ae; --hl-com: #6e7781; --hl-fn: #6639ba; --hl-bi: #953800;
+}
+[data-theme="dark"] {
+  --win-code-bg: #1c1f25; --win-code-border: #2f353d; --win-code-text: #abb2bf; --win-code-gutter: #5f6673;
+  --win-head-bg: #15181d; --win-head-text: #8a919e;
+  --win-btn-bg: #323842; --win-btn-border: #3e4451; --win-btn-text: #c8cdd6;
+  --win-out-bg: #242830; --win-out-border: #3a3e46; --win-out-text: #e6e6e6; --win-out-title: #a3a9b5; --win-link: #6e675d;
+  --win-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --hl-kw: #ff7b72; --hl-str: #a5d6ff; --hl-num: #79c0ff; --hl-com: #8b949e; --hl-fn: #d2a8ff; --hl-bi: #ffa657;
+}
+.pyrun { margin: 1.4rem 0; }
+.pyrun__win, .pyrun__outwin { position: relative; border-radius: var(--radius); box-shadow: var(--win-shadow); }
+.pyrun__win { background: var(--win-code-bg); border: 1px solid var(--win-code-border); overflow: hidden; }
+.pyrun__head { position: relative; min-height: 2.2rem; padding: 0.6rem 4.5rem 0.2rem; text-align: center; font-size: 0.85rem; color: var(--win-head-text); background: var(--win-head-bg); }
+.pyrun__head::before {
+  content: ""; position: absolute; left: 1rem; top: 0.8rem; width: 52px; height: 12px;
+  background: radial-gradient(circle at 6px 6px, var(--win-dot-1) 5.5px, transparent 6px),
+              radial-gradient(circle at 26px 6px, var(--win-dot-2) 5.5px, transparent 6px),
+              radial-gradient(circle at 46px 6px, var(--win-dot-3) 5.5px, transparent 6px);
+}
+.pyrun__title { font-family: var(--font-mono); }
+.pyrun__copy {
+  position: absolute; top: 0.35rem; right: 0.5rem; width: 1.7rem; height: 1.7rem; padding: 0; border-radius: 4px;
+  border: 1px solid transparent; background: transparent; color: var(--win-head-text); cursor: pointer; display: grid; place-items: center;
+}
+.pyrun__copy:hover { color: #ffffff; border-color: #3e4451; background: #323842; }
+.pyrun__copy svg { width: 1rem; height: 1rem; }
+.pyrun__copy.is-done { color: var(--win-dot-3); }
+.pyrun__editor { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); overflow: hidden; }
+.pyrun__gutter {
+  padding: 0.8rem 0 0.8rem 1rem; font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.6;
+  color: var(--win-code-gutter); text-align: right; white-space: pre; user-select: none;
+}
+.pyrun__scroll { position: relative; overflow: auto; }   /* длинные строки прокручиваются по горизонтали */
+.pyrun__hl, .pyrun__code {
+  margin: 0; padding: 0.8rem 1.2rem 0.8rem 0.9rem; font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.6;
+  tab-size: 4; white-space: pre; box-sizing: border-box; min-width: 100%;
+}
+.pyrun__hl { position: absolute; inset: 0; pointer-events: none; color: var(--win-code-text); background: transparent; border: 0; }
+.pyrun__code {
+  position: relative; display: block; width: 100%; border: 0; outline: none; background: transparent;
+  color: transparent; caret-color: var(--win-code-text); resize: none; overflow: hidden;
+}
+.pyrun__code::selection { background: rgba(60, 120, 200, 0.3); }
+.hl-kw { color: var(--hl-kw); } .hl-str { color: var(--hl-str); } .hl-num { color: var(--hl-num); }
+.hl-com { color: var(--hl-com); font-style: italic; } .hl-fn { color: var(--hl-fn); } .hl-bi { color: var(--hl-bi); }
+.pyrun__grip {
+  position: absolute; right: 2px; bottom: 2px; width: 14px; height: 14px; cursor: ns-resize;
+  background: linear-gradient(135deg, transparent 0 45%, var(--win-code-gutter) 45% 55%, transparent 55% 70%, var(--win-code-gutter) 70% 80%, transparent 80%);
+  opacity: 0.8;
+}
+.pyrun__bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; padding: 0.6rem 1rem 0.8rem; border-top: 1px solid var(--win-code-border); }
+.pyrun__btn {
+  font: inherit; font-size: 0.9rem; min-width: max-content; padding: 0.38rem 0.9rem; border-radius: var(--radius); cursor: pointer;
+  background: var(--c-accent-bright); color: #0b2a14; border: 1px solid #28a444; font-weight: 600;
+}
+.pyrun__btn--secondary { background: var(--win-btn-bg); color: var(--win-btn-text); border-color: var(--win-btn-border); font-weight: 400; }
+.pyrun__btn:disabled { opacity: 0.6; cursor: default; }
+.pyrun__status { font-size: 0.85rem; color: var(--c-muted); }
+.pyrun__outwin { margin-top: 0.9rem; background: var(--win-out-bg); border: 1px solid var(--win-out-border); }
+.pyrun__outwin::after { content: ""; position: absolute; left: 2rem; top: calc(-0.9rem - 1px); width: 2px; height: 0.9rem; background: var(--win-link); }
+.pyrun__outlabel { display: block; padding: 0.6rem 1.2rem 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--win-out-title); }
+.pyrun__out {
+  margin: 0; padding: 0.5rem 1.2rem 0.4rem; min-height: 2.4rem; font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.6;
+  white-space: pre-wrap; color: var(--win-out-text); background: transparent; border: 0;
+}
+.pyrun__verdict { padding: 0 1.2rem 0.5rem; font-weight: 600; }
+.pyrun__verdict:empty { padding: 0; }
+.pyrun__verdict--ok { color: var(--c-good); }
+.pyrun__verdict--bad { color: var(--c-bad); }
+.pyrun__files { display: flex; flex-direction: column; align-items: flex-start; gap: 0.45rem; padding: 0.2rem 1.2rem 1rem; }
+.pyrun__files:empty { padding: 0 0 0.7rem; }
+.pyrun__files-title { font-size: 0.85rem; color: var(--win-out-title); }
+.pyrun__file { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.pyrun__file code { font-family: var(--font-mono); font-size: 0.9rem; color: var(--win-out-text); background: none; border: 0; padding: 0; }
+.pyrun__expected-box { margin: 0.6rem 0 0; font-size: 0.9rem; color: var(--c-muted); }
+.pyrun__expected-box pre { margin: 0.4rem 0 0; padding: 0.5rem 0.9rem; font-family: var(--font-mono); font-size: 0.9rem; white-space: pre-wrap; background: var(--win-out-bg); border: 1px solid var(--win-out-border); border-radius: var(--radius); color: var(--win-out-text); }
+.pyrun__note { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--c-muted); }
+
+/* Кнопка копирования у статичных блоков кода (assets/js/copycode.js) */
+.content div.highlighter-rouge { position: relative; }
+.content div.highlighter-rouge .copy-btn {
+  position: absolute; top: 0.12rem; right: 0.3rem; width: 1.5rem; height: 1.25rem; padding: 0; border-radius: 4px;
+  border: 1px solid transparent; background: transparent; color: var(--c-code-label); cursor: pointer; display: grid; place-items: center;
+}
+.content div.highlighter-rouge .copy-btn.is-done { color: var(--c-good); }
+.content div.highlighter-rouge .copy-btn svg { width: 0.85rem; height: 0.85rem; }
+.content div.highlighter-rouge .copy-btn:hover { color: var(--c-text); background: var(--c-code-bg); border-color: var(--c-code-border); }
+.content .output.highlighter-rouge .copy-btn, .content .output.highlighter-rouge .copy-btn:hover { color: var(--c-term-label); background: transparent; }
+
+/* Группы кнопок результата (слайсер): отступ от предыдущего блока */
+.sl #sl-out .gv__bar { margin-top: 0.9rem; }
+.sl #sl-out .gv__stats { margin-top: 0.6rem; }
+
+/* ---------- 7. Анимированные схемы ---------- */
+
+.anim {
+  margin: 1.5rem 0;
+  padding: 0.8rem;
+  background: var(--c-bg-soft);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 0.8rem 1rem;
+  align-items: start;
+}
+.anim svg { width: 100%; height: auto; display: block; }
+.anim__panel { font-size: 0.9rem; }
+.anim__panel label { display: block; margin: 0.4rem 0; }
+.anim__panel input[type="range"] { width: 100%; }
+.anim__panel output { font-family: var(--font-mono); }
+.anim__panel .tool-btn { margin-top: 0.4rem; }
+.anim__caption { grid-column: 1 / -1; margin: 0; font-size: 0.9rem; color: var(--c-muted); }
+.anim--paused svg * { animation-play-state: paused !important; }
+.anim .d-fil { stroke: #2b6cb0; stroke-width: 9; stroke-dasharray: 10 6; animation: anim-feed 1.2s linear infinite; }
+[data-theme="dark"] .anim .d-fil { stroke: #7fb3ff; }
+@keyframes anim-feed { to { stroke-dashoffset: -16; } }
+.anim .d-roller { fill: none; stroke: var(--c-text); stroke-width: 1.6; stroke-dasharray: 4 4; transform-box: fill-box; transform-origin: center; animation: anim-spin 1.2s linear infinite; }
+.anim .d-roller--ccw { animation-direction: reverse; }
+@keyframes anim-spin { to { transform: rotate(360deg); } }
+@media (max-width: 720px) { .anim { grid-template-columns: 1fr; } }
+@media print { .anim__panel { display: none; } .anim { display: block; } }
+.anim__panel select { font: inherit; padding: 0.2rem 0.4rem; background: var(--c-bg); color: var(--c-text); border: 1px solid var(--c-border); border-radius: var(--radius); max-width: 100%; }
+
+/* Анимация «центр сопла»: размерные линии и диагноз */
+.anim .dim { stroke: var(--c-muted); stroke-width: 1; fill: none; }
+.anim .d-muted { fill: var(--c-muted); }
+.anim .diag { font-weight: 600; margin: 0.5rem 0; }
+.anim .diag.ok { color: var(--c-good); }
+.anim .diag.bad { color: var(--c-bad); }
+.anim .diag.gap { color: #8a6d00; }
+[data-theme="dark"] .anim .diag.gap { color: #e2c66a; }

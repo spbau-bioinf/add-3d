@@ -1,7 +1,9 @@
 /* ==========================================================================
    gcode-viewer.js — просмотрщик G-кода (разметка: _includes/gcode-viewer.html).
    Нужен gcode-core.js. Файлы читаются только в браузере и никуда не отправляются.
-   Текст в поле запоминается для каждой страницы отдельно (localStorage).
+   Текст в поле запоминается для каждой страницы отдельно (localStorage);
+   кнопка «Очистить» удаляет его, чтобы на общем компьютере
+   следующий студент не увидел чужой файл.
    Адрес вида viewer.html#square сразу открывает готовый файл
    (two, broken, square, scaffold).
    ========================================================================== */
@@ -20,7 +22,8 @@
   var KEY = "gv:" + location.pathname;
   var store = {
     get: function () { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
-    set: function (v) { try { localStorage.setItem(KEY, v); } catch (e) { /* хранилище недоступно */ } }
+    set: function (v) { try { localStorage.setItem(KEY, v); } catch (e) { /* хранилище недоступно */ } },
+    clear: function () { try { localStorage.removeItem(KEY); } catch (e) { /* хранилище недоступно */ } }
   };
 
   var cv = $("gv-canvas"), ctx = cv.getContext("2d");
@@ -42,6 +45,7 @@
   function viewMode() { return root.querySelector('input[name="gv-view"]:checked').value; }
 
   function loadText(t) { ta.value = t; store.set(t); render(true); }
+  window.gvLoadText = loadText;            // для окон запуска Python (pyrun.js)
 
   function render(resetLayer) {
     M = parseGcode(ta.value);
@@ -93,7 +97,7 @@
     if (!M || !M.segs.length) return;
     var rho = parseFloat($("gv-rho").value) || 1.24;
     var mass = M.eSum * filArea() / 1000 * rho;
-    [["Слоёв", String(M.zs.length)],
+    [["Слоев", String(M.zs.length)],
      ["Высота слоя, мм", fmt(M.hLayer, 2)],
      ["Нить E, мм", fmt(M.eSum, M.eSum < 100 ? 2 : 1)],
      ["Масса, г", fmt(mass, mass < 10 ? 3 : 1)],
@@ -232,6 +236,7 @@
 
   // ---------- события ----------
   $("gv-draw").addEventListener("click", function () { store.set(ta.value); render(false); });
+  $("gv-clear").addEventListener("click", function () { ta.value = ""; store.clear(); render(true); });
   $("gv-file").addEventListener("change", function (e) {
     var f = e.target.files[0];
     if (!f) return;
@@ -248,7 +253,7 @@
   var rt = null;
   window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(draw, 120); });
 
-  // ---------- старт: адрес #ключ → сохранённый текст → файл по умолчанию ----------
+  // ---------- старт: адрес #ключ → сохраненный текст → файл по умолчанию ----------
   var hash = location.hash.replace("#", "");
   var saved = store.get();
   if (GCODE_PRESETS[hash]) loadText(GCODE_PRESETS[hash].text());

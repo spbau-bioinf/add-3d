@@ -1,0 +1,87 @@
+{%- comment -%} Анимация баланса объема (task 1-2, раздел 1): сопло кладет дорожку, нить подается
+  со скоростью v_f; справа сечения нити и дорожки в одном масштабе. {%- endcomment -%}
+<div class="anim" id="anim-balance">
+<svg viewBox="0 0 500 270" role="img" aria-label="Сопло движется вдоль платформы и кладет дорожку высотой H; нить подается в сопло со скоростью подачи. Справа в одном масштабе показаны сечение нити и сечение дорожки.">
+<defs><marker id="ab-m" markerHeight="7" markerWidth="7" orient="auto-start-reverse" refX="9" refY="5" viewBox="0 0 10 10"><path class="d-arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<g id="ab-head">
+<line id="ab-fil" x1="0" y1="-150" x2="0" y2="-74" stroke="#2b6cb0" stroke-width="12" stroke-dasharray="10 6" stroke-linecap="butt"/>
+<circle class="d-roller" id="ab-r1" cx="-16" cy="-80" r="10"/>
+<circle class="d-roller d-roller--ccw" id="ab-r2" cx="16" cy="-80" r="10"/>
+<rect class="d-box" x="-20" y="-66" width="40" height="40" rx="3"/>
+<path class="d-box d-box--nozzle" d="M-18,-26 L18,-26 L6,0 L-6,0 Z"/>
+<path class="d-arrow" d="M30,-150 L30,-100" marker-end="url(#ab-m)"/>
+<text class="d-text d-text--mono d-text--small" id="ab-vf" x="38" y="-122">v_f</text>
+<text class="d-text d-text--small" x="-34" y="-110" text-anchor="end">нить</text>
+<text class="d-text d-text--small" x="-26" y="-8" text-anchor="end">сопло</text>
+</g>
+<rect id="ab-road" x="110" y="176" width="0" height="24" rx="3" fill="var(--c-accent)"/>
+<line class="d-plate" x1="60" y1="200" x2="330" y2="200"/>
+<text class="d-text d-text--small" x="195" y="222" text-anchor="middle">платформа; полоса — дорожка</text>
+<path class="d-arrow" d="M110,245 L190,245" marker-end="url(#ab-m)"/>
+<text class="d-text d-text--mono d-text--small" id="ab-vr" x="200" y="249">v_r</text>
+<g id="ab-sect">
+<text class="d-text d-text--small" x="445" y="24" text-anchor="middle">один масштаб</text>
+<circle id="ab-c" cx="430" cy="80" r="35" fill="#2b6cb0" opacity="0.85"/>
+<text class="d-text d-text--small" id="ab-t1" x="430" y="134" text-anchor="middle">нить, d</text>
+<rect id="ab-rect" x="422" y="160" width="16" height="8" fill="var(--c-accent)"/>
+<text class="d-text d-text--small" id="ab-t2" x="430" y="190" text-anchor="middle">дорожка, W × H</text>
+<text class="d-text d-text--mono d-text--small" id="ab-ratio" x="430" y="214" text-anchor="middle">×30</text>
+<text class="d-text d-text--small" id="ab-t3" x="430" y="232" text-anchor="middle">во столько раз</text>
+<text class="d-text d-text--small" id="ab-t4" x="430" y="248" text-anchor="middle">E меньше пути</text>
+</g>
+</svg>
+<div class="anim__panel">
+<label>Сопло:
+<select id="ab-mode"><option value="move">движется вдоль платформы</option><option value="fixed">неподвижно, движется платформа</option></select></label>
+<label>Диаметр нити d: <output id="ab-d-v">1,75</output> мм<input type="range" id="ab-d" min="1.75" max="3" step="0.25" value="1.75"></label>
+<label>Ширина дорожки W: <output id="ab-w-v">0,40</output> мм<input type="range" id="ab-w" min="0.3" max="0.6" step="0.05" value="0.4"></label>
+<label>Высота слоя H: <output id="ab-h-v">0,20</output> мм<input type="range" id="ab-h" min="0.1" max="0.3" step="0.05" value="0.2"></label>
+<label>Скорость сопла v_r: <output id="ab-s-v">20</output> мм/с<input type="range" id="ab-s" min="10" max="60" step="5" value="20"></label>
+<div id="ab-out" class="d-text--small"></div>
+<button type="button" class="tool-btn" id="ab-pause">Пауза</button>
+</div>
+<p class="anim__caption">Сопло стоит на высоте слоя <i>H</i> над платформой и кладет дорожку; штрихи нити движутся со скоростью подачи <i>v</i><sub>f</sub>, которая следует из баланса объема. Справа сечения нити и дорожки в одном масштабе: сечение нити в десятки раз больше, поэтому подача <i>E</i> во столько же раз меньше пути сопла. Чем тоньше нить и крупнее дорожка, тем быстрее нужно подавать нить.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-balance"), head = document.getElementById("ab-head"), fil = document.getElementById("ab-fil"), road = document.getElementById("ab-road");
+  var d = document.getElementById("ab-d"), w = document.getElementById("ab-w"), h = document.getElementById("ab-h"), s = document.getElementById("ab-s"), mode = document.getElementById("ab-mode");
+  var fmt = function (v, n) { return (+v).toFixed(n).replace(".", ","); };
+  var X0 = 110, X1 = 240, PLATE = 200, PX = 120;   // px на 1 мм высоты слоя; сечения справа: 40 px на 1 мм
+  var paused = false, phase = 0, last = null, period = 4000, vf = 0.6652 / 20, e1 = 0.03326, roadH = 24;
+  function params() {
+    var D = +d.value, W = +w.value, H = +h.value, V = +s.value;
+    var area = Math.PI * (D / 2) * (D / 2); e1 = W * H / area; vf = V * e1;
+    document.getElementById("ab-d-v").textContent = fmt(D, 2); document.getElementById("ab-w-v").textContent = fmt(W, 2);
+    document.getElementById("ab-h-v").textContent = fmt(H, 2); document.getElementById("ab-s-v").textContent = V;
+    document.getElementById("ab-vf").textContent = "v_f = " + fmt(vf, 2) + " мм/с"; document.getElementById("ab-vr").textContent = "v_r = " + V + " мм/с";
+    document.getElementById("ab-out").textContent = "E на 1 мм пути: " + fmt(e1, 5) + " мм; v_f = v_r · W · H / (π · (d / 2)²)";
+    roadH = Math.round(H * PX); road.setAttribute("height", String(roadH)); road.setAttribute("y", String(PLATE - roadH));
+    fil.setAttribute("stroke-width", String(Math.round(D * 7)));
+    var K = 32, R = D / 2 * K, c = document.getElementById("ab-c");   // сечения: 32 px на 1 мм; места под круг и прямоугольник отведены по наибольшим размерам
+    c.setAttribute("r", String(R)); c.setAttribute("cy", "82");         // центр круга неподвижен: 34 + 48 (наибольший радиус)
+    document.getElementById("ab-t1").setAttribute("y", "148");
+    var rw = W * K, rh = H * K, rect = document.getElementById("ab-rect");
+    rect.setAttribute("width", String(rw)); rect.setAttribute("height", String(rh)); rect.setAttribute("x", String(430 - rw / 2)); rect.setAttribute("y", String(165 - rh / 2));
+    document.getElementById("ab-t2").setAttribute("y", "188"); document.getElementById("ab-ratio").setAttribute("y", "210");
+    document.getElementById("ab-t3").setAttribute("y", "228"); document.getElementById("ab-t4").setAttribute("y", "244");
+    document.getElementById("ab-ratio").textContent = "×" + fmt(area / (W * H), 0);
+    period = (X1 - X0) / V * 1000;   // 130 px дорожки — это 140 мм пути при скорости V мм/с
+    [document.getElementById("ab-r1"), document.getElementById("ab-r2")].forEach(function (r) { r.style.animationDuration = (1 / Math.max(vf, 0.05)) + "s"; });
+  }
+  function set(p) {
+    phase = p;
+    var L = (X1 - X0) * p;
+    if (mode.value === "move") { road.setAttribute("x", String(X0)); road.setAttribute("width", String(Math.round(L))); head.setAttribute("transform", "translate(" + (X0 + L) + "," + (PLATE - roadH) + ")"); }
+    else { road.setAttribute("x", String(Math.round(X1 - L))); road.setAttribute("width", String(Math.round(L))); head.setAttribute("transform", "translate(" + X1 + "," + (PLATE - roadH) + ")"); }
+    fil.setAttribute("stroke-dashoffset", String(-(L * e1) * 16));   // нить сдвигается на E = L · e1 (16 px на 1 мм нити)
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  [d, w, h, s].forEach(function (el) { el.addEventListener("input", function () { params(); set(phase); }); });
+  mode.addEventListener("change", function () { phase = 0; set(0); });
+  params(); set(0); requestAnimationFrame(frame);
+  var pb = document.getElementById("ab-pause");
+  pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [road, head]; }};
+})();
+</script>

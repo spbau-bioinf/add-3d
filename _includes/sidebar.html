@@ -2,13 +2,18 @@
   Боковое меню: все занятия из _data/nav.yml.
   Щелчок по «task N» раскрывает и скрывает страницы занятия;
   занятие, в котором находится открытая страница, раскрыто сразу.
+  Ссылкой в пункте служит только код («task 1-2»): невидимый слой ссылки (::after у .menu__hit)
+  растянут на весь пункт, поэтому щелчок по названию тоже работает, а название остается
+  вне ссылки и не подчеркивается браузерами с принудительным подчеркиванием ссылок (Firefox, Zen).
+  Так же устроен блок с названием сайта: ссылка — пустой слой поверх него.
 {%- endcomment -%}
 <aside class="sidebar">
   <div class="sidebar__brand">
-    <a class="sidebar__home" href="{{ root | default: './' }}">
+    <div class="sidebar__home">
       <span class="sidebar__brand-title">{{ site.brand_title }}</span>
       <span class="sidebar__brand-sub">{{ site.brand_sub }}</span>
-    </a>
+      <a class="sidebar__home-link" href="{{ root | default: './' }}" aria-label="{{ site.brand_title }}: главная страница"></a>
+    </div>
   </div>
   <nav class="menu" aria-label="Практические работы">
     <ul class="menu__list menu__list--groups">
@@ -25,10 +30,13 @@
           <ul class="menu__list menu-group__list">
   {%- for item in w.pages %}
             <li class="menu__item menu__item--sub{% if item.extra %} menu__item--extra{% endif %}">
-              <a class="menu__link{% if item.url == here %} menu__link--current{% endif %}" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %}>
-                <span class="menu__code">{{ item.code }}</span>
+              <div class="menu__link{% if item.url == here %} menu__link--current{% endif %}">
+                <a class="menu__code menu__hit" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %} aria-label="{{ item.code }}: {{ item.menu_title | default: item.title | strip_html }}">{{ item.code }}</a>
                 <span class="menu__title">{{ item.menu_title | default: item.title }}</span>
-              </a>
+              </div>
+              {%- if item.url == here %}
+              <div class="submenu" id="submenu" data-page="{{ item.code }}"></div>
+              {%- endif %}
             </li>
   {%- endfor %}
           </ul>
@@ -45,10 +53,10 @@
           <ul class="menu__list menu-group__list">
   {%- for item in site.tools %}
             <li class="menu__item menu__item--sub">
-              <a class="menu__link{% if item.url == here %} menu__link--current{% endif %}" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %}>
-                <span class="menu__code">{{ item.code }}</span>
+              <div class="menu__link{% if item.url == here %} menu__link--current{% endif %}">
                 <span class="menu__title">{{ item.title }}</span>
-              </a>
+                <a class="menu__hit" href="{{ root }}{{ item.url }}"{% if item.url == here %} aria-current="page"{% endif %} aria-label="{{ item.title }}"></a>
+              </div>
             </li>
   {%- endfor %}
           </ul>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {%- comment -%}
-  Шаблон страниц занятий. Меню берётся из _data/nav.yml,
+  Шаблон страниц занятий. Меню берется из _data/nav.yml,
   кнопки «Предыдущая / Следующая» считаются по порядку страниц в меню.
 {%- endcomment -%}
 {%- include root.html -%}
@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="{{ root }}assets/css/markdown.css">
   <link rel="stylesheet" href="{{ root }}assets/css/site.css">
   <link rel="stylesheet" href="{{ root }}assets/css/tools.css">
+  <link rel="stylesheet" href="{{ root }}assets/css/dark.css">
+  <script src="{{ root }}assets/js/theme.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#content">Перейти к содержанию</a>
@@ -28,6 +30,7 @@
 
     <div class="page">
       <header class="page-header">
+        {% include theme-toggle.html %}
         <p class="page-header__kicker">{% if page.kicker %}{{ page.kicker }}{% else %}{{ work.title }} · {{ page.code }}{% endif %}</p>
         <h1 class="page-header__title">{{ page.title }}</h1>
       </header>
@@ -77,5 +80,9 @@
     </div>
 
   </div>
+  <script src="{{ root }}assets/js/quiz.js" defer></script>
+  <script src="{{ root }}assets/js/pyrun.js" defer></script>
+  <script src="{{ root }}assets/js/copycode.js" defer></script>
+  <script src="{{ root }}assets/js/submenu.js" defer></script>
 </body>
 </html>

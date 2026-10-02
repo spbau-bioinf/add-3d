@@ -309,12 +309,12 @@
   border-radius: 8px;
 }
 
-a.card__link:hover {
+.card:not(.card--soon) .card__link:hover {
   border-color: var(--c-accent);
   box-shadow: 0 6px 18px rgba(16, 35, 26, 0.12);
 }
 
-a.card__link:hover .card__title {
+.card:not(.card--soon) .card__link:hover .card__title {
   color: var(--c-accent-strong);
 }
 
@@ -390,7 +390,7 @@ a.card__link:hover .card__title {
   margin: 0;
 }
 
-/* Занятие ещё не опубликовано */
+/* Занятие еще не опубликовано */
 .card--soon .card__link {
   background: transparent;
   border-style: dashed;
@@ -405,7 +405,7 @@ a.card__link:hover .card__title {
   color: var(--c-muted);
 }
 
-a.card__link:focus-visible,
+.card__link:has(.card__stretch:focus-visible),
 .pill:focus-visible,
 .topbar__link:focus-visible,
 .topbar__brand:focus-visible {
@@ -428,3 +428,44 @@ a.card__link:focus-visible,
     padding-right: 1rem;
   }
 }
+
+/* Карточки занятий: ссылка — пустой слой поверх карточки, текст вне ссылки и не подчеркивается;
+   теги прижаты к низу. */
+.card__link { position: relative; }
+.card__stretch { position: absolute; inset: 0; z-index: 1; border-radius: 8px; }
+.card__stretch:focus-visible { outline: 3px solid var(--c-accent-bright); outline-offset: 2px; }
+.card__body { display: flex; flex-direction: column; }
+.card__tags { margin-top: auto; padding-top: 0.5rem; }
+
+/* ---------- Подменю открытой страницы: разделы и задания ---------- */
+.submenu { margin: 0.35rem 0 0.5rem 0.4rem; padding-left: 0.6rem; border-left: 2px solid var(--c-border); }
+.submenu__label { margin: 0.55rem 0 0.25rem; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-muted); }
+.submenu__list { list-style: none; margin: 0; padding: 0; }
+.submenu__item { position: relative; margin: 0; }
+.submenu__link { display: flex; gap: 0.35rem; align-items: baseline; padding: 0.22rem 0.4rem; font-size: 0.8rem; line-height: 1.3; color: var(--c-text-soft); text-decoration: none; border-radius: 5px; }
+.submenu__link:hover { color: var(--c-text); background: #e7ebf0; }
+.submenu__link.is-current { color: var(--c-accent-strong); font-weight: 600; box-shadow: inset 2px 0 0 var(--c-accent); }
+.submenu__num { flex: none; min-width: 1.1rem; font-family: var(--font-mono); font-size: 0.74rem; color: var(--c-muted); }
+.submenu__tnum { flex: none; font-family: var(--font-mono); font-size: 0.74rem; color: var(--c-accent-strong); }
+.submenu__icon { flex: none; width: 0.85rem; height: 0.85rem; align-self: center; background: currentColor; opacity: 0.55;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>') center / contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>') center / contain no-repeat; }
+[data-theme="dark"] .submenu__link:hover { background: #262e37; }
+
+/* ---------- Подчеркивание в боковом меню ----------
+   Подчеркнуты только коды страниц («task 1-2»); названия страниц, пункты подменю,
+   инструменты и блок с названием сайта стоят вне ссылок. Подчеркивание задано явно, чтобы меню выглядело
+   одинаково во всех браузерах. */
+.menu__link { position: relative; cursor: pointer; }
+.menu__hit { color: var(--c-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.menu__hit::after { content: ""; position: absolute; inset: 0; border-radius: 5px; }
+.menu__hit:focus-visible { outline: none; }
+.menu__link:has(.menu__hit:focus-visible) { outline: 3px solid var(--c-accent-bright); outline-offset: 1px; }
+.menu__link--current .menu__hit { color: var(--c-accent-bright); }
+.sidebar__home { position: relative; }
+.sidebar__home-link { position: absolute; inset: 0; border-radius: 5px; }
+.sidebar__home-link:focus-visible { outline: 3px solid var(--c-accent-bright); outline-offset: 2px; }
+.sidebar__home:hover .sidebar__brand-title { color: var(--c-accent-strong); }
+.submenu__link { position: relative; cursor: pointer; }
+.submenu__hit { position: absolute; inset: 0; border-radius: 5px; }
+.submenu__hit:focus-visible { outline: 3px solid var(--c-accent-bright); outline-offset: 1px; }

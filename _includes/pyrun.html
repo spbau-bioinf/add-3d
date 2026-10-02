@@ -1,0 +1,23 @@
+{%- comment -%}
+  Окно запуска Python (assets/js/pyrun.js). Вставка:
+    {% capture code %}…{% endcapture %}{% capture expected %}…{% endcapture %}
+    {% include pyrun.html file="task_1-2_1.py" code=code expected=expected %}
+  Необязательно: stdin="строки через \n", title="…" (подпись в заголовке вместо имени файла),
+  note="…" (пояснение под окном вывода).
+{%- endcomment -%}
+{%- unless pymods_done %}{% include pyrun-modules.html %}{% assign pymods_done = true %}{% endunless %}
+<div class="pyrun" data-file="{{ include.file }}"{% if include.stdin %} data-stdin="{{ include.stdin }}"{% endif %}>
+<div class="pyrun__win">
+<div class="pyrun__head"><span class="pyrun__title">{{ include.title | default: include.file | default: "Код" }}</span><button type="button" class="pyrun__copy" title="Скопировать код" aria-label="Скопировать код"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
+<div class="pyrun__editor"><div class="pyrun__gutter" aria-hidden="true"></div><div class="pyrun__scroll"><pre class="pyrun__hl" aria-hidden="true"></pre><textarea class="pyrun__code" spellcheck="false" aria-label="Код программы">{{ include.code | strip | escape }}
+</textarea></div><div class="pyrun__grip" title="Потяните, чтобы изменить высоту окна" aria-hidden="true"></div></div>
+<div class="pyrun__bar"><button type="button" class="pyrun__btn pyrun__run">▶ Запустить</button><button type="button" class="pyrun__btn pyrun__btn--secondary pyrun__reset" title="Вернуть исходный код и очистить вывод">↺ Сбросить</button><span class="pyrun__status">Код выполняется в браузере; файл для сдачи сохраняйте у себя.</span></div>
+</div>
+<div class="pyrun__outwin"><span class="pyrun__outlabel">Вывод</span><pre class="pyrun__out" aria-live="polite"></pre><div class="pyrun__verdict"></div><div class="pyrun__files"></div></div>
+{%- if include.expected %}
+<details class="pyrun__expected-box"><summary>Требуемый вывод</summary><pre class="pyrun__expected">{{ include.expected | strip | escape }}</pre></details>
+{%- endif %}
+{%- if include.note %}
+<p class="pyrun__note">{{ include.note }}</p>
+{%- endif %}
+</div>

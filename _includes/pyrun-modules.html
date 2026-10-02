@@ -1,0 +1,5 @@
+{%- comment -%} Исходники gen.py и stats.py для окон запуска Python (pyrun.js читает их со страницы,
+  поэтому окна работают и при открытии сайта с диска). Копии в _includes/files должны совпадать
+  с assets/files; это проверяет tools/check_pages.py --modules. {%- endcomment -%}
+<script type="text/plain" data-pymod="gen.py">{% include files/gen.py %}</script>
+<script type="text/plain" data-pymod="stats.py">{% include files/stats.py %}</script>

@@ -6,7 +6,7 @@
     python tools/html2md.py <папка_с_html> [--site .]
 
 Что делает:
-  * для каждого task_N*.html создаёт task_N/task_N*.md;
+  * для каждого task_N*.html создает task_N/task_N*.md;
   * боковое меню, шапку, подвал, кнопки «Предыдущая / Следующая» и подпись
     автора убирает — их рисует шаблон _layouts/default.html;
   * меню занятия записывает (или обновляет) в _data/nav.yml.
@@ -26,7 +26,7 @@ from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 # Настройки разметки
 # ---------------------------------------------------------------------------
 
-# Блоки-обёртки: превращаются в <tag class="..." markdown="1"> ... </tag>,
+# Блоки-обертки: превращаются в <tag class="..." markdown="1"> ... </tag>,
 # а их содержимое пишется в Markdown.
 CONTAINER_CLASSES = {
     "section", "subsection", "theory", "goal", "callout", "example", "task",
@@ -265,7 +265,7 @@ def raw_html(el: Tag) -> str:
     if el.name == "div" and "table-scroll" in el.get("class", []):
         inner = el.find_all(True, recursive=False)
         if len(inner) == 1:
-            el = inner[0]  # обёртку добавит шаблон
+            el = inner[0]  # обертку добавит шаблон
     for wrap in el.select("div.table-scroll"):
         wrap.unwrap()
     tables = [el] if el.name == "table" else el.find_all("table")

@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/site.css">
   <link rel="stylesheet" href="assets/css/tools.css">
+  <link rel="stylesheet" href="assets/css/dark.css">
+  <script src="assets/js/theme.js"></script>
 </head>
 <body class="home">
   <a class="skip-link" href="#content">Перейти к содержанию</a>
@@ -23,6 +25,7 @@
         <a class="topbar__link" href="{{ l.url }}">{{ l.title }}</a>
 {%- endfor %}
       </nav>
+      {% include theme-toggle.html %}
     </div>
   </header>
 
@@ -56,7 +59,10 @@
   {%- if w.soon or w.pages == nil or w.pages.size == 0 %}{% assign ready = false %}{% endif %}
   {%- assign num = w.work | prepend: "0" | slice: -2, 2 %}
         <li class="card{% unless ready %} card--soon{% endunless %}">
-          {% if ready %}<a class="card__link" href="{{ w.pages[0].url }}">{% else %}<div class="card__link">{% endif %}
+          {%- comment -%} Карточка не обернута в ссылку: ссылка — пустой слой поверх карточки
+            (card__stretch). Так текст карточки не попадает внутрь ссылки, и браузеры с принудительным
+            подчеркиванием ссылок (Firefox, Zen) его не подчеркивают. {%- endcomment %}
+          <div class="card__link">
             <div class="card__cover{% if w.image %} card__cover--image{% endif %}"{% if w.image %} style="background-image: url('{{ w.image }}')"{% endif %}>
 {%- unless w.image %}
               <span class="card__num" aria-hidden="true">{{ num }}</span>
@@ -68,7 +74,7 @@
               <p class="card__meta">
 {%- if ready -%}
   {%- assign n = w.pages.size | minus: 1 -%}
-                Страниц: {{ n }}
+                Страниц: {{ n }}{% if w.tasks %} · Заданий: {{ w.tasks }}{% endif %}
 {%- else -%}
                 Скоро
 {%- endif -%}
@@ -80,7 +86,10 @@
               <p class="card__tags">{% for t in w.tags %}<span class="tag">{{ t }}</span>{% endfor %}</p>
 {%- endif %}
             </div>
-          {% if ready %}</a>{% else %}</div>{% endif %}
+{%- if ready %}
+            <a class="card__stretch" href="{{ w.pages[0].url }}" aria-label="{{ w.title }}: открыть занятие"></a>
+{%- endif %}
+          </div>
         </li>
 {%- endfor %}
       </ul>
