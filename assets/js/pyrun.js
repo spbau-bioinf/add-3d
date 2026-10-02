@@ -2,12 +2,14 @@
    Код выполняется настоящим CPython (Pyodide) в браузере: интерпретатор
    загружается с cdn.jsdelivr.net при первом нажатии «Запустить» и общий
    для всех окон страницы. Перед запуском в виртуальную файловую систему
-   кладутся gen.py и stats.py из assets/files, поэтому import из них работает.
+   кладутся модули страницы (по умолчанию gen.py и stats.py) и ее модели .stl,
+   поэтому import и open() работают.
    Файлы, которые программа записала (например, .gcode), перечисляются под
    окном; кнопка «В просмотрщик» открывает их во встроенном просмотрщике,
    если он есть на странице (gcode-viewer.js публикует window.gvLoadText).
-   Исходники модулей берутся из тегов <script type="text/plain" data-pymod="…"> на странице
-   (их вставляет _includes/pyrun-modules.html), а если их нет — загружаются из assets/files.
+   Исходники модулей берутся из тегов <script type="text/plain" data-pymod="…"> на странице,
+   модели — из тегов data-pyfile в base64 (их вставляет _includes/pyrun-modules.html по полям
+   страницы pymods и pyfiles); если тегов модулей нет, gen.py и stats.py загружаются из assets/files.
    Разметка: <div class="pyrun" data-file="имя.py" data-stdin="строки ввода">
                <textarea class="pyrun__code">…</textarea> … <pre class="pyrun__expected">…</pre> */
 (function () {
@@ -41,7 +43,10 @@
   var INDEX_URL = "https://cdn.jsdelivr.net/pyodide/v" + VERSION + "/full/";
   var root = (document.querySelector('script[src$="assets/js/pyrun.js"]') || {}).src || "";
   root = root.replace(/assets\/js\/pyrun\.js.*$/, "");
-  var MODULES = ["gen.py", "stats.py"];
+  var MODTAGS = document.querySelectorAll("script[data-pymod]");
+  var MODULES = MODTAGS.length ? Array.prototype.map.call(MODTAGS, function (t) { return t.getAttribute("data-pymod"); }) : ["gen.py", "stats.py"];
+  var DATAFILES = Array.prototype.map.call(document.querySelectorAll("script[data-pyfile]"), function (t) { return t.getAttribute("data-pyfile"); });
+  function b64bytes(t) { var s = atob(t.replace(/\s+/g, "")), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
   var pyPromise = null;
 
   function getPy(status) {
@@ -60,7 +65,12 @@
             var src = tag ? Promise.resolve(tag.textContent) : fetch(root + "assets/files/" + m).then(function (r) { return r.ok ? r.text() : ""; }, function () { return ""; });
             return src.then(function (t) { if (t) py.FS.writeFile(HOME + "/" + m, t.trim() + "\n"); });
           })).then(function () {
-            try { py.runPython("import runpy; runpy.run_path('gen.py', run_name='__main__')"); } catch (e) { /* square.gcode и scaffold.gcode не созданы */ }
+            Array.prototype.forEach.call(document.querySelectorAll("script[data-pyfile]"), function (t) {   // модели страницы
+              py.FS.writeFile(HOME + "/" + t.getAttribute("data-pyfile"), b64bytes(t.textContent));
+            });
+            if (MODULES.indexOf("gen.py") >= 0) {
+              try { py.runPython("import runpy; runpy.run_path('gen.py', run_name='__main__')"); } catch (e) { /* square.gcode и scaffold.gcode не созданы */ }
+            }
             resolve(py);
           });
         }, reject);
@@ -130,7 +140,7 @@
         if (files) {
           files.innerHTML = "";
           var created = listFiles(py).filter(function (f) { return before.indexOf(f) < 0 || /\.gcode$/.test(f); });
-          created = created.filter(function (f) { return MODULES.indexOf(f) < 0; });
+          created = created.filter(function (f) { return MODULES.indexOf(f) < 0 && DATAFILES.indexOf(f) < 0 && f !== "__pycache__"; });
           if (created.length) {                                        // файлы столбиком: имя и кнопка в каждой строке
             var title = document.createElement("div"); title.className = "pyrun__files-title"; title.textContent = "Файлы, записанные программой:"; files.appendChild(title);
             created.forEach(function (f) {
@@ -139,9 +149,10 @@
               var isG = /\.gcode$/.test(f) && window.gvLoadText;
               var b = document.createElement("button"); b.type = "button"; b.className = "tool-btn"; b.textContent = isG ? "В просмотрщик" : "Скачать";
               b.addEventListener("click", function () {
-                var t = py.FS.readFile(f, {encoding: "utf8"});
-                if (isG) { window.gvLoadText(t); document.getElementById("gv").scrollIntoView({behavior: "smooth"}); }
-                else { var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t], {type: "text/plain"})); a.download = f; a.click(); }
+                if (isG) { window.gvLoadText(py.FS.readFile(f, {encoding: "utf8"})); document.getElementById("gv").scrollIntoView({behavior: "smooth"}); }
+                else {                                                      // двоичные файлы (.stl) скачиваются байтами
+                  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([py.FS.readFile(f)], {type: "application/octet-stream"})); a.download = f; a.click();
+                }
               });
               row.appendChild(b); files.appendChild(row);
             });

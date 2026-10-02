@@ -1,0 +1,25 @@
+{%- comment -%}
+  Просмотрщик сеток. Вставка в страницу:
+    {% include mesh-viewer.html %}
+    {% include mesh-viewer.html presets="holed,two_cubes" default="holed" %}
+  presets — кнопки моделей из assets/files (finger, holed, flipped, two_cubes,
+  shells, ring, bone_a, bone_b); default — модель, которая открывается сразу.
+  На одной странице — не больше одного просмотрщика.
+  Внутри нет пустых строк и отступов: иначе kramdown разберет разметку как Markdown.
+{%- endcomment -%}
+{%- include root.html -%}
+<div class="gv mv" id="mv" data-root="{{ root }}" data-presets="{{ include.presets | default: 'finger,holed,flipped,two_cubes,shells' }}" data-default="{{ include.default }}">
+<div class="gv__bar" id="mv-presets"><span class="gv__spacer" style="order:99"></span><label class="tool-btn" for="mv-file" style="order:100">Открыть STL…</label><input type="file" id="mv-file" accept=".stl" hidden></div>
+<p class="mv__about" id="mv-about" hidden></p>
+<div class="mv__grid">
+<div>
+<div class="gv__canvas-wrap"><canvas class="gv__canvas mv__canvas" id="mv-canvas" aria-label="Сетка модели"></canvas><div class="gv__empty" id="mv-empty">Здесь появится модель. Нажмите кнопку с готовой моделью или откройте свой файл STL.</div></div>
+<div class="gv__opts mv__opts"><span>Щелчок по грани:</span><label><input type="radio" name="mv-mode" value="rot" checked> только вращать</label><label><input type="radio" name="mv-mode" value="del"> удалить грань</label><label><input type="radio" name="mv-mode" value="flip"> развернуть грань</label><button type="button" class="tool-btn" id="mv-reset">Вернуть модель</button></div>
+<div class="gv__legend mv__legend"><span><i class="mv__lg-face"></i>грань</span><span><i class="mv__lg-edge"></i>край (1 грань)</span><span><i class="mv__lg-sing"></i>сингулярное ребро</span><span><i class="mv__lg-flip"></i>развернуть при согласовании</span><span><i class="mv__lg-shell"></i>лишняя оболочка</span></div>
+</div>
+<div class="gv__stats mv__stats" id="mv-stats"></div>
+</div>
+<div class="gv__line" id="mv-line" aria-live="polite"></div>
+</div>
+<script src="{{ root }}assets/js/mesh-core.js"></script>
+<script src="{{ root }}assets/js/mesh-viewer.js"></script>

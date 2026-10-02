@@ -1,0 +1,88 @@
+{%- comment -%} Анимация чтения двоичного STL (task 2-1, раздел 2): указатель идет по байтам файла, грань k начинается с 84 + 50·k. {%- endcomment -%}
+<div class="anim" id="anim-stl-bytes">
+<svg viewBox="0 0 480 240" role="img" aria-label="Двоичный STL как лента байтов: заголовок 80 байт, счетчик граней 4 байта, затем грани по 50 байт. Указатель чтения проходит ленту, текущая грань показана крупно: нормаль, три вершины и атрибут.">
+<g id="asb-strip"></g>
+<g id="asb-link"></g>
+<g id="asb-ptr"><polygon class="d-arrowhead" points="-6,36 6,36 0,48"/></g>
+<g id="asb-zoom"></g>
+<text class="d-text d-text--small" x="429" y="198" text-anchor="end">атрибут 2 Б</text>
+<text class="d-text d-text--small" x="240" y="230" text-anchor="middle">длина блока пропорциональна числу байтов, кроме счетчика F</text>
+</svg>
+<div class="anim__panel">
+<label>Число граней <i>F</i>: <output id="asb-f-v">4</output><input type="range" id="asb-f" min="1" max="6" step="1" value="4"></label>
+<div id="asb-size"></div>
+<div id="asb-now" class="d-text--mono"></div>
+<button type="button" class="tool-btn" id="asb-pause">Пауза</button>
+</div>
+<p class="anim__caption">Указатель чтения проходит двоичный STL. Первые 80 байт (заголовок) пропускаются, следующие 4 байта дают число граней <i>F</i>, затем каждая грань занимает 50 байт с одним и тем же порядком полей: нормаль, три вершины по 12 байт и атрибут 2 байта. Поэтому грань <i>k</i> начинается со смещения 84 + 50·<i>k</i>, а размер файла равен 84 + 50·<i>F</i>. Ползунок меняет число граней и вместе с ним длину файла.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-stl-bytes"), strip = document.getElementById("asb-strip");
+  var link = document.getElementById("asb-link"), ptr = document.getElementById("asb-ptr"), zoom = document.getElementById("asb-zoom");
+  var fIn = document.getElementById("asb-f"), sizeOut = document.getElementById("asb-size"), now = document.getElementById("asb-now");
+  var NS = "http://www.w3.org/2000/svg", X0 = 14, Y0 = 60, H = 40, CW = 30, K = 1.1, ZX = 65, ZY = 140, ZH = 40, ZS = 7;
+  var FIELDS = [["нормаль", 12], ["вершина 1", 12], ["вершина 2", 12], ["вершина 3", 12], ["", 2]];
+  var paused = false, phase = 0, last = null, period = 9000, F = 4, faceRects = [], fieldRects = [];
+  function el(t, a, txt) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (txt) e.textContent = txt; return e; }
+  // байт файла -> x на ленте (счетчик растянут: 4 байта на CW пикселей)
+  function bx(b) { return b <= 80 ? X0 + K * b : b <= 84 ? X0 + K * 80 + (b - 80) * CW / 4 : X0 + K * 80 + CW + K * (b - 84); }
+  function block(parent, x, w, cls, l1, l2) {
+    var gg = el("g", {}); var r = el("rect", {"class": cls, x: x, y: Y0, width: w, height: H});
+    gg.appendChild(r);
+    gg.appendChild(el("text", {"class": "d-text d-text--small", x: x + w / 2, y: Y0 + 17, "text-anchor": "middle", style: "font-size: 11px"}, l1));
+    gg.appendChild(el("text", {"class": "d-text d-text--small", x: x + w / 2, y: Y0 + 32, "text-anchor": "middle", style: "font-size: 11px"}, l2));
+    parent.appendChild(gg); return r;
+  }
+  function plan() {
+    F = +fIn.value; document.getElementById("asb-f-v").textContent = F;
+    strip.innerHTML = ""; faceRects = [];
+    block(strip, bx(0), 80 * K, "d-box", "заголовок", "80 Б");
+    block(strip, bx(80), CW, "d-box d-box--name", "F", "4 Б");
+    for (var k = 0; k < F; k++) faceRects.push(block(strip, bx(84 + 50 * k), 50 * K, "d-box", "грань " + k, "50 Б"));
+    sizeOut.innerHTML = "Размер файла:<br>84 + 50·" + F + " = " + (84 + 50 * F) + "&nbsp;Б";
+  }
+  function buildZoom() {
+    var x = ZX;
+    FIELDS.forEach(function (f) {
+      var gg = el("g", {}), w = f[1] * ZS, r = el("rect", {"class": "d-box", x: x, y: ZY, width: w, height: ZH});
+      gg.appendChild(r);
+      if (f[0]) {
+        gg.appendChild(el("text", {"class": "d-text d-text--small", x: x + w / 2, y: ZY + 17, "text-anchor": "middle"}, f[0]));
+        gg.appendChild(el("text", {"class": "d-text d-text--small", x: x + w / 2, y: ZY + 32, "text-anchor": "middle"}, "12 Б"));
+      }
+      zoom.appendChild(gg); fieldRects.push(r); x += w;
+    });
+  }
+  function set(p) {
+    phase = p;
+    // доли цикла: заголовок, счетчик, грани, пауза в конце
+    var tH = 0.08, tC = 0.07, tEnd = 0.88, per = (tEnd - tH - tC) / F, b, k = -1, j = -1, msg;
+    if (p < tH) { b = 80 * p / tH; msg = "Заголовок: data[0:80]\nпропускается"; }
+    else if (p < tH + tC) { b = 80 + 4 * (p - tH) / tC; msg = "Счетчик: data[80:84]\nstruct.unpack(\"<I\", …) = " + F; }
+    else if (p < tEnd) {
+      k = Math.min(F - 1, Math.floor((p - tH - tC) / per));
+      var q = (p - tH - tC - k * per) / per, inFace = 50 * q;
+      b = 84 + 50 * k + inFace;
+      j = inFace < 48 ? Math.floor(inFace / 12) : 4;
+      var s = 84 + 50 * k, a = s + (j < 4 ? 12 * j : 48), e = a + (j < 4 ? 12 : 2);
+      msg = "Грань " + k + ": 84 + 50·" + k + " = " + s + "\n" + (j < 4 ? FIELDS[j][0] : "атрибут") + ": data[" + a + ":" + e + "]";
+    } else { b = 84 + 50 * F; msg = "Конец файла: байт " + (84 + 50 * F) + "\n84 + 50·F совпало с размером"; }
+    ptr.setAttribute("transform", "translate(" + bx(b).toFixed(1) + ",0)");
+    faceRects.forEach(function (r, i) { r.setAttribute("class", i === k ? "d-box d-box--object" : "d-box"); });
+    fieldRects.forEach(function (r, i) { r.setAttribute("class", i === j ? "d-box d-box--object" : "d-box"); });
+    link.innerHTML = "";
+    if (k >= 0) {
+      var xl = bx(84 + 50 * k), xr = xl + 50 * K, zr = ZX + 50 * ZS;
+      link.appendChild(el("path", {"class": "d-arrow", d: "M" + xl + "," + (Y0 + H) + " L" + ZX + "," + ZY + " M" + xr + "," + (Y0 + H) + " L" + zr + "," + ZY, "stroke-dasharray": "4 3"}));
+    }
+    now.textContent = msg;
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  fIn.addEventListener("input", function () { plan(); phase = 0; set(0); });
+  now.style.whiteSpace = "pre-line";
+  buildZoom(); plan(); set(0); requestAnimationFrame(frame);
+  var pb = document.getElementById("asb-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [ptr, link]; }};
+})();
+</script>

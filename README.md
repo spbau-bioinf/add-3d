@@ -10,7 +10,7 @@
 | `task_1/task_1.md`, `task_1/task_1-0.md` … | страницы занятия 1 — **их и правим**; у каждого занятия своя папка |
 | `viewer.md`, `pycheck.md`, `slicer.md`, `kiri.md` | страницы инструментов: просмотрщик G-кода, проверка кода Python, учебный слайсер, слайсер Kiri:Moto во фрейме |
 | `assets/js/slicer-core.js`, `assets/js/slicer-ui.js`, `assets/js/clipper.js`, `_includes/slicer.html` | учебный слайсер: STL → сечения → периметры и заполнение → G-код; Clipper 6.4.2 (Boost License) для операций над многоугольниками |
-| `_includes/anim-*.html` | анимированные схемы с параметрами: экструдер, баланс объема, центр сопла, шов, зигзаг, решетка |
+| `_includes/anim-*.html` | анимированные схемы с параметрами: экструдер, баланс объема, центр сопла, шов, зигзаг, решетка (занятие 1); грани у ребра, чтение двоичного STL, обход контура дыры, согласование ориентации (занятие 2: `anim-edge-faces`, `anim-stl-bytes`, `anim-hole-walk`, `anim-orient`) |
 | `tools/check_pages.py` | проверка собранного сайта в Chromium: ошибки JS, наложения в анимациях, окна кода без прокрутки, мини-тесты (см. шапку скрипта) |
 | `_data/nav.yml` | занятия: названия, описания для главной, порядок страниц |
 | `_config.yml` | название курса, тексты главной страницы, подпись автора, подвал |
@@ -28,7 +28,9 @@
 | `assets/js/theme.js` | переключатель темы: кнопка в шапке, выбор хранится в localStorage |
 | `assets/js/copycode.js` | кнопка копирования в правом верхнем углу каждого блока кода (кроме деревьев папок); копирует текст блока как есть |
 | `assets/js/quiz.js` | мини-тест, который после верных ответов собирает комментарий для вставки в файл |
-| `assets/js/pyrun.js`, `_includes/pyrun-modules.html`, `_includes/files/` | запуск Python на странице (Pyodide с cdn.jsdelivr.net). Исходники `gen.py` и `stats.py` вшиваются в страницу из `_includes/files/` (копии `assets/files/`; совпадение проверяет `tools/check_pages.py --src .`), поэтому `import gen` работает и при открытии сайта с диска |
+| `assets/js/pyrun.js`, `_includes/pyrun-modules.html`, `_includes/files/` | запуск Python на странице (Pyodide с cdn.jsdelivr.net). Модули страницы вшиваются из `_includes/files/` по полю `pymods` в начале страницы (по умолчанию `gen.py,stats.py`), модели — по полю `pyfiles` в base64 из `_includes/files/<имя>.b64`. Поэтому `import` и `open()` работают и при открытии сайта с диска. Копии пересоздает и сверяет `python tools/sync_pyfiles.py [--fix]`; после изменения файла в `assets/files` запустите его с `--fix` |
+| `assets/files/mesh_checks.py` | готовые функции из примеров занятия 2 (`edge_faces`, `signed_volume`, `shells`) для окон Python; студенты собирают свой `mesh_checks.py` сами, на страницах этот файл не скачивается |
+| `tools/sync_pyfiles.py` | копии модулей и моделей для окон Python против `assets/files` |
 | `_includes/pyrun.html`, `_includes/anim-extruder.html`, `_includes/theme-toggle.html` | вставки окна Python, анимированной схемы экструдера и кнопки темы |
 | `assets/js/gcode-core.js` | разбор G-кода и учебный генератор (порт `gen.py`), готовые файлы для кнопок просмотрщика |
 | `assets/js/gcode-viewer.js`, `assets/js/e-calc.js` | работа просмотрщика и калькулятора; текст поля просмотрщика хранится в localStorage отдельно для каждой страницы, кнопка «Очистить» его удаляет |

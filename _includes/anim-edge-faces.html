@@ -1,0 +1,59 @@
+{%- comment -%} Анимация граней у ребра (task 2-0, раздел 3; по согласованию также task 2-3, раздел 1): у ребра одна, две, три или четыре грани. {%- endcomment -%}
+<div class="anim" id="anim-edge-faces">
+<svg viewBox="0 0 480 240" role="img" aria-label="Ребро u v и грани, которые его содержат. Грани появляются по одной, счетчик граней у ребра растет; при одной грани ребро краевое, при двух нормальное, при трех и четырех сингулярное.">
+<g id="aef-faces"></g>
+<line id="aef-edge" class="d-medge" x1="150" y1="120" x2="330" y2="120"/>
+<circle class="d-mvert" cx="150" cy="120" r="4"/>
+<circle class="d-mvert" cx="330" cy="120" r="4"/>
+<text class="d-text" x="136" y="125" text-anchor="end">u</text>
+<text class="d-text" x="344" y="125" text-anchor="start">v</text>
+<text class="d-text d-text--small" x="240" y="230" text-anchor="middle">грани развернуты в плоскость рисунка; красное ребро — дефект</text>
+</svg>
+<div class="anim__panel">
+<label>Граней у ребра: <output id="aef-n-v">2</output><input type="range" id="aef-n" min="1" max="4" step="1" value="2"></label>
+<div id="aef-count" class="d-text--mono"></div>
+<div id="aef-diag" class="diag"></div>
+<button type="button" class="tool-btn" id="aef-pause">Пауза</button>
+</div>
+<p class="anim__caption">Ребро (<i>u</i>, <i>v</i>) и грани, которые его содержат. Грани появляются по одной, как при проходе по списку граней, а строка справа повторяет счетчик функции <code>edge_faces</code> из task 2-3. В замкнутой многообразной сетке у каждого ребра ровно две грани; одна грань означает край дыры, три и больше — сингулярное ребро. В сетке грани расходятся от ребра в пространстве, на рисунке они развернуты в плоскость.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-edge-faces"), g = document.getElementById("aef-faces");
+  var edge = document.getElementById("aef-edge"), nIn = document.getElementById("aef-n");
+  var cnt = document.getElementById("aef-count"), diag = document.getElementById("aef-diag");
+  var NS = "http://www.w3.org/2000/svg", U = [150, 120], V = [330, 120], M = [240, 120];
+  // вершины граней напротив ребра; третья и четвертая грани лишние
+  var APEX = [[230, 32], [250, 200], [322, 50], [170, 192]];
+  var CLS = ["d-mface", "d-mface d-mface--alt", "d-mface d-mface--bad", "d-mface d-mface--bad"];
+  var VERDICT = {1: ["bad", "1 грань: край, в поверхности дыра"], 2: ["ok", "2 грани: норма"],
+                 3: ["bad", "3 грани: сингулярное ребро"], 4: ["bad", "4 грани: сингулярное ребро"]};
+  var paused = false, phase = 0, last = null, period = 5000, n = 2, GROW = 0.7;
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function plan() { n = +nIn.value; document.getElementById("aef-n-v").textContent = n; }
+  function set(p) {
+    phase = p; g.innerHTML = "";
+    var k = 0, dur = GROW / n;
+    for (var i = 0; i < n; i++) {
+      var prog = Math.max(0, Math.min(1, (p - i * dur) / dur));
+      if (prog <= 0) continue;
+      k++;
+      var e = 1 - Math.pow(1 - prog, 2);
+      var ax = M[0] + (APEX[i][0] - M[0]) * e, ay = M[1] + (APEX[i][1] - M[1]) * e;
+      var f = el("polygon", {"class": CLS[i], points: U.join(",") + " " + V.join(",") + " " + ax.toFixed(1) + "," + ay.toFixed(1)});
+      if (i > 1) f.style.fillOpacity = 0.7;
+      g.appendChild(f);
+    }
+    cnt.textContent = "count[(u, v)] = " + k;
+    var done = p >= GROW;
+    edge.setAttribute("class", done && n !== 2 ? "d-medge d-medge--bad" : "d-medge");
+    if (done) { diag.className = "diag " + VERDICT[n][0]; diag.textContent = VERDICT[n][1]; }
+    else { diag.className = "diag"; diag.textContent = "Проход по граням: учтено " + k + " из " + n; }
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  nIn.addEventListener("input", function () { plan(); phase = 0; set(0); });
+  plan(); set(0); requestAnimationFrame(frame);
+  var pb = document.getElementById("aef-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [g]; }};
+})();
+</script>

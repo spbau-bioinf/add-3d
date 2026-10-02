@@ -1,5 +1,12 @@
-{%- comment -%} Исходники gen.py и stats.py для окон запуска Python (pyrun.js читает их со страницы,
-  поэтому окна работают и при открытии сайта с диска). Копии в _includes/files должны совпадать
-  с assets/files; это проверяет tools/check_pages.py --modules. {%- endcomment -%}
-<script type="text/plain" data-pymod="gen.py">{% include files/gen.py %}</script>
-<script type="text/plain" data-pymod="stats.py">{% include files/stats.py %}</script>
+{%- comment -%} Модули и модели для окон запуска Python (pyrun.js читает их со страницы,
+  поэтому окна работают и при открытии сайта с диска).
+  Модули: поле страницы pymods (по умолчанию gen.py,stats.py) — текст из _includes/files/<имя>.
+  Модели: поле страницы pyfiles — base64 из _includes/files/<имя>.b64 (двоичные .stl).
+  Копии в _includes/files должны совпадать с assets/files: tools/sync_pyfiles.py --check. {%- endcomment -%}
+{%- assign pymods = page.pymods | default: "gen.py,stats.py" | split: "," -%}
+{%- for m in pymods -%}{%- assign mp = m | strip %}
+<script type="text/plain" data-pymod="{{ mp }}">{% include files/{{ mp }} %}</script>
+{%- endfor -%}
+{%- if page.pyfiles -%}{%- assign pyfiles = page.pyfiles | split: "," -%}{%- for f in pyfiles -%}{%- assign fp = f | strip %}
+<script type="text/plain" data-pyfile="{{ fp }}">{% include files/{{ fp }}.b64 %}</script>
+{%- endfor -%}{%- endif %}

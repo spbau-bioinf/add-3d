@@ -1,0 +1,17 @@
+{%- comment -%}
+  Демонстрация: хордовое отклонение при приближении окружности многоугольником.
+  Вставка: {% include tess-demo.html %}. Внутри нет пустых строк.
+{%- endcomment -%}
+{%- include root.html -%}
+<div class="demo" id="tess">
+<div class="demo__ctrls"><label for="tess-n">Сторон многоугольника</label><input type="range" id="tess-n" min="6" max="96" step="1" value="12"><span class="demo__v" id="tess-nv">12</span><button type="button" class="tool-btn" id="tess-dbl">Удвоить</button></div>
+<div class="demo__grid">
+<svg class="demo__svg" id="tess-svg" viewBox="-120 -120 240 240" role="img" aria-label="Окружность радиусом 10 мм и вписанный многоугольник"></svg>
+<div class="demo__out">
+<div class="gv__stat"><span class="demo__k">Хордовое отклонение ε</span><span class="demo__v" id="tess-eps"></span></div>
+<div class="gv__stat"><span class="demo__k">По сравнению с вдвое меньшим числом сторон</span><span class="demo__v" id="tess-ratio"></span></div>
+<div class="gv__stat"><span class="demo__k">Допуск 0,05 мм (нужно от <span id="tess-min"></span> сторон)</span><span class="demo__v" id="tess-ok"></span></div>
+</div>
+</div>
+</div>
+<script src="{{ root }}assets/js/tess-demo.js"></script>

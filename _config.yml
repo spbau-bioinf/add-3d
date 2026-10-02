@@ -44,6 +44,9 @@ tools:
   - url: viewer.html
     code: "tool"
     title: "Просмотрщик G-кода"
+  - url: mesh-viewer.html
+    code: "tool"
+    title: "Просмотрщик сеток"
   - url: pycheck.html
     code: "tool"
     title: "Проверка кода Python"

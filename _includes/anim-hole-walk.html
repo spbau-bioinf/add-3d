@@ -1,0 +1,94 @@
+{%- comment -%} Анимация обхода контура дыры (task 2-3, раздел 2): курсор идет по краевым ребрам от вершины к соседу, кроме того, откуда пришел. {%- endcomment -%}
+<div class="anim" id="anim-hole-walk">
+<svg viewBox="0 0 480 240" role="img" aria-label="Фрагмент сетки с дырой. Курсор обходит краевые ребра дыры, пройденные ребра выделяются цветом. В варианте с двумя дырами, которые касаются в одной вершине, обход может уйти из одной дыры в другую.">
+<g id="ahw-mesh"></g>
+<g id="ahw-walk"></g>
+<circle id="ahw-cur" r="6" cx="0" cy="0" style="fill: var(--c-text); stroke: var(--c-bg-soft); stroke-width: 2"/>
+<text class="d-text d-text--small" x="240" y="230" text-anchor="middle">пройденные краевые ребра выделены цветом, кружок — курсор обхода</text>
+</svg>
+<div class="anim__panel">
+<label>Дыра:
+<select id="ahw-case"><option value="hex">6 ребер</option><option value="tri">3 ребра</option><option value="close">две дыры, каждая отдельно</option><option value="merge">две дыры, один контур</option></select></label>
+<label>Начальная вершина: <output id="ahw-s-v">0</output><input type="range" id="ahw-s" min="0" max="5" step="1" value="0"></label>
+<div id="ahw-out"></div>
+<div id="ahw-diag" class="diag"></div>
+<button type="button" class="tool-btn" id="ahw-pause">Пауза</button>
+</div>
+<p class="anim__caption">Обход контура дыры по правилу раздела 2: из текущей вершины курсор идет к соседу по краевому ребру, кроме того, откуда пришел, и останавливается, вернувшись в начальную вершину. В простой дыре у каждой вершины контура ровно два краевых ребра, и обход однозначен. Если две дыры касаются в одной вершине, у нее четыре краевых ребра и три кандидата на следующий шаг; результат зависит от того, какой сосед окажется первым в списке: обход либо закроет каждую дыру отдельно, либо пройдет обе как один контур из 6 ребер.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-hole-walk"), mesh = document.getElementById("ahw-mesh"), walk = document.getElementById("ahw-walk");
+  var cur = document.getElementById("ahw-cur"), caseIn = document.getElementById("ahw-case"), sIn = document.getElementById("ahw-s");
+  var out = document.getElementById("ahw-out"), diag = document.getElementById("ahw-diag");
+  var NS = "http://www.w3.org/2000/svg", COLORS = ["var(--c-bad)", "#c79a1e"];
+  var O = [[410, 105], [335, 179], [185, 179], [110, 105], [185, 31], [335, 31]];
+  // вершины: сначала внешние O0..O5, затем вершины дыры
+  var CASES = {
+    hex: {pts: O.concat([[312, 130], [260, 155], [208, 130], [208, 80], [260, 55], [312, 80]]),
+          faces: [[0,1,6],[6,1,7],[1,2,7],[7,2,8],[2,3,8],[8,3,9],[3,4,9],[9,4,10],[4,5,10],[10,5,11],[5,0,11],[11,0,6]],
+          hole: [6, 7, 8, 9, 10, 11], loops: [[6, 7, 8, 9, 10, 11]]},
+    tri: {pts: O.concat([[310, 105], [235, 148], [235, 62]]),
+          faces: [[0,1,6],[6,1,7],[1,2,7],[2,3,7],[7,3,8],[3,4,8],[4,5,8],[8,5,6],[5,0,6]],
+          hole: [6, 7, 8], loops: [[6, 7, 8]]}
+  };
+  // две треугольные дыры с общей вершиной c = 10
+  var T = [[260, 31], [335, 31], [410, 105], [335, 179], [260, 179], [185, 179], [110, 105], [185, 31],
+           [205, 72], [205, 138], [260, 105], [315, 72], [315, 138]];
+  var TF = [[7,8,0],[8,10,0],[10,11,0],[0,11,1],[11,2,1],[11,12,2],[12,3,2],[12,4,3],[10,12,4],[9,10,4],[9,4,5],[9,5,6],[8,9,6],[8,6,7]];
+  CASES.close = {pts: T, faces: TF, hole: [8, 9, 10, 11, 12], loops: [[8, 9, 10], [10, 12, 11]], fork: 10};
+  CASES.merge = {pts: T, faces: TF, hole: [8, 9, 10, 11, 12], loops: [[8, 9, 10, 12, 11, 10]], fork: 10};
+  var paused = false, phase = 0, last = null, period = 7000, C, paths = [], total = 0, WALK = 0.85;
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function rot(a, i) { return a.slice(i).concat(a.slice(0, i)); }
+  function plan() {
+    C = CASES[caseIn.value];
+    sIn.max = C.hole.length - 1; if (+sIn.value > +sIn.max) sIn.value = sIn.max;
+    var s = C.hole[+sIn.value]; document.getElementById("ahw-s-v").textContent = sIn.value;
+    // контур с начальной вершиной идет первым и начинается с нее
+    var first = C.loops.findIndex(function (l) { return l.indexOf(s) >= 0; });
+    paths = C.loops.map(function (l, i) { return i === first ? rot(l, l.indexOf(s)) : l; });
+    if (first > 0) paths.unshift(paths.splice(first, 1)[0]);
+    total = paths.reduce(function (a, l) { return a + l.length; }, 0);
+    mesh.innerHTML = "";
+    C.faces.forEach(function (f) { mesh.appendChild(el("polygon", {"class": "d-mface", points: f.map(function (i) { return C.pts[i].join(","); }).join(" ")})); });
+    if (C.fork !== undefined) { var c = C.pts[C.fork]; mesh.appendChild(el("circle", {cx: c[0], cy: c[1], r: 11, style: "fill: none; stroke: #c79a1e; stroke-width: 2; stroke-dasharray: 3 3"})); }
+    C.hole.forEach(function (i) { mesh.appendChild(el("circle", {"class": "d-mvert", cx: C.pts[i][0], cy: C.pts[i][1], r: 4})); });
+  }
+  function boundaryDegree(v) {
+    var n = 0; C.loops.forEach(function (l) { l.forEach(function (x) { if (x === v) n += 2; }); });
+    return n;   // в восьмерке c встречается дважды, в двух контурах по одному разу
+  }
+  function set(p) {
+    phase = p; walk.innerHTML = "";
+    var done = Math.min(total, total * p / WALK), left = done, pos = null, curV = null, lines = [];
+    paths.forEach(function (l, li) {
+      var walked = 0;
+      for (var i = 0; i < l.length; i++) {
+        if (left <= 0) break;
+        var a = C.pts[l[i]], b = C.pts[l[(i + 1) % l.length]], t = Math.min(1, left);
+        var x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t;
+        walk.appendChild(el("line", {x1: a[0], y1: a[1], x2: x.toFixed(1), y2: y.toFixed(1), style: "stroke: " + COLORS[li] + "; stroke-width: 4; stroke-linecap: round"}));
+        pos = [x, y]; curV = t === 1 ? l[(i + 1) % l.length] : l[i]; left -= 1; if (t === 1) walked++;
+      }
+      lines.push("Контур " + (li + 1) + ": пройдено " + walked + " из " + l.length + " ребер");
+    });
+    if (!pos) { pos = C.pts[paths[0][0]]; curV = paths[0][0]; }
+    cur.setAttribute("cx", pos[0].toFixed(1)); cur.setAttribute("cy", pos[1].toFixed(1));
+    var deg = boundaryDegree(curV);
+    lines.push("Краевых ребер у текущей вершины: " + deg);
+    out.innerHTML = lines.join("<br>");
+    if (p >= WALK) {
+      if (caseIn.value === "merge") { diag.className = "diag bad"; diag.textContent = "Найден 1 контур из 6 ребер вместо двух дыр по 3 ребра"; }
+      else { diag.className = "diag ok"; diag.textContent = "Найдено дыр: " + paths.length + (paths.length > 1 ? ", по " + paths[0].length + " ребра" : ", ребер " + paths[0].length); }
+    } else if (deg > 2) { diag.className = "diag gap"; diag.textContent = "Развилка: три кандидата на следующий шаг"; }
+    else { diag.className = "diag"; diag.textContent = ""; }
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  caseIn.addEventListener("change", function () { plan(); phase = 0; set(0); });
+  sIn.addEventListener("input", function () { plan(); phase = 0; set(0); });
+  plan(); set(0); requestAnimationFrame(frame);
+  var pb = document.getElementById("ahw-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [walk, cur]; }};
+})();
+</script>

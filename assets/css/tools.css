@@ -11,6 +11,8 @@
                   d-plate, d-dim, d-box--nozzle
    Просмотрщик .. gv, gv__bar, gv__grid, gv__text, gv__canvas, gv__empty,
                   gv__actions, gv__opts, gv__ctrls, gv__val, gv__line, gv__legend,
+   Сетки ........ d-mface, d-medge, d-mvert (схемы); mv, mv__* (просмотрщик сеток);
+                  demo, demo__* (демонстрации занятия 2)
                   gv__stats, gv__stat, gv__warns, gv__fil, tool-btn
    Калькулятор .. calc, calc__in, calc__out
    ========================================================================== */
@@ -500,3 +502,199 @@ a.tag--ext:hover {
 .kiri iframe { display: block; width: 100%; height: 42rem; border: 0; background: var(--c-bg-soft); }
 
 .tool-btn--off { opacity: 0.55; }
+
+/* ---------- Схемы сеток (занятие 2) ----------
+   d-mface ........ грань сетки
+   d-mface--alt ... соседняя грань другого цвета
+   d-mface--bad ... грань с дефектом
+   d-medge ........ обычное ребро
+   d-medge--bad ... ребро с дефектом (край, сингулярное ребро)
+   d-mvert ........ вершина
+   ------------------------------------------------ */
+
+.d-mface {
+  fill: #e9f6ed;
+  stroke: var(--c-accent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.d-mface--alt {
+  fill: #eef3fb;
+  stroke: #5b7fb5;
+}
+
+.d-mface--bad {
+  fill: #fdecec;
+  stroke: var(--c-bad);
+}
+
+.d-medge {
+  fill: none;
+  stroke: #4a5566;
+  stroke-width: 1.5;
+}
+
+.d-medge--bad {
+  stroke: var(--c-bad);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.d-mvert {
+  fill: #4a5566;
+}
+
+/* темная тема: темные грани, светлые ребра и вершины, как у стрелок d-arrow */
+[data-theme="dark"] .d-mface { fill: #1d3326; stroke: #45bf63; }
+[data-theme="dark"] .d-mface--alt { fill: #1c2a3d; stroke: #7fa3d9; }
+[data-theme="dark"] .d-mface--bad { fill: #2d1b1b; stroke: #ff8686; }
+[data-theme="dark"] .d-medge { stroke: #b4bec8; }
+[data-theme="dark"] .d-medge--bad { stroke: #ff8686; }
+[data-theme="dark"] .d-mvert { fill: #b4bec8; }
+
+/* ---------- Просмотрщик сеток и демонстрации (занятие 2) ----------
+   mv, mv__grid, mv__canvas, mv__opts, mv__legend, mv__lg-*, mv__stats, mv__stat--bad
+   demo, demo__ctrls, demo__grid, demo__svg, demo__out, demo__k, demo__v
+   ------------------------------------------------------------------ */
+
+.mv__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 1rem;
+  align-items: start;
+}
+
+.mv__canvas {
+  height: 380px;
+  touch-action: none;
+  cursor: grab;
+}
+
+.mv__opts {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.mv__stats {
+  grid-template-columns: 1fr;
+  margin-top: 0;
+}
+
+.mv__stat--bad .gv__stat-v {
+  color: var(--c-bad);
+}
+
+.mv__legend i {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-top: 0;
+  border-radius: 2px;
+}
+
+.mv__lg-face  { background: #7cc690; }
+.mv__lg-flip  { background: #ef9f27; }
+.mv__lg-shell { background: #7f77dd; }
+.mv__lg-edge  { background: #b42f2f; height: 4px !important; }
+.mv__lg-sing  { background: #1f3b73; height: 4px !important; }
+
+.demo {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.demo__ctrls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+}
+
+.demo__ctrls input[type="range"] {
+  flex: 1 1 12rem;
+}
+
+.demo__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 1rem;
+  align-items: center;
+}
+
+.demo__svg {
+  width: 100%;
+  max-height: 300px;
+}
+
+.demo__out {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.demo__k {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--c-muted);
+}
+
+.demo__v {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+}
+
+.demo__v--ok  { color: var(--c-accent); }
+.demo__v--bad { color: var(--c-bad); }
+
+@media (max-width: 760px) {
+  .mv__grid,
+  .demo__grid {
+    grid-template-columns: 1fr;
+  }
+  .mv__stats {
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  }
+}
+
+.mv__stats .gv__stat {
+  padding: 0.3rem 0.6rem;
+}
+
+.mv__stats .gv__stat-v {
+  font-size: 0.95rem;
+}
+
+.mv__about {
+  margin: 0 0 0.8rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--c-bg-soft);
+  border-left: 3px solid var(--c-accent);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.mv .tool-btn.is-active {
+  background: var(--c-accent);
+  color: #ffffff;
+}
+
+/* значения в демонстрациях не меняют ширину и высоту блока при движении ползунка */
+.demo__v {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.demo__ctrls > .demo__v {
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+.demo__out .gv__stat {
+  min-height: 4.2rem;
+}

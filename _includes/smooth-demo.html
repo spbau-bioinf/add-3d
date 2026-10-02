@@ -1,0 +1,17 @@
+{%- comment -%}
+  Демонстрация: лапласово сглаживание шумного контура и компенсация усадки.
+  Вставка: {% include smooth-demo.html %}. Внутри нет пустых строк.
+{%- endcomment -%}
+{%- include root.html -%}
+<div class="demo" id="smooth">
+<div class="demo__ctrls"><label for="smooth-it">Шагов сглаживания (λ = 0,5)</label><input type="range" id="smooth-it" min="0" max="60" step="1" value="0"><span class="demo__v" id="smooth-itv">0</span><label><input type="checkbox" id="smooth-comp"> компенсировать масштабом β</label></div>
+<div class="demo__grid">
+<svg class="demo__svg" id="smooth-svg" viewBox="-125 -125 250 250" role="img" aria-label="Шумный контур скана круга диаметром 20 мм"></svg>
+<div class="demo__out">
+<div class="gv__stat"><span class="demo__k">Площадь по сравнению с исходной</span><span class="demo__v" id="smooth-area"></span></div>
+<div class="gv__stat"><span class="demo__k">Шум радиуса (СКО)</span><span class="demo__v" id="smooth-noise"></span></div>
+<div class="gv__stat"><span class="demo__k">β = √(A₀ / Aₙ)</span><span class="demo__v" id="smooth-beta"></span></div>
+</div>
+</div>
+</div>
+<script src="{{ root }}assets/js/smooth-demo.js"></script>

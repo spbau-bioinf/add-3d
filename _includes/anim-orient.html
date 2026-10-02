@@ -1,0 +1,109 @@
+{%- comment -%} Анимация согласования ориентации (task 2-4, разделы 1 и 3): обход соседей от опорной грани, разворот граней, общий разворот по знаку объема. {%- endcomment -%}
+<div class="anim" id="anim-orient">
+<svg viewBox="0 0 480 240" role="img" aria-label="Полоса из восьми граней. Круговая стрелка в грани показывает порядок ее вершин. Обход идет от грани 0 к соседям; если две соседние грани проходят общее ребро в одну сторону, соседняя грань разворачивается.">
+<defs>
+<marker id="aor-h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="d-arrowhead" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="aor-hb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path style="fill: var(--c-bad)" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<g id="aor-faces"></g>
+<g id="aor-check"></g>
+<g id="aor-labels"></g>
+<text class="d-text d-text--small" x="240" y="230" text-anchor="middle">в грани — порядок вершин; у желтого ребра — обход двумя гранями</text>
+</svg>
+<div class="anim__panel">
+<label>Перевернуты:
+<select id="aor-case"><option value="2">грань 2</option><option value="2,5">грани 2 и 5</option><option value="4,5,6,7">грани 4–7</option><option value="0">грань 0 (опорная)</option></select></label>
+<div id="aor-out"></div>
+<div id="aor-diag" class="diag"></div>
+<button type="button" class="tool-btn" id="aor-pause">Пауза</button>
+</div>
+<p class="anim__caption">Исправление ориентации по разделу 3: грань 0 считается правильной, обход идет по соседям, и для каждой пары сравнивается направление общего ребра. Если обе грани проходят его в одну сторону (красные стрелки), соседняя грань разворачивается: ее вершины записываются в обратном порядке. Если перевернута сама опорная грань, после обхода развернутыми окажутся все остальные; сетка согласована, но смотрит внутрь, и это исправляет последний шаг по знаку объема. Полоса граней плоская, поэтому «внутрь» на рисунке показано цветом.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-orient"), gF = document.getElementById("aor-faces");
+  var gC = document.getElementById("aor-check"), gL = document.getElementById("aor-labels");
+  var caseIn = document.getElementById("aor-case"), out = document.getElementById("aor-out"), diag = document.getElementById("aor-diag");
+  var NS = "http://www.w3.org/2000/svg", P = [], FACES = [], STEP = 0.1, NSTEP = 7, FLIPALL = 0.82;
+  for (var i = 0; i <= 4; i++) P.push([40 + 95 * i, 50]);
+  for (i = 0; i <= 4; i++) P.push([70 + 95 * i, 160]);
+  for (i = 0; i < 4; i++) { FACES.push([i, 5 + i, i + 1]); FACES.push([i + 1, 5 + i, 6 + i]); }   // все согласованы
+  var paused = false, phase = 0, last = null, period = 10000, flipped = [];
+  function el(t, a, txt) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (txt !== undefined) e.textContent = txt; return e; }
+  function cen(f) { return [0, 1].map(function (c) { return (P[f[0]][c] + P[f[1]][c] + P[f[2]][c]) / 3; }); }
+  function goes(f, u, v) { for (var k = 0; k < 3; k++) if (f[k] === u && f[(k + 1) % 3] === v) return true; return false; }
+  function shared(a, b) { var s = a.filter(function (x) { return b.indexOf(x) >= 0; }); return s; }
+  function labels() {
+    gL.innerHTML = "";
+    FACES.forEach(function (f, i) {
+      var top = i % 2 === 0;
+      var x = top ? (P[f[0]][0] + P[f[2]][0]) / 2 : (P[f[1]][0] + P[f[2]][0]) / 2;
+      gL.appendChild(el("text", {"class": "d-text d-text--small", x: x, y: top ? 40 : 178, "text-anchor": "middle"}, String(i)));
+    });
+  }
+  function arc(c, cw) {
+    var r = 11, a0 = -Math.PI / 2, a1 = a0 + (cw ? 1 : -1) * 1.5 * Math.PI;
+    return "M" + (c[0] + r * Math.cos(a0)).toFixed(1) + "," + (c[1] + r * Math.sin(a0)).toFixed(1) +
+           " A" + r + "," + r + " 0 1 " + (cw ? 1 : 0) + " " + (c[0] + r * Math.cos(a1)).toFixed(1) + "," + (c[1] + r * Math.sin(a1)).toFixed(1);
+  }
+  function edgeArrow(face, u, v, bad) {
+    var c = cen(face), dir = goes(face, u, v), a = dir ? P[u] : P[v], b = dir ? P[v] : P[u];
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+    if ((c[0] - mx) * nx + (c[1] - my) * ny < 0) { nx = -nx; ny = -ny; }
+    var o = 9, s = [a[0] + 0.25 * dx + o * nx, a[1] + 0.25 * dy + o * ny], e = [a[0] + 0.75 * dx + o * nx, a[1] + 0.75 * dy + o * ny];
+    // совпавшее направление красным, остальные стрелки серые (классы темы d-arrow, d-arrowhead)
+    return el("path", {d: "M" + s[0].toFixed(1) + "," + s[1].toFixed(1) + " L" + e[0].toFixed(1) + "," + e[1].toFixed(1),
+      "class": "d-arrow", style: "stroke-width: 2" + (bad ? "; stroke: var(--c-bad)" : ""), "marker-end": "url(#" + (bad ? "aor-hb" : "aor-h") + ")"});
+  }
+  function plan() { flipped = caseIn.value.split(",").map(Number); labels(); }
+  function set(p) {
+    phase = p;
+    var st = FACES.map(function (f, i) { return flipped.indexOf(i) >= 0 ? [f[0], f[2], f[1]] : f.slice(); });
+    var nflip = 0, cur = null, msg = "";
+    for (var s = 0; s < NSTEP; s++) {
+      var q = (p - s * STEP) / STEP; if (q < 0) break;
+      var a = s, b = s + 1, uv = shared(st[a], st[b]), same = goes(st[a], uv[0], uv[1]) === goes(st[b], uv[0], uv[1]);
+      if (q < 1) cur = {a: a, b: b, uv: uv, same: same, after: q >= 0.6};
+      if (same && q >= 0.6) { st[b] = [st[b][0], st[b][2], st[b][1]]; nflip++; }
+    }
+    var inward = flipped.indexOf(0) >= 0, all = false;
+    if (inward && p >= FLIPALL) { st = st.map(function (f) { return [f[0], f[2], f[1]]; }); all = true; }
+    gF.innerHTML = "";
+    st.forEach(function (f, i) {
+      var good = goes(f, FACES[i][0], FACES[i][1]);
+      var g = el("g", {});
+      var poly = el("polygon", {"class": good ? "d-mface" : "d-mface d-mface--bad", points: FACES[i].map(function (k) { return P[k].join(","); }).join(" ")});
+      if (i === 0) poly.style.strokeWidth = 3.5;
+      g.appendChild(poly);
+      // знак площади в экранных координатах: у исходных граней он отрицательный (обход против часовой стрелки на экране)
+      var A = P[f[0]], B = P[f[1]], Cc = P[f[2]], cross = (B[0] - A[0]) * (Cc[1] - A[1]) - (B[1] - A[1]) * (Cc[0] - A[0]);
+      g.appendChild(el("path", {d: arc(cen(f), cross > 0), "class": "d-arrow", style: good ? "" : "stroke: var(--c-bad)", "marker-end": "url(#" + (good ? "aor-h" : "aor-hb") + ")"}));
+      gF.appendChild(g);
+    });
+    gC.innerHTML = "";
+    if (cur) {
+      var u = P[cur.uv[0]], v = P[cur.uv[1]], fa = st[cur.a], fb = st[cur.b];
+      gC.appendChild(el("line", {x1: u[0], y1: u[1], x2: v[0], y2: v[1], style: "stroke: #c79a1e; stroke-width: 4; stroke-linecap: round"}));
+      var bad = cur.same && !cur.after;
+      gC.appendChild(edgeArrow(fa, cur.uv[0], cur.uv[1], bad));
+      gC.appendChild(edgeArrow(fb, cur.uv[0], cur.uv[1], bad));
+      msg = "Шаг " + (cur.a + 1) + " из " + NSTEP + ": грань " + cur.a + " → грань " + cur.b + "<br>" +
+            (cur.same ? "общее ребро в одну сторону: грань " + cur.b + (cur.after ? " развернута" : " будет развернута")
+                      : "общее ребро в разные стороны: грань " + cur.b + " не меняется");
+    } else if (p >= NSTEP * STEP) msg = "Обход закончен";
+    else msg = "Опорная грань 0";
+    out.innerHTML = msg + "<br>Развернуто граней при обходе: " + nflip;
+    if (p >= NSTEP * STEP) {
+      if (!inward) { diag.className = "diag ok"; diag.textContent = "Ориентация согласована"; }
+      else if (!all) { diag.className = "diag gap"; diag.textContent = "Согласована, но смотрит внутрь: объем отрицательный"; }
+      else { diag.className = "diag ok"; diag.textContent = "Объем отрицательный: развернуты все грани"; }
+    } else { diag.className = "diag"; diag.textContent = ""; }
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  caseIn.addEventListener("change", function () { plan(); phase = 0; set(0); });
+  plan(); set(0); requestAnimationFrame(frame);
+  var pb = document.getElementById("aor-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  box.__anim = {set: set, moving: function () { return [gC]; }};
+})();
+</script>
