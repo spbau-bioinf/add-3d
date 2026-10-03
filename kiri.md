@@ -21,6 +21,9 @@ show_author: false
 </section>
 
 <div class="kiri"><iframe src="https://grid.space/kiri/" title="Kiri:Moto" loading="lazy" allow="fullscreen"></iframe></div>
+<script src="assets/js/kiri-theme.js"></script>
+
+Тема фрейма переключается вместе с темой сайта: после переключения Kiri:Moto перезагружается, загруженные модели при этом сохраняются. Если фрейм остался в прежней теме, включите или выключите ее в самом Kiri:Moto: **Setup → prefs → dark mode**.
 
 <aside class="callout callout--warning" markdown="1">
 

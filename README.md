@@ -25,7 +25,8 @@
 | `assets/css/site.css` | стили меню и главной страницы |
 | `assets/css/tools.css` | стили просмотрщика, калькулятора и списка источников |
 | `assets/css/dark.css` | темная тема и стили новых блоков: формулы с расшифровкой (`formula`, `where`), «Проверьте себя» (`check`), мини-тест (`quiz`), окно запуска Python (`pyrun`), анимированные схемы (`anim`) |
-| `assets/js/theme.js` | переключатель темы: кнопка в шапке, выбор хранится в localStorage |
+| `assets/js/theme.js` | переключатель темы: кнопка в шапке, выбор хранится в localStorage; по умолчанию светлая тема, темная включается только кнопкой |
+| `assets/js/kiri-theme.js` | тема фрейма Kiri:Moto вслед за темой сайта: настройка `dark` отправляется через Frame Message API Kiri:Moto, после смены темы фрейм перезагружается |
 | `assets/js/copycode.js` | кнопка копирования в правом верхнем углу каждого блока кода (кроме деревьев папок); копирует текст блока как есть |
 | `assets/js/quiz.js` | мини-тест, который после верных ответов собирает комментарий для вставки в файл |
 | `assets/js/pyrun.js`, `_includes/pyrun-modules.html`, `_includes/files/` | запуск Python на странице (Pyodide с cdn.jsdelivr.net). Модули страницы вшиваются из `_includes/files/` по полю `pymods` в начале страницы (по умолчанию `gen.py,stats.py`), модели — по полю `pyfiles` в base64 из `_includes/files/<имя>.b64`. Поэтому `import` и `open()` работают и при открытии сайта с диска. Копии пересоздает и сверяет `python tools/sync_pyfiles.py [--fix]`; после изменения файла в `assets/files` запустите его с `--fix` |

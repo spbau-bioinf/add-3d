@@ -188,6 +188,20 @@ a.tag--ext:hover {
   outline-offset: 2px;
 }
 
+/* недоступная кнопка (нет модели, идет запуск): приглушенная, но читаемая в обеих темах */
+.tool-btn:disabled,
+.tool-btn:disabled:hover {
+  color: var(--c-muted);
+  background: transparent;
+  border-color: var(--c-border);
+  cursor: not-allowed;
+}
+
+/* переключатели, флажки и ползунки в цвет сайта в обеих темах (accent-color наследуется) */
+:root {
+  accent-color: var(--c-accent);
+}
+
 /* ---------- 7. Просмотрщик G-кода ---------- */
 
 .gv {
