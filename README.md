@@ -38,7 +38,7 @@
 | `assets/js/gcode-viewer.js`, `assets/js/e-calc.js` | работа просмотрщика и калькулятора; текст поля просмотрщика хранится в localStorage отдельно для каждой страницы, кнопка «Очистить» его удаляет |
 | `_includes/gcode-viewer.html`, `_includes/e-calc.html` | вставки просмотрщика и калькулятора в страницы |
 | `assets/files/` | файлы для студентов: `two_layers.gcode`, `broken.gcode`, `gen.py`, `stats.py`; модель `t_bracket.stl` и нарезанные из нее в PrusaSlicer 2.8.1 файлы `t_bracket_a.gcode` (без поддержек) и `t_bracket_b.gcode` (с поддержками) для task 1-6. Если модель меняется, оба файла G-кода нарезаются заново с профилями, указанными на странице task 1-6 |
-| `assets/img/` | иллюстрации из источников |
+| `assets/img/` | иллюстрации из источников; значок сайта: `favicon.svg`, `favicon-32.png` (старые браузеры), `apple-touch-icon.png` (180 × 180, экран телефона) — подключены в `_layouts/default.html` и `_layouts/home.html` |
 | `tools/html2md.py` | конвертер HTML → Markdown для следующих занятий |
 
 Меню, шапку, подвал, подпись автора и кнопки перехода писать в страницах
