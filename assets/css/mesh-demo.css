@@ -1,0 +1,62 @@
+/* Интерактивные демонстрации task 2-0a: нормаль, связность, срезы сетки.
+   Все правила ограничены блоком .mdemo; цвета текста и фона берутся из переменных сайта,
+   собственные цвета схем заданы для светлой и темной темы. */
+.mdemo {
+  --md-face: #cfe6d6; --md-face-sel: #9fd1ae; --md-face-bad: #f3c4c4; --md-stroke: #2d3a2f;
+  --md-normal: #1f5fbf; --md-normal-bad: #b42f2f; --md-plane: #3b7dd8; --md-hl: #c98a00;
+  --md-warn: #b05f00; --md-bad-soft: #fdeeee;
+  --md-p0: #2f6fd6; --md-p1: #d9822b; --md-p2: #8a5cd6; --md-p3: #1f9e8f;
+  margin: 1.2rem 0; padding: 14px; background: var(--c-bg-soft);
+  border: 1px solid var(--c-border); border-radius: var(--radius, 8px);
+}
+[data-theme="dark"] .mdemo {
+  --md-face: #2c4a36; --md-face-sel: #3f7a52; --md-face-bad: #6a3030; --md-stroke: #b9d6c1;
+  --md-normal: #7fb2ff; --md-normal-bad: #ff8a8a; --md-plane: #7fb2ff; --md-hl: #ffd166;
+  --md-warn: #f0a24a; --md-bad-soft: #3a2224;
+  --md-p0: #6f9ff0; --md-p1: #f0a35c; --md-p2: #b393f0; --md-p3: #4fc7b8;
+}
+.mdemo svg { display: block; width: 100%; height: auto; touch-action: none; user-select: none; }
+.mdemo select { font: inherit; font-size: 0.92rem; color: var(--c-text); background: var(--c-bg);
+  border: 1px solid var(--c-border); border-radius: 6px; padding: 0.25rem 0.5rem; max-width: 100%; }
+.mdemo .panel { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 10px; font-size: 0.92rem; }
+.mdemo .panel label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: 100%; }
+.mdemo .caption { color: var(--c-muted); font-size: 0.88rem; margin-top: 8px; }
+.mdemo .grid2 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 720px) { .mdemo .grid2 { grid-template-columns: 1fr; } }
+.mdemo table { border-collapse: collapse; width: 100%; font-size: 0.86rem; margin: 0; display: table; }
+.mdemo th, .mdemo td { border: 0; border-bottom: 1px solid var(--c-border); padding: 0.26rem 0.4rem; text-align: left; vertical-align: top; background: transparent; }
+.mdemo th { color: var(--c-muted); font-weight: 600; }
+.mdemo td.num, .mdemo th.num { text-align: right; font-family: var(--font-mono); }
+.mdemo .ok { color: var(--c-good); font-weight: 600; }
+.mdemo .bad { color: var(--c-bad); font-weight: 600; }
+.mdemo tr.badrow td { background: var(--md-bad-soft); }
+.mdemo tr.pick { cursor: pointer; }
+.mdemo tr.pick:hover td { background: var(--c-accent-soft); }
+.mdemo tr.picked td { outline: 2px solid var(--md-hl); outline-offset: -2px; }
+.mdemo tr.sumrow td { font-weight: 700; border-top: 2px solid var(--c-border); }
+.mdemo .mono { font-family: var(--font-mono); font-size: 0.92em; }
+.mdemo .stat { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--c-border); background: var(--c-bg); margin: 2px 4px 2px 0; font-size: 0.86rem; }
+.mdemo .mdemo-calc { font-family: var(--font-mono); font-size: 0.82rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; overflow-x: auto; color: var(--c-text); }
+.mdemo .chip { display: inline-block; border-radius: 4px; padding: 0 0.35rem; font-family: var(--font-mono); font-size: 0.84rem; border: 1px solid transparent; }
+.mdemo .chip.plain { border-color: var(--c-border); background: var(--c-bg); }
+.mdemo .chip.c0 { background: color-mix(in srgb, var(--md-p0) 22%, transparent); border-color: var(--md-p0); }
+.mdemo .chip.c1 { background: color-mix(in srgb, var(--md-p1) 22%, transparent); border-color: var(--md-p1); }
+.mdemo .chip.c2 { background: color-mix(in srgb, var(--md-p2) 22%, transparent); border-color: var(--md-p2); }
+.mdemo .chip.c3 { background: color-mix(in srgb, var(--md-p3) 22%, transparent); border-color: var(--md-p3); }
+.mdemo .chip.hl { outline: 2px solid var(--c-text); }
+.mdemo .mdemo-steps { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.mdemo .mdemo-steps span { font-size: 0.82rem; padding: 0.1rem 0.55rem; border-radius: 999px; border: 1px solid var(--c-border); color: var(--c-muted); }
+.mdemo .mdemo-steps span.on { border-color: var(--c-accent); color: var(--c-accent); background: var(--c-accent-soft); font-weight: 600; }
+.mdemo .stack { display: grid; }
+.mdemo .stack > * { grid-area: 1 / 1; visibility: hidden; }
+.mdemo .stack > .on { visibility: visible; }
+.mdemo .stepbox p { margin: 0.5rem 0; }
+.mdemo .stl { font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.45; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 6px; padding: 6px 0; max-height: 380px; overflow-y: auto; color: var(--c-text); }
+.mdemo .stl div { padding: 0 10px; white-space: pre; cursor: pointer; }
+.mdemo .stl div.cur { background: color-mix(in srgb, var(--md-hl) 35%, transparent); font-weight: 700; }
+.mdemo .stl div.done { color: var(--c-muted); }
+.mdemo .log { min-height: 3.2em; font-size: 0.9rem; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 6px; padding: 6px 10px; margin-top: 8px; }
+.mdemo .svg-text { fill: var(--c-text); font: 13px var(--font-sans, sans-serif); }
+.mdemo .svg-muted { fill: var(--c-muted); font: 12px var(--font-sans, sans-serif); }
+.mdemo .svg-mono { fill: var(--c-text); font: 12px var(--font-mono); }
+.mdemo .svg-hl { fill: var(--md-hl); font: 700 14px var(--font-mono); paint-order: stroke; stroke: var(--c-bg-soft); stroke-width: 4px; }

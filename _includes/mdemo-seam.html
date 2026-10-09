@@ -1,0 +1,31 @@
+{%- comment -%}
+  Демонстрация task 2-0a: сбой слияния вершин. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg id="seam" viewBox="0 0 560 260" role="img" aria-label="Две грани с общим ребром; при несовпадении координат общее ребро распадается на два краевых"></svg>
+  <div class="panel">
+    <label>Случай
+      <select id="case">
+        <option value="eps">погрешность координаты</option>
+        <option value="t">Т-соединение</option>
+      </select>
+    </label>
+    <label id="epsl">Погрешность ε
+      <select id="eps">
+        <option value="0">0</option>
+        <option value="0.00004">0,00004 мм</option>
+        <option value="0.0003" selected>0,0003 мм</option>
+        <option value="0.002">0,002 мм</option>
+      </select>
+    </label>
+    <label id="digl">Округление
+      <select id="dig">
+        <option value="4" selected>до 4 знаков (как в index_mesh)</option>
+        <option value="3">до 3 знаков</option>
+        <option value="2">до 2 знаков</option>
+      </select>
+    </label>
+  </div>
+  <div id="seamstats" style="margin-top:8px"></div>
+  <div class="caption" id="seamcap"></div>
+</div>

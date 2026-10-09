@@ -1,0 +1,34 @@
+{%- comment -%}
+  Демонстрация task 2-0a: схема грани a, b, c и нормали n. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg viewBox="0 0 640 300" role="img" aria-label="Грань с вершинами a, b, c, векторами b − a и c − a и нормалью n">
+    <defs>
+      <marker id="sch-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--c-text)"/></marker>
+      <marker id="sch-n" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--md-normal)"/></marker>
+      <marker id="sch-o" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--c-accent)"/></marker>
+    </defs>
+    <polygon points="90,235 340,255 270,150" style="fill:var(--md-face);fill-opacity:0.9;stroke:var(--md-stroke);stroke-width:2.5;stroke-linejoin:round"/>
+    <line x1="90" y1="235" x2="330" y2="254" stroke-width="2.5" marker-end="url(#sch-a)" style="stroke:var(--c-text)"/>
+    <line x1="90" y1="235" x2="262" y2="155" stroke-width="2.5" marker-end="url(#sch-a)" style="stroke:var(--c-text)"/>
+    <text x="205" y="272" class="svg-mono" text-anchor="middle">b − a</text>
+    <text x="150" y="182" class="svg-mono" text-anchor="middle">c − a</text>
+    <path d="M 212,226 A 26 13 0 1 0 245,212" style="fill:none;stroke:var(--c-accent);stroke-width:2" marker-end="url(#sch-o)"/>
+    <line x1="233" y1="213" x2="233" y2="62" stroke-width="3" marker-end="url(#sch-n)" style="stroke:var(--md-normal)"/>
+    <text x="243" y="72" class="svg-text" style="font-weight:700;fill:var(--md-normal)">n</text>
+    <circle cx="90" cy="235" r="5" style="fill:var(--c-text)"/><text x="70" y="240" class="svg-mono" style="font-weight:700">a</text>
+    <circle cx="340" cy="255" r="5" style="fill:var(--c-text)"/><text x="350" y="262" class="svg-mono" style="font-weight:700">b</text>
+    <circle cx="270" cy="150" r="5" style="fill:var(--c-text)"/><text x="278" y="143" class="svg-mono" style="font-weight:700">c</text>
+    <text x="395" y="70" class="svg-text">нормаль n перпендикулярна</text>
+    <text x="395" y="88" class="svg-text">грани и смотрит из тела</text>
+    <text x="395" y="122" class="svg-text">зеленая стрелка — обход</text>
+    <text x="395" y="140" class="svg-text">a → b → c: против часовой</text>
+    <text x="395" y="158" class="svg-text">стрелки, если смотреть со</text>
+    <text x="395" y="176" class="svg-text">стороны, куда указывает n</text>
+    <text x="395" y="216" class="svg-muted">вершина — точка a, b или c</text>
+    <text x="395" y="234" class="svg-muted">ребро — отрезок между двумя</text>
+    <text x="395" y="252" class="svg-muted">вершинами, например a–b</text>
+    <text x="395" y="270" class="svg-muted">грань — сам треугольник</text>
+  </svg>
+  <div class="caption">Векторы b − a и c − a идут из вершины a вдоль двух сторон грани. Их векторное произведение перпендикулярно грани, а направление задает правило правой руки: пальцы поворачивают от b − a к c − a, большой палец указывает n. Если поменять местами b и c, поворот пойдет в обратную сторону, и n развернется вниз, внутрь тела.</div>
+</div>

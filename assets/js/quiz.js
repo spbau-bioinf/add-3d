@@ -9,7 +9,9 @@
             <button class="quiz__copy">…</button><span class="quiz__copied"></span></div>
      </div>
    Имена групп радиокнопок проставляются здесь, поэтому в разметке атрибут
-   name не нужен; варианты ответа перемешиваются при каждой загрузке. Пояснение показывается только после ответа. Комментарий
+   name не нужен; варианты ответа перемешиваются при каждой загрузке. Пояснение показывается только после ответа: при верном ответе —
+   .quiz__exp, при неверном — пояснение выбранного варианта из <span class="quiz__why" hidden>
+   внутри его label (если его нет, показывается .quiz__exp). Комментарий
    строится из текста вопроса и верного варианта; знак комментария берется
    из data-comment («#» для Python, «;» для G-кода). */
 (function () {
@@ -41,12 +43,18 @@
       var lines = [], all = true, missing = 0;
       Array.prototype.forEach.call(qs, function (q) {
         Array.prototype.forEach.call(q.querySelectorAll("label"), function (l) { l.classList.remove("is-ok", "is-bad"); });
-        var exp = q.querySelector(".quiz__exp"); if (exp) exp.hidden = true;
+        var exp = q.querySelector(".quiz__exp"), why = q.querySelector(".quiz__exp--why");
+        if (exp) exp.hidden = true;
+        if (why) why.hidden = true;
         var chosen = q.querySelector("input:checked");
         if (!chosen) { all = false; missing++; return; }
         var ok = chosen.hasAttribute("data-ok");
         chosen.parentElement.classList.add(ok ? "is-ok" : "is-bad");
-        if (exp) exp.hidden = false;
+        var reason = !ok && chosen.parentElement.querySelector(".quiz__why");
+        if (reason && exp) {                                  // неверный вариант со своим пояснением
+          if (!why) { why = document.createElement("p"); why.className = "quiz__exp quiz__exp--why"; exp.parentNode.insertBefore(why, exp.nextSibling); }
+          why.innerHTML = reason.innerHTML; why.hidden = false;
+        } else if (exp) exp.hidden = false;
         if (!ok) { all = false; return; }
         var question = q.querySelector("p").textContent.trim().replace(/^\d+\.\s*/, "");
         var answer = q.querySelector("[data-ok]").parentElement.textContent.trim();

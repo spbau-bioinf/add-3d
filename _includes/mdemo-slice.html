@@ -1,0 +1,37 @@
+{%- comment -%}
+  Демонстрация task 2-0a: нарезка сетки на слои. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <div class="grid2">
+    <div>
+      <svg id="sl3d" viewBox="0 0 460 420" role="img" aria-label="Модель с секущей плоскостью и линиями пересечения"></svg>
+    </div>
+    <div>
+      <svg id="sl2d" viewBox="0 0 320 320" role="img" aria-label="Контур слоя, вид сверху"></svg>
+      <div id="slstats" style="margin-top:6px"></div>
+    </div>
+  </div>
+  <form class="panel" id="slform">
+    <label>Модель
+      <select id="slmodel">
+        <option value="vase" selected>ваза (80 граней)</option>
+        <option value="torus">тор — кольцо (192 грани)</option>
+        <option value="pyr">четырехгранная пирамида (6 граней)</option>
+      </select>
+    </label>
+    <label>Высота плоскости <input id="slz" type="range" min="0.05" max="2.35" step="0.05" value="0.9"> <output id="slzv">0,90 мм</output></label>
+    <label>Показать
+      <select id="slmode">
+        <option value="seg">отрезки отдельных граней</option>
+        <option value="loop" selected>собранный контур</option>
+        <option value="fill">контур и заполнение</option>
+      </select>
+    </label>
+    <label><input id="slhole" type="checkbox"> удалить одну грань (дыра)</label>
+    <label><input id="slall" type="checkbox"> все слои</label>
+    <label>Масштаб <input id="slzoom" type="range" min="50" max="300" step="10" value="100"> <output id="slzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="slreset" type="button">Сбросить</button>
+  </form>
+  <div id="slcalc" class="mdemo-calc" style="margin-top:10px"></div>
+  <div class="caption">Слева модель и секущая плоскость; модель поворачивается мышью, колесо мыши или ползунок «Масштаб» меняют ее размер, кнопка «Сбросить» возвращает исходный вид и параметры. На модели пересеченные грани выделены, линия пересечения — толстая. Справа тот же слой сверху. В режиме «отрезки» каждый отрезок окрашен отдельно: так их выдает шаг 2, еще не связанными. Желтым выделена сторона грани из примера расчета под рисунком и найденная на ней точка p. Включите дыру и проведите плоскость через удаленную грань (ее высоты указаны под видом сверху): контур не замкнется, и слайсеру придется угадывать, как его закрыть.</div>
+</div>

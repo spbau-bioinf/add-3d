@@ -1,0 +1,30 @@
+{%- comment -%}
+  Демонстрация task 2-0a: чтение STL строка за строкой. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <div class="grid2">
+    <div>
+      <svg id="read3d" viewBox="0 0 460 380" role="img" aria-label="Пирамида, которая строится по мере чтения строк STL"></svg>
+      <div id="readlog" class="log"></div>
+      <div id="readstats" style="margin-top:6px"></div>
+    </div>
+    <div>
+      <div id="stltext" class="stl"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <button class="tool-btn tool-btn--main" id="rplay" type="button">Пуск</button>
+    <button class="tool-btn" id="rstep" type="button">Шаг</button>
+    <button class="tool-btn" id="rreset" type="button">Сначала</button>
+    <label>Скорость
+      <select id="rspeed">
+        <option value="1400">медленно</option>
+        <option value="800" selected>нормально</option>
+        <option value="350">быстро</option>
+      </select>
+    </label>
+    <label>Масштаб <input id="rzoom" type="range" min="50" max="300" step="10" value="100"> <output id="rzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="rfull" type="button">Сбросить</button>
+  </div>
+  <div class="caption">Пирамиду можно поворачивать мышью во время анимации, колесо мыши или ползунок «Масштаб» меняют ее размер. «Сначала» начинает чтение заново, «Сбросить» возвращает еще и исходные вид, масштаб и скорость. Щелчок по строке файла переносит чтение к этой строке.</div>
+</div>

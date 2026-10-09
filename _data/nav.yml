@@ -61,6 +61,9 @@
     - url: task_2/task_2-0.html
       code: "task 2-0"
       title: "Сетка в цифровом конвейере"
+    - url: task_2/task_2-0a.html
+      code: "task 2-0a"
+      title: "Нормаль, связность и срезы: интерактивные демонстрации"
     - url: task_2/task_2-1.html
       code: "task 2-1"
       title: "STL изнутри: чтение файла на Python"

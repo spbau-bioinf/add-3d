@@ -22,7 +22,10 @@
     .subsection__title и .task__title / .final-task > h2 на странице;
   * группы кнопок результата (.gv__bar не первая в блоке, .quiz__bar, строки списка
     файлов) не прилипают к блоку над ними: зазор не меньше 6 px; список файлов под
-    окном Python выстроен столбиком.
+    окном Python выстроен столбиком;
+  * интерактивные блоки (.anim, .demo, .mdemo) не скачут: до 12 щелчков по каждой кнопке
+    блока не меняют его высоту и место нажатой кнопки (кнопки внутри [data-resize],
+    тестов и окон Python не проверяются).
 Коды выхода: 0 — замечаний нет, 1 — есть замечания.
 """
 import asyncio
@@ -51,7 +54,7 @@ async () => {
   out.links = [];
   document.querySelectorAll('.sidebar a, .cards a').forEach(a => {
     const t = a.textContent.trim();
-    if (t && !/^task \\d+(-\\d+)?$/.test(t)) out.links.push(t.slice(0, 40));
+    if (t && !/^task \\d+(-\\d+[a-z]?)?$/.test(t)) out.links.push(t.slice(0, 40));
   });
   // щелчок по названию пункта меню и по карточке попадает в ссылку
   const hits = [...document.querySelectorAll('.menu-group__list .menu__title, .submenu__text, .card__title')].filter(e => e.checkVisibility ? e.checkVisibility() : e.offsetParent !== null);
@@ -125,6 +128,25 @@ async () => {
     anims.forEach(a => { try { a.play(); } catch (e) {} });
     if (problems.length) out.anim.push({id: box.id, n: problems.length, first: problems[0]});
   }
+  // интерактивные блоки не скачут: щелчки по кнопкам не меняют высоту блока и место кнопки
+  out.jump = [];
+  for (const box of document.querySelectorAll('.anim, .demo, .mdemo')) {
+    if (box.offsetParent === null) continue;
+    const btns = [...box.querySelectorAll('button')].filter(b => !b.closest('.quiz, .pyrun, [data-resize]'));
+    const h0 = box.getBoundingClientRect().height;
+    let bad = null;
+    for (const b of btns) {
+      for (let k = 0; k < 12 && !bad && !b.disabled; k++) {
+        const t0 = b.getBoundingClientRect().top - box.getBoundingClientRect().top;
+        b.click();
+        await new Promise(r => requestAnimationFrame(r));
+        const t1 = b.getBoundingClientRect().top - box.getBoundingClientRect().top, h1 = box.getBoundingClientRect().height;
+        if (Math.abs(h1 - h0) > 1 || Math.abs(t1 - t0) > 1)
+          bad = '«' + b.textContent.trim().slice(0, 20) + '», щелчок ' + (k + 1) + ': высота блока ' + h0.toFixed(0) + ' → ' + h1.toFixed(0) + ' px, кнопка сдвинулась на ' + (t1 - t0).toFixed(0) + ' px';
+      }
+    }
+    if (bad) out.jump.push((box.id || box.className.split(' ')[0]) + ': ' + bad);
+  }
   document.querySelectorAll('.quiz').forEach((q, i) => {
     q.querySelectorAll('input[data-ok]').forEach(r => { r.checked = true; });
     q.querySelector('.quiz__check').click();
@@ -168,6 +190,7 @@ async def main():
             if r["layout"]: notes.append("кнопки: " + "; ".join(r["layout"][:4]))
             if r["links"]: notes.append("текст в ссылках или промах щелчка: " + "; ".join(r["links"][:4]))
             if r["submenu"]: notes.append("подменю: " + "; ".join(r["submenu"]))
+            if r["jump"]: notes.append("блок скачет при щелчках: " + "; ".join(r["jump"][:3]))
             rel = page.relative_to(site)
             if notes:
                 bad += 1
