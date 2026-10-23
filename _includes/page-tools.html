@@ -1,0 +1,9 @@
+{%- comment -%}
+  Баннер режима «Только задачи» (assets/js/theme.js, settings.js): виден только в этом режиме;
+  на страницах без заданий (класс no-tasks у <html>) — другой текст. Цветовой профиль, показ и прогресс —
+  в меню настроек ⚙ в шапке (_includes/hdr-tools.html).
+  Переключатель объема теории стоит на каждой странице занятия справа над текстом; он синхронизирован
+  с пунктом «Теория» меню ⚙ (кнопки data-set="theory", состояние отмечает theme.js).
+{%- endcomment -%}
+<div class="theory-switch" role="group" aria-label="Объем теории"><span class="theory-switch__label">Объем теории</span><div class="set-seg"><button type="button" class="set-seg__btn" data-set="theory" data-val="brief" title="Только то, что нужно для заданий">Кратко</button><button type="button" class="set-seg__btn" data-set="theory" data-val="full" title="Вся теория: пояснения, разборы, дополнительные сведения">Подробно</button></div></div>
+<div class="view-banner"><span class="view-banner__on">Показаны только задания. Теория и примеры скрыты: их открывает кнопка под заголовком раздела.</span><span class="view-banner__none">На этой странице нет заданий, поэтому она показана целиком.</span><button type="button" class="tool-btn" data-set="view" data-val="all">Показать все</button></div>

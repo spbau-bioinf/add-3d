@@ -20,14 +20,14 @@
 <path class="d-arrow" d="M110,245 L190,245" marker-end="url(#ab-m)"/>
 <text class="d-text d-text--mono d-text--small" id="ab-vr" x="200" y="249">v_r</text>
 <g id="ab-sect">
-<text class="d-text d-text--small" x="445" y="24" text-anchor="middle">один масштаб</text>
-<circle id="ab-c" cx="430" cy="80" r="35" fill="#2b6cb0" opacity="0.85"/>
-<text class="d-text d-text--small" id="ab-t1" x="430" y="134" text-anchor="middle">нить, d</text>
+<text class="d-text d-text--small" x="448" y="24" text-anchor="middle">один масштаб</text>
+<circle id="ab-c" cx="448" cy="80" r="35" fill="#2b6cb0" opacity="0.85"/>
+<text class="d-text d-text--small" id="ab-t1" x="448" y="134" text-anchor="middle">нить, d</text>
 <rect id="ab-rect" x="422" y="160" width="16" height="8" fill="var(--c-accent)"/>
-<text class="d-text d-text--small" id="ab-t2" x="430" y="190" text-anchor="middle">дорожка, W × H</text>
-<text class="d-text d-text--mono d-text--small" id="ab-ratio" x="430" y="214" text-anchor="middle">×30</text>
-<text class="d-text d-text--small" id="ab-t3" x="430" y="232" text-anchor="middle">во столько раз</text>
-<text class="d-text d-text--small" id="ab-t4" x="430" y="248" text-anchor="middle">E меньше пути</text>
+<text class="d-text d-text--small" id="ab-t2" x="448" y="190" text-anchor="middle">дорожка, W × H</text>
+<text class="d-text d-text--mono d-text--small" id="ab-ratio" x="448" y="214" text-anchor="middle">×30</text>
+<text class="d-text d-text--small" id="ab-t3" x="448" y="232" text-anchor="middle">во столько раз</text>
+<text class="d-text d-text--small" id="ab-t4" x="448" y="248" text-anchor="middle">E меньше пути</text>
 </g>
 </svg>
 <div class="anim__panel">
@@ -58,11 +58,11 @@
     document.getElementById("ab-out").textContent = "E на 1 мм пути: " + fmt(e1, 5) + " мм; v_f = v_r · W · H / (π · (d / 2)²)";
     roadH = Math.round(H * PX); road.setAttribute("height", String(roadH)); road.setAttribute("y", String(PLATE - roadH));
     fil.setAttribute("stroke-width", String(Math.round(D * 7)));
-    var K = 32, R = D / 2 * K, c = document.getElementById("ab-c");   // сечения: 32 px на 1 мм; места под круг и прямоугольник отведены по наибольшим размерам
+    var K = 32, R = D / 2 * K, c = document.getElementById("ab-c");   // сечения сдвинуты вправо (x = 448), чтобы подпись v_f у конца дорожки не задевала круг d = 3 мм   // сечения: 32 px на 1 мм; места под круг и прямоугольник отведены по наибольшим размерам
     c.setAttribute("r", String(R)); c.setAttribute("cy", "82");         // центр круга неподвижен: 34 + 48 (наибольший радиус)
     document.getElementById("ab-t1").setAttribute("y", "148");
     var rw = W * K, rh = H * K, rect = document.getElementById("ab-rect");
-    rect.setAttribute("width", String(rw)); rect.setAttribute("height", String(rh)); rect.setAttribute("x", String(430 - rw / 2)); rect.setAttribute("y", String(165 - rh / 2));
+    rect.setAttribute("width", String(rw)); rect.setAttribute("height", String(rh)); rect.setAttribute("x", String(448 - rw / 2)); rect.setAttribute("y", String(165 - rh / 2));
     document.getElementById("ab-t2").setAttribute("y", "188"); document.getElementById("ab-ratio").setAttribute("y", "210");
     document.getElementById("ab-t3").setAttribute("y", "228"); document.getElementById("ab-t4").setAttribute("y", "244");
     document.getElementById("ab-ratio").textContent = "×" + fmt(area / (W * H), 0);
@@ -81,7 +81,7 @@
   mode.addEventListener("change", function () { phase = 0; set(0); });
   params(); set(0); requestAnimationFrame(frame);
   var pb = document.getElementById("ab-pause");
-  pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; box.classList.toggle("anim--paused", paused); });   // ролики на CSS тоже стоят
   box.__anim = {set: set, moving: function () { return [road, head]; }};
 })();
 </script>

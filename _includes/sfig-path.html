@@ -1,0 +1,56 @@
+{%- comment -%}
+  Схема task 3-0, раздел 5: от контура слоя к дорожкам — периметры вдоль контура и заполнение с шагом W / плотность.
+  Контур — пластина 40 × 24 мм с отверстием диаметром 12 мм. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-path">
+  <svg id="path-svg" viewBox="0 0 480 300" role="img" aria-label="Слой пластины с отверстием: тонкая черная линия — контур слоя, синие дорожки — периметры, оранжевые — заполнение"></svg>
+  <div id="path-stats"></div>
+  <form class="panel" id="path-form">
+    <label>Периметров <input id="path-p" type="range" min="1" max="3" step="1" value="2"> <output id="path-pv">2</output></label>
+    <label>Плотность заполнения <input id="path-d" type="range" min="10" max="100" step="5" value="15"> <output id="path-dv">15&nbsp;%</output></label>
+    <label>Шаблон
+      <select id="path-pat">
+        <option value="lines" selected>параллельные линии</option>
+        <option value="grid">сетка</option>
+      </select>
+    </label>
+  </form>
+  <div class="caption">Слой пластины 40 × 24 мм с отверстием диаметром 12 мм, вид сверху. Тонкая черная линия — контур слоя, который дает сборка контуров (шаг 3). Синие полосы — периметры: ось первого лежит на половине ширины дорожки <i>W</i> = 0,45 мм внутри контура, следующие — через <i>W</i>, поэтому дорожки касаются друг друга. Оранжевые полосы — заполнение с шагом <i>W</i> / плотность: при 100 % дорожки идут вплотную, при 15 % — через 3 мм. Ширина дорожек показана в масштабе схемы чуть уже настоящей, чтобы соседние дорожки были различимы.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("path-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", S = 10, OX = 40, OY = 30, Wd = 40, Ht = 24, R = 6, W = 0.45;   // 1 мм = 10 px
+  var CX = OX + Wd / 2 * S, CY = OY + Ht / 2 * S;
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function f(x, d) { return x.toFixed(d).replace(".", ","); }
+  var defs = el("defs", {}, svg), clip = el("clipPath", {id: "path-clip"}, defs), cp = el("path", {"clip-rule": "evenodd"}, clip);
+  var gI = el("g", {"clip-path": "url(#path-clip)"}, svg), gP = el("g", {}, svg), gC = el("g", {}, svg);
+  el("rect", {x: OX, y: OY, width: Wd * S, height: Ht * S, style: "fill: none; stroke: var(--md-stroke); stroke-width: 1.2"}, gC);
+  el("circle", {cx: CX, cy: CY, r: R * S, style: "fill: none; stroke: var(--md-stroke); stroke-width: 1.2"}, gC);
+  function clear(g) { while (g.firstChild) g.removeChild(g.firstChild); }
+  function draw() {
+    var P = +document.getElementById("path-p").value, dens = +document.getElementById("path-d").value / 100, pat = document.getElementById("path-pat").value;
+    document.getElementById("path-pv").textContent = P; document.getElementById("path-dv").textContent = Math.round(dens * 100) + " %";
+    clear(gP); clear(gI);
+    for (var i = 0; i < P; i++) {   // ось i-го периметра: (i + 0,5)·W от контура
+      var d = (i + 0.5) * W;
+      el("rect", {x: OX + d * S, y: OY + d * S, width: (Wd - 2 * d) * S, height: (Ht - 2 * d) * S, style: "fill: none; stroke: var(--md-p0); stroke-opacity: 0.8; stroke-width: " + (W * S * 0.8)}, gP);
+      el("circle", {cx: CX, cy: CY, r: (R + d) * S, style: "fill: none; stroke: var(--md-p0); stroke-opacity: 0.8; stroke-width: " + (W * S * 0.8)}, gP);
+    }
+    var b = P * W, x0 = OX + b * S, y0 = OY + b * S, w = (Wd - 2 * b) * S, h = (Ht - 2 * b) * S, r = (R + b) * S;   // область заполнения
+    cp.setAttribute("d", "M" + x0 + "," + y0 + "h" + w + "v" + h + "h" + (-w) + "z M" + (CX - r) + "," + CY + "a" + r + "," + r + " 0 1,0 " + (2 * r) + ",0a" + r + "," + r + " 0 1,0 " + (-2 * r) + ",0z");
+    var s = W / dens;   // шаг заполнения, мм
+    [1].concat(pat === "grid" ? [-1] : []).forEach(function (dir) {
+      for (var c = -Ht - Wd; c <= Wd + Ht; c += s * Math.SQRT2) {   // линии под 45°, расстояние между осями s (по горизонтали s·√2)
+        el("line", {x1: OX + (c) * S, y1: OY + (dir > 0 ? 0 : Ht * S), x2: OX + (c + Ht) * S, y2: OY + (dir > 0 ? Ht * S : 0), style: "stroke: var(--md-p1); stroke-opacity: 0.75; stroke-width: " + (W * S * 0.8)}, gI);
+      }
+    });
+    document.getElementById("path-stats").innerHTML = "<span class='stat'>периметры занимают " + P + " · " + f(W, 2) + " = " + f(P * W, 2) + " мм от контура</span>" +
+      "<span class='stat'>шаг заполнения <i>s</i> = " + f(W, 2) + " / " + f(dens, 2) + " = " + f(s, 2) + " мм</span>";
+  }
+  document.getElementById("path-form").addEventListener("input", draw);
+  document.getElementById("path-form").addEventListener("change", draw);
+  draw();
+})();
+</script>

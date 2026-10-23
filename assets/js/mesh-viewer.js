@@ -11,7 +11,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var PRESETS = {
     finger: "Фаланга (исправная)", holed: "Дыры", flipped: "Перевернутые грани", two_cubes: "Два куба (общее ребро)",
-    shells: "Мусор", ring: "Кольцо", bone_a: "bone_a", bone_b: "bone_b"
+    shells: "Мусор", ring: "Кольцо", bone_a: "bone_a", bone_b: "bone_b", scan_sphere: "Скан сферы", ramp: "Клин ramp.stl", t_bracket: "Кронштейн t_bracket.stl"
   };
   var ABOUT = {
     finger: "Исправная сетка фаланги пальца: замкнута, ориентирована согласованно, одна оболочка. " +
@@ -30,7 +30,13 @@
     ring: "Исправное кольцо-тор: одна «ручка», поэтому V − E + F = 0. Габариты около 1,4 единицы: " +
       "модель экспортирована в дюймах, в миллиметрах это 36 мм.",
     bone_a: "Модель для итогового задания task 2-7 (миллиметры): найдите все ее дефекты.",
-    bone_b: "Модель для итогового задания task 2-7 (дюймы): найдите все ее дефекты."
+    bone_b: "Модель для итогового задания task 2-7 (дюймы): найдите все ее дефекты.",
+    scan_sphere: "Скан шарика диаметром 20 мм: 5120 граней, сетка замкнута и ориентирована согласованно. " +
+      "Неровности около 0,25 мм — шум сканирования; его убирают сглаживанием на task 2-6.",
+    ramp: "Клин ramp.stl: 8 граней, основание 17,3 × 10 мм, высота 10 мм. Наклонная сторона — две треугольные грани под 30° к горизонтали, " +
+      "нормаль наклонной грани (0,5; 0; 0,866). Остальные грани горизонтальны (низ) или вертикальны (стенки). Модель задач task 3-1 и task 3-2.",
+    t_bracket: "Кронштейн t_bracket.stl: Т-образная деталь из 28 граней. Вертикальная стойка 12 × 12 × 18 мм, сверху перекладина 36 × 12 × 4 мм. " +
+      "Полки — части перекладины по 12 мм слева и справа от стойки; они висят над столом на высоте 18 мм, их нижние грани нужно поддерживать."
   };
   var COL = {face: [124, 198, 144], flip: [239, 159, 39], shell: [127, 119, 221]};
   var cv = $("mv-canvas"), ctx = cv.getContext("2d");
@@ -209,7 +215,7 @@
   $("mv-reset").addEventListener("click", function () { if (orig) reset(); });
 
   var drag = null, moved = false;
-  cv.addEventListener("pointerdown", function (e) { drag = [e.clientX, e.clientY]; moved = false; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointerdown", function (e) { e.preventDefault(); drag = [e.clientX, e.clientY]; moved = false; cv.setPointerCapture(e.pointerId); });
   cv.addEventListener("pointermove", function (e) {
     if (!drag) return;
     var dx = e.clientX - drag[0], dy = e.clientY - drag[1];

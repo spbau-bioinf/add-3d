@@ -28,7 +28,7 @@
         <a class="topbar__link" href="{{ l.url }}">{{ l.title }}</a>
 {%- endfor %}
       </nav>
-      {% include theme-toggle.html %}
+      {% include hdr-tools.html %}
     </div>
   </header>
 
@@ -101,5 +101,7 @@
   </main>
 
   {% include footer.html %}
+  <script src="assets/js/search.js" defer></script>
+  <script src="assets/js/settings.js" defer></script>
 </body>
 </html>

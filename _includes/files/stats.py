@@ -50,5 +50,6 @@ def gcode_stats(path, d_fil=1.75, rho=1.24):    # rho — плотность PLA
             "путь печати, м": round(ext_len / 1000, 2), "холостые, м": round(trav_len / 1000, 2)}
 
 if __name__ == "__main__":
-    for p in sys.argv[1:]:
+    # без имен файлов в командной строке (кнопка Run в редакторе) — файлы task 1-4
+    for p in sys.argv[1:] or ["square.gcode", "scaffold.gcode"]:
         print(p, gcode_stats(p))

@@ -1,0 +1,63 @@
+{%- comment -%} Анимация равномерных и адаптивных слоев (task 3-6, раздел 2): профиль фаланги, слева равномерные слои, справа адаптивные. {%- endcomment -%}
+<div class="anim" id="anim-adapt">
+<svg viewBox="0 0 480 300" role="img" aria-label="Профиль фаланги: левая половина нарезана слоями одной толщины, правая — адаптивно: тонкие слои на скругленных концах, толстые на боковой поверхности.">
+<text class="d-text d-text--small" x="150" y="18" text-anchor="middle">равномерно</text>
+<text class="d-text d-text--small" x="330" y="18" text-anchor="middle">адаптивно</text>
+<g id="aad-layers"></g>
+<path id="aad-prof" class="d-medge" style="fill: none; stroke-width: 2"/>
+<line class="d-medge" x1="240" y1="24" x2="240" y2="262" style="stroke-dasharray: 3 4; stroke-width: 1"/>
+<text class="d-text d-text--small" x="240" y="290" text-anchor="middle">линия — профиль модели; прямоугольники — слои</text>
+</svg>
+<div class="anim__panel">
+<label>Допустимая ступенька δ: <input type="range" id="aad-d" min="0.25" max="1" step="0.05" value="0.5"> <output id="aad-dv">0,50 мм</output></label>
+<div id="aad-out"></div>
+<button type="button" class="tool-btn" id="aad-pause">Пауза</button>
+</div>
+<p class="anim__caption">Профиль фаланги высотой 40 мм (та же форма, что <code>finger.stl</code>). Чтобы слои были видны, толщины в 5 раз больше, чем в задании 2: от 0,25 до 1,5 мм. Слева все слои одной толщины, выбранной так, чтобы ступенька нигде не превышала δ: на скругленных концах поверхность почти горизонтальна, и толщина равна δ. Справа толщина каждого слоя подбирается по самому пологому участку в пределах слоя: τ = δ / max |cos θ|. На почти вертикальной боковой поверхности слои толстые, на концах тонкие. Наибольшая ступенька в обоих случаях одна, а слоев справа меньше.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-adapt"), NS = "http://www.w3.org/2000/svg";
+  var Lm = 40, TMIN = 0.25, TMAX = 1.5, PX = 5.8, Z0 = 262, CXL = 236, CXR = 244;
+  var dIn = document.getElementById("aad-d"), dOut = document.getElementById("aad-dv"), out = document.getElementById("aad-out");
+  var paused = false, phase = 0, last = null, period = 8000;
+  // профиль как в tools/make_models.py: z = L(1 − cos t)/2, r = (6 − 2 sin(πz/L))·√(sin t)
+  var prof = [];
+  for (var i = 0; i <= 400; i++) { var t = Math.PI * i / 400, z = Lm * (1 - Math.cos(t)) / 2; prof.push([z, (6 - 2 * Math.sin(Math.PI * z / Lm)) * Math.sqrt(Math.sin(t))]); }
+  var cosAt = prof.map(function (p, k) {   // |cos θ| = |dr/ds| между соседними точками профиля
+    var q = prof[Math.min(k + 1, prof.length - 1)], o = prof[Math.max(k - 1, 0)], dr = q[1] - o[1], dz = q[0] - o[0];
+    return Math.abs(dr) / (Math.hypot(dr, dz) || 1);
+  });
+  function rAt(z) { for (var k = 1; k < prof.length; k++) if (prof[k][0] >= z) { var a = prof[k - 1], b = prof[k], u = (z - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); } return 0; }
+  function maxCos(z1, z2) { var c = 0; prof.forEach(function (p, k) { if (p[0] >= z1 && p[0] <= z2) c = Math.max(c, cosAt[k]); }); return c; }
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function fmt(x, d) { return x.toFixed(d).replace(".", ","); }
+  var d = "";
+  prof.forEach(function (p, k) { d += (k ? "L" : "M") + (CXR + p[1] * PX).toFixed(1) + "," + (Z0 - p[0] * PX).toFixed(1); });
+  for (var k = prof.length - 1; k >= 0; k--) d += "L" + (CXL - prof[k][1] * PX).toFixed(1) + "," + (Z0 - prof[k][0] * PX).toFixed(1);
+  document.getElementById("aad-prof").setAttribute("d", d);
+  function layersOf(delta, adaptive) {
+    var res = [], z = 0, tu = Math.min(TMAX, Math.max(TMIN, delta / maxCos(0, Lm)));
+    while (z < Lm - 1e-9) {
+      var c = maxCos(z, z + TMAX), tau = adaptive ? (c === 0 ? TMAX : Math.min(TMAX, Math.max(TMIN, delta / c))) : tu;
+      tau = Math.min(tau, Lm - z); res.push([z, tau]); z += tau;
+    }
+    return res;
+  }
+  function set(p) {
+    phase = p;
+    var delta = +dIn.value, U = layersOf(delta, false), A = layersOf(delta, true), g = document.getElementById("aad-layers");
+    dOut.textContent = fmt(delta, 2) + " мм";
+    out.innerHTML = "равномерно: " + U.length + " слоев по " + fmt(U[0][1], 2) + " мм<br>адаптивно: " + A.length + " слоев от " + fmt(Math.min.apply(null, A.slice(0, -1).map(function (l) { return l[1]; })), 2) + " до " + fmt(Math.max.apply(null, A.map(function (l) { return l[1]; })), 2) + " мм";
+    g.innerHTML = "";
+    var hmax = Math.min(Lm, p * Lm * 1.25);
+    U.forEach(function (l) { if (l[0] < hmax) { var r = rAt(l[0] + l[1] / 2); g.appendChild(el("rect", {x: CXL - r * PX, y: Z0 - (l[0] + l[1]) * PX, width: r * PX, height: Math.max(0.6, l[1] * PX), "class": "d-mface", style: "stroke-width: 0.6; fill-opacity: 0.6"})); } });
+    A.forEach(function (l) { if (l[0] < hmax) { var r = rAt(l[0] + l[1] / 2); g.appendChild(el("rect", {x: CXR, y: Z0 - (l[0] + l[1]) * PX, width: r * PX, height: Math.max(0.6, l[1] * PX), "class": "d-mface", style: "stroke-width: 0.6; fill-opacity: 0.6"})); } });
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  dIn.addEventListener("input", function () { set(phase); });
+  var pb = document.getElementById("aad-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  set(0); requestAnimationFrame(frame);
+  box.__anim = {set: set, moving: function () { return [document.getElementById("aad-layers")]; }};
+})();
+</script>

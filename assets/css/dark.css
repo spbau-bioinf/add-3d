@@ -9,7 +9,9 @@
      4. блок «Проверьте себя» (check);
      5. мини-тест, собирающий комментарий (quiz);
      6. окно запуска Python (pyrun);
-     7. анимированные схемы с параметрами (anim).
+     7. анимированные схемы с параметрами (anim);
+     8. панель показа (Кратко / Подробно, Только задачи), поиск, файлы страницы,
+        проверка решений в окне Python и проверка файлов G-кода.
    ========================================================================== */
 
 /* ---------- 1. Темная тема ---------- */
@@ -111,6 +113,7 @@
 [data-theme="dark"] .output--file .output__label,
 [data-theme="dark"] .output--file.highlighter-rouge::before { color: #e2c66a; background: #2a2714; }
 [data-theme="dark"] .hl-comment, [data-theme="dark"] .highlight .c, [data-theme="dark"] .highlight .c1, [data-theme="dark"] .highlight .cm { color: #8b949e; }
+[data-theme="dark"] .overview__label { color: #14111f; }
 [data-theme="dark"] .hl-string, [data-theme="dark"] .highlight .s, [data-theme="dark"] .highlight .s1, [data-theme="dark"] .highlight .s2, [data-theme="dark"] .highlight .sa, [data-theme="dark"] .highlight .se, [data-theme="dark"] .highlight .si { color: #a5d6ff; }
 [data-theme="dark"] .hl-keyword, [data-theme="dark"] .highlight .k, [data-theme="dark"] .highlight .kc, [data-theme="dark"] .highlight .kd, [data-theme="dark"] .highlight .kn, [data-theme="dark"] .highlight .kr, [data-theme="dark"] .highlight .ow { color: #ff7b72; }
 [data-theme="dark"] .hl-number, [data-theme="dark"] .highlight .m, [data-theme="dark"] .highlight .mi, [data-theme="dark"] .highlight .mf { color: #79c0ff; }
@@ -321,7 +324,7 @@
   margin: 0; padding: 0.8rem 1.2rem 0.8rem 0.9rem; font-family: var(--font-mono); font-size: 0.95rem; line-height: 1.6;
   tab-size: 4; white-space: pre; box-sizing: border-box; min-width: 100%;
 }
-.pyrun__hl { position: absolute; inset: 0; pointer-events: none; color: var(--win-code-text); background: transparent; border: 0; }
+.pyrun__hl { position: absolute; inset: 0; pointer-events: none; color: var(--win-code-text); background: transparent; border: 0; overflow: hidden; }   /* общее pre { overflow-x: auto } давало слою свою полосу прокрутки */
 .pyrun__code {
   position: relative; display: block; width: 100%; border: 0; outline: none; background: transparent;
   color: transparent; caret-color: var(--win-code-text); resize: none; overflow: hidden;
@@ -416,3 +419,339 @@
 .anim .diag.bad { color: var(--c-bad); }
 .anim .diag.gap { color: #8a6d00; }
 [data-theme="dark"] .anim .diag.gap { color: #e2c66a; }
+
+/* ---------- 8. Панель показа, поиск, файлы страницы, проверка решений ---------- */
+
+@media print { .hdr-tools, .view-banner, .view-peek, .ex-nav { display: none !important; } }
+
+/* «Кратко»: дополнительная теория скрыта; в «Подробно» она отмечена пунктиром слева */
+[data-theory="brief"] .th-full { display: none !important; }
+/* пунктир слева рисуется псевдоэлементом снаружи блока: не меняет отступы, не наезжает на номера
+   списков и не заменяет собственную рамку выносок; у таблицы — на ее обертке с прокруткой */
+html:not([data-theory="brief"]) main .th-full:not(span):not(li):not(tr):not(table),
+html:not([data-theory="brief"]) main .table-scroll:has(> table.th-full) { position: relative; }
+html:not([data-theory="brief"]) main .th-full:not(span):not(li):not(tr):not(table)::after,
+html:not([data-theory="brief"]) main .table-scroll:has(> table.th-full)::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -0.9rem; border-left: 2px dashed var(--c-border); pointer-events: none;
+}
+[data-theory="brief"] main .table-scroll:has(> table.th-full) { display: none; }
+/* переключатель объема теории над текстом страницы (_includes/page-tools.html) */
+.theory-switch { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; margin: 0 0 1.2rem auto; width: max-content; }
+.theory-switch__label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-muted); }
+.theory-switch .set-seg__btn { flex: none; padding: 0.35rem 0.9rem; }
+
+/* «Только задачи»: видны задания, итоговые задания, «Затем» и просмотрщики */
+.view-banner { display: none; align-items: center; flex-wrap: wrap; gap: 0.6rem 1rem; margin: 0 0 1.2rem; padding: 0.6rem 0.9rem; background: var(--c-hint-bg); border: 1px solid var(--c-hint-border); border-radius: var(--radius); }
+.view-banner__none { display: none; }
+[data-view="tasks"] .view-banner { display: flex; }
+[data-view="tasks"].no-tasks .view-banner__on { display: none; }
+[data-view="tasks"].no-tasks .view-banner__none { display: inline; }
+.view-peek { display: none; margin: 0 0 1rem; }
+[data-view="tasks"]:not(.no-tasks) .view-peek { display: inline-flex; }
+[data-view="tasks"]:not(.no-tasks) main > .theory,
+[data-view="tasks"]:not(.no-tasks) main > .goal,
+[data-view="tasks"]:not(.no-tasks) main > .callout,
+[data-view="tasks"]:not(.no-tasks) main > .sources,
+[data-view="tasks"]:not(.no-tasks) main > .subsection:not(:has(.task)),
+[data-view="tasks"]:not(.no-tasks) main > .subsection:not(.view-open) > :not(.subsection__title):not(.task):not(.view-peek):not(.gv) { display: none; }
+
+/* окно поиска (search.js) */
+.search-dlg { width: min(46rem, calc(100vw - 2rem)); max-height: calc(100vh - 4rem); padding: 0; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+.search-dlg::backdrop { background: rgba(10, 15, 20, 0.45); }
+.search-dlg__head { display: flex; gap: 0.5rem; padding: 0.8rem; border-bottom: 1px solid var(--c-border); }
+.search-dlg__input { flex: 1; min-width: 0; padding: 0.5rem 0.7rem; font: inherit; color: var(--c-text); background: var(--c-bg-soft); border: 1px solid var(--c-border); border-radius: var(--radius); }
+.search-dlg__list { margin: 0; padding: 0.4rem 0.8rem 0.8rem; list-style: none; overflow-y: auto; max-height: calc(100vh - 10rem); }
+.search-dlg__list li { padding: 0.5rem 0; border-bottom: 1px solid var(--c-border); }
+.search-dlg__list a { font-weight: 600; }
+.search-dlg__where { display: block; font-size: 0.8rem; color: var(--c-muted); }
+.search-dlg__snip { display: block; font-size: 0.9rem; color: var(--c-text-soft); }
+.search-dlg mark { color: inherit; background: rgba(255, 216, 102, 0.55); }
+.search-dlg__msg { padding: 0.6rem 0; color: var(--c-muted); }
+
+/* файлы страницы и файлы для запуска программы (pyrun.js) */
+.page-files { margin: 1.2rem 0; padding: 0.8rem 1rem; background: var(--c-file-bg); border: 1px solid var(--c-file-border); border-radius: var(--radius); }
+.page-files__title { margin: 0 0 0.4rem; font-weight: 700; }
+.page-files table { margin: 0.4rem 0 0; font-size: 0.9rem; }
+.page-files p { margin: 0.3rem 0; font-size: 0.9rem; }
+.dl-link { white-space: nowrap; font-family: var(--font-mono); font-size: 0.9em; }
+.pyrun__deps, .task__deps { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--c-muted); }
+
+/* проверка решения тестами в окне Python */
+.pyrun__file-in { display: none; }
+.pyrun__tests-res { padding: 0 1.2rem 0.8rem; }
+.pyrun__tests-res:empty { padding: 0; }
+.pyrun__test { margin: 0.4rem 0; padding: 0.4rem 0.7rem; border-left: 3px solid var(--c-border); color: var(--win-out-text); }
+.pyrun__test--ok { border-left-color: var(--c-good); }
+.pyrun__test--bad { border-left-color: var(--c-bad); }
+.pyrun__test b { font-weight: 600; }
+.pyrun__test-ok { color: var(--c-good); font-weight: 600; }
+.pyrun__test-bad { color: var(--c-bad); font-weight: 600; }
+.pyrun__test pre { margin: 0.3rem 0 0; padding: 0.3rem 0.6rem; font-family: var(--font-mono); font-size: 0.85rem; white-space: pre-wrap; background: rgba(127, 127, 127, 0.12); border-radius: 4px; }
+.pyrun__test details { margin-top: 0.3rem; font-size: 0.9rem; }
+.pyrun__hint { margin: 0.3rem 0 0; font-size: 0.9rem; }
+
+/* проверка файла G-кода по таблице «Проверьте себя» (gcheck.js) */
+.gcheck { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; margin: 0.8rem 0 0; }
+.gcheck input[type=file] { display: none; }
+.gcheck__res { flex-basis: 100%; font-size: 0.9rem; }
+.gcheck__res:empty { display: none; }
+.gcheck__ok { color: var(--c-good); font-weight: 600; }
+.gcheck__bad { color: var(--c-bad); font-weight: 600; }
+.gcheck__res ul { margin: 0.3rem 0 0; }
+
+/* ---------- 9. Кнопки шапки и меню настроек ⚙ (settings.js) ---------- */
+
+.hdr-tools { position: absolute; top: 1rem; right: 1rem; z-index: 20; display: flex; gap: 0.5rem; align-items: center; text-align: left; }
+.hdr-tools .theme-btn { position: static; }
+.search-btn, .set-btn, .rs-btn { width: 2.6rem; height: 2.6rem; padding: 0; display: grid; place-items: center; color: #ffffff; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; cursor: pointer; }
+.search-btn:hover, .set-btn:hover, .rs-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.search-btn:focus-visible, .set-btn:focus-visible, .rs-btn:focus-visible { outline: 2px solid var(--c-accent-bright); outline-offset: 2px; }
+.search-btn svg { width: 1.2rem; height: 1.2rem; }
+.set-btn svg, .rs-btn svg { width: 1.25rem; height: 1.25rem; }
+.topbar .hdr-tools { position: relative; top: auto; right: auto; }
+.topbar .search-btn, .topbar .set-btn, .topbar .rs-btn { color: var(--c-text); background: var(--c-bg); border-color: var(--c-border); }
+.topbar .search-btn:hover, .topbar .set-btn:hover, .topbar .rs-btn:hover { border-color: var(--c-accent); background: var(--c-bg-soft); }
+@media (max-width: 720px) { .page-header { padding-top: 4.2rem; } }
+
+.set-pop { position: absolute; top: calc(100% + 0.5rem); right: 0; width: min(30rem, calc(100vw - 2rem)); max-height: calc(100vh - 6rem); overflow-y: auto; padding: 0.9rem 1rem; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22); font-size: 0.92rem; letter-spacing: normal; text-transform: none; }
+.set-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.6rem; align-items: center; margin: 0 0 0.7rem; }
+.set-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-muted); }
+.set-seg { display: flex; padding: 3px; gap: 3px; background: var(--c-bg-soft); border: 1px solid var(--c-border); border-radius: 8px; }
+.set-seg__btn { flex: 1; padding: 0.4rem 0.5rem; font: inherit; color: var(--c-text-soft); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+.set-seg__btn[aria-pressed="true"] { color: var(--c-text); background: var(--c-bg); border-color: var(--c-border); font-weight: 700; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+.set-pal-open { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0.45rem 0.7rem; font: inherit; color: var(--c-text); background: var(--c-bg-soft); border: 1px solid var(--c-border); border-radius: 8px; cursor: pointer; }
+.set-pal-open:hover { border-color: var(--c-accent); }
+.set-prog { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.set-icon { width: 2.5rem; height: 2.5rem; padding: 0; display: inline-grid; place-items: center; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 50%; cursor: pointer; }
+.set-icon:hover { border-color: var(--c-accent); background: var(--c-bg-soft); }
+.set-icon:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.set-icon svg { width: 1.2rem; height: 1.2rem; }
+.set-prog { gap: 0.8rem; }
+.set-icon.set-danger.is-armed { color: #ffffff; background: var(--c-bad); border-color: var(--c-bad); }
+.set-danger { color: var(--c-bad); }
+.set-note { margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--c-muted); }
+.pal-head { display: flex; align-items: baseline; gap: 0.7rem; margin: 0 0 0.7rem; }
+.pal-back { padding: 0; font: inherit; font-weight: 700; color: var(--c-accent); background: none; border: 0; cursor: pointer; }
+.pal-sub { font-size: 0.8rem; color: var(--c-muted); }
+.pal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr)); gap: 0.6rem; }
+.pal-tile { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.4rem; text-align: left; font: inherit; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 8px; cursor: pointer; }
+.pal-tile[aria-pressed="true"] { border: 2px solid var(--c-accent); padding: calc(0.4rem - 1px); }
+.pal-tile__pv { display: block; padding: 0.35rem; border: 1px solid; border-radius: 5px; }
+.pal-tile__bar { display: flex; justify-content: flex-end; height: 0.7rem; margin: 0 0 0.3rem; padding: 2px; border: 1px solid; border-radius: 3px; }
+.pal-tile__bar i { display: block; width: 1.2rem; border-radius: 2px; }
+.pal-tile__code { display: block; padding: 0.25rem 0.35rem; font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.45; white-space: nowrap; overflow: hidden; border-radius: 3px; }
+.pal-tile__code b { font-weight: 400; }
+.pal-tile__name { font-size: 0.82rem; font-weight: 700; }
+.pal-tile__src { font-size: 0.72rem; color: var(--c-muted); }
+
+/* отметка у заголовка задания */
+.task-status { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; font-size: 0.72rem; font-weight: 600; letter-spacing: normal; text-transform: none; vertical-align: middle; border-radius: 999px; border: 1px solid var(--c-border); color: var(--c-muted); }
+.task-status--done { color: var(--c-good); border-color: var(--c-good); background: var(--c-good-bg); }
+
+/* меню «Только задачи»: вместо страниц занятия — список его заданий со статусами */
+.ex-nav { display: none; padding: 0.4rem 0.6rem 1rem; }
+[data-view="tasks"] .ex-nav { display: block; }
+[data-view="tasks"] .sidebar:has(.ex-nav) .menu { display: none; }
+.ex-nav__head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin: 0.2rem 0.4rem 0.4rem; }
+.ex-nav__title { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-muted); }
+.ex-nav__count { font-size: 0.8rem; color: var(--c-muted); white-space: nowrap; }
+.ex-nav__bar { height: 4px; margin: 0 0.4rem 0.7rem; background: var(--c-border); border-radius: 2px; overflow: hidden; }
+.ex-nav__bar span { display: block; height: 100%; background: var(--c-accent); }
+.ex-nav__list { margin: 0; padding: 0; list-style: none; }
+.ex-item { position: relative; display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 1rem; gap: 0.4rem; align-items: center; padding: 0.4rem 0.5rem; color: var(--c-text); text-decoration: none; border-radius: 6px; font-size: 0.88rem; }
+.ex-item:hover { background: var(--c-bg); }
+.ex-item__hit { position: absolute; inset: 0; border-radius: 6px; }
+.ex-item__hit:focus-visible { outline: 2px solid var(--c-accent); }
+.ex-item.is-here { background: var(--c-accent-soft); box-shadow: inset 3px 0 0 var(--c-accent); }
+.ex-item__code { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--c-accent); }
+.ex-item__st { width: 0.85rem; height: 0.85rem; border-radius: 50%; }
+.ex-item__st--none { border: 1.5px solid var(--c-muted); }
+.ex-item__st--part { border: 1.5px solid var(--c-accent); background: linear-gradient(90deg, var(--c-accent) 50%, transparent 50%); }
+.ex-item__st--done { border: 1.5px solid var(--c-good); background: var(--c-good); }
+.ex-nav__all { margin: 0.8rem 0.4rem 0; }
+
+/* Safari выделяет блок целиком, когда по нему тянут мышью (поворот модели, ползунок):
+   у интерактивных схем и демонстраций выделение текста выключено, в Safari — с приставкой -webkit- */
+.anim, .mdemo, .demo, .calc, .gv__canvas-wrap, .gv__ctrls, .gv__opts, .mv canvas, input[type="range"] {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.mdemo svg, .anim svg, .demo svg, canvas { -webkit-tap-highlight-color: transparent; }
+.no-select, .no-select * { -webkit-user-select: none !important; user-select: none !important; }
+
+/* ---------- 9а. Панель страницы (#pbar, settings.js, раздел 4) ----------
+   Когда шапка страницы уходит с экрана, сверху появляется панель: слева «Практика N · решено K из M»
+   и название страницы, по центру кольца страниц практики (заливка — доля решенных заданий страницы),
+   справа кнопки шапки (они переезжают в панель), по нижнему краю — сколько страницы прочитано.
+   На узком экране панель видна всегда, «☰» открывает боковое меню; на телефоне кольца — в меню. */
+.pbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; z-index: 50; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1rem; align-items: center; height: 3.3rem; padding: 0 1rem 0 1.3rem; color: var(--c-text); background: color-mix(in srgb, var(--c-bg) 97%, transparent); border-bottom: 1px solid var(--c-border); backdrop-filter: blur(8px); transform: translateY(-110%); visibility: hidden; transition: transform 0.2s, visibility 0s 0.2s; }
+.pbar.is-on { transform: none; visibility: visible; transition: transform 0.2s; }
+.pbar__left { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+.pbar__label { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.pbar__sub { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c-muted); white-space: nowrap; }
+.pbar__title { overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.pbar__cnt { min-height: 24px; padding: 0; font: inherit; letter-spacing: inherit; text-transform: none; color: var(--c-text-soft); background: none; border: 0; cursor: pointer; }
+.pbar__cnt:hover { color: var(--c-text); text-decoration: underline; }
+.pbar__cnt b { color: var(--c-accent-strong); }
+.pbar__tools { display: flex; justify-content: flex-end; }
+.pbar .hdr-tools { position: relative; top: auto; right: auto; gap: 0.4rem; }
+.pbar .search-btn, .pbar .set-btn, .pbar .rs-btn, .pbar .theme-btn { width: 2.2rem; height: 2.2rem; color: var(--c-text); background: var(--c-bg); border-color: var(--c-border); }
+.pbar .search-btn:hover, .pbar .set-btn:hover, .pbar .rs-btn:hover, .pbar .theme-btn:hover { border-color: var(--c-accent); background: var(--c-bg-soft); }
+.pbar .search-btn svg, .pbar .set-btn svg, .pbar .rs-btn svg { width: 1.05rem; height: 1.05rem; }
+.pbar__line { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; }
+.pbar__line i { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: var(--c-accent); }
+.pbar__menu { display: none; flex: none; place-items: center; width: 2.2rem; height: 2.2rem; padding: 0; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 6px; cursor: pointer; }
+.pbar__menu svg { width: 1.1rem; height: 1.1rem; }
+.pbar__pop { position: absolute; top: calc(100% + 0.4rem); left: 1rem; z-index: 5; width: min(24rem, calc(100vw - 2rem)); padding: 0.8rem 0.9rem; font-size: 0.85rem; line-height: 1.45; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22); }
+.pbar__pop p { margin: 0 0 0.45rem; }
+.pbar__pop button { padding: 0; font: inherit; color: var(--c-link); background: none; border: 0; text-decoration: underline; cursor: pointer; }
+/* кольца страниц практики */
+.rings { display: flex; align-items: center; }
+.rings__step { position: relative; display: grid; place-items: center; width: 1.65rem; height: 1.65rem; padding: 0; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; color: var(--c-text); background: conic-gradient(var(--c-accent) calc(var(--f) * 1turn), var(--c-border) 0); border: 0; border-radius: 50%; cursor: pointer; }
+.rings__step span { display: grid; place-items: center; width: 1.25rem; height: 1.25rem; background: var(--c-bg); border-radius: 50%; }
+.rings__step.is-full span { color: #ffffff; background: var(--c-accent); }
+[data-theme="dark"] .rings__step.is-full span { color: #0b2a14; }
+.rings__step.is-here { width: 2rem; height: 2rem; box-shadow: 0 0 0 2px var(--c-bg), 0 0 0 3.5px var(--c-accent); }
+.rings__step.is-here span { width: 1.55rem; height: 1.55rem; }
+.rings__step + .rings__step { margin-left: 0.85rem; }
+.rings__step + .rings__step::before { content: ""; position: absolute; right: 100%; top: 50%; width: 0.85rem; height: 2px; background: var(--c-border); }
+.rings__hit { position: absolute; inset: 0; border-radius: 50%; }
+.rings__hit:focus-visible { outline: 2px solid var(--c-accent-bright); outline-offset: 2px; }
+.rings-tip { position: fixed; z-index: 300; max-width: 18rem; padding: 0.35rem 0.55rem; font-size: 0.78rem; line-height: 1.35; color: #ffffff; background: #1d2430; border-radius: 6px; pointer-events: none; }
+.sidebar__rings { display: none; }
+.menu-shade { display: none; }
+@media (max-width: 900px) {
+  body { padding-top: 3.3rem; }
+  .pbar { left: 0; transform: none; visibility: visible; padding: 0 0.6rem; gap: 0.5rem; }
+  .pbar__menu { display: grid; }
+  .page-header { padding-top: 2.2rem; }
+  .menu-shade { position: fixed; inset: 0; z-index: 65; background: rgba(10, 15, 20, 0.45); }
+  .menu-open .menu-shade { display: block; }
+}
+@media (max-width: 640px) {
+  .pbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .pbar > .rings, .pbar .rs-btn { display: none; }
+  .pbar .hdr-tools { gap: 0.3rem; }
+  .sidebar__rings { display: flex; justify-content: center; margin: 0 0 1rem; }
+}
+@media print { .pbar, .menu-shade { display: none !important; } body { padding-top: 0; } }
+/* боковое меню: текущий раздел и задание, отметки решенных */
+.submenu__link.is-current, .submenu__link.is-sec { color: var(--c-text); font-weight: 600; background: color-mix(in srgb, var(--c-accent) 14%, transparent); box-shadow: inset 3px 0 0 var(--c-accent); }
+.submenu__link.is-sec .submenu__num { color: var(--c-accent-strong); }
+.submenu__icon.st-done { opacity: 1; background: none; -webkit-mask: none; mask: none; font-size: 0.8rem; font-weight: 700; line-height: 0.85rem; text-align: center; color: var(--c-accent-strong); }
+.submenu__icon.st-done::before { content: "✓"; }
+.submenu__icon.st-teach { opacity: 0.8;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>') center / contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>') center / contain no-repeat; }
+.task-status--teach { color: var(--c-text-soft); border-style: dashed; }
+
+/* ---------- 10. Цветовой профиль (html[data-palette], переменные --p-* ставит theme.js) ----------
+   Профиль меняет и блоки, у которых в теме цвета заданы явно: шапку, выноски, цели, «Затем»,
+   метки уровней, кнопки, окна кода и вывода. Без профиля этот раздел не действует. */
+html[data-palette] body, html[data-palette] .page, html[data-palette] .content { background-color: var(--p-surface); }
+html[data-palette] .sidebar { background: var(--p-bg); border-color: var(--p-border); }
+html[data-palette] .page-header { background: var(--p-header); }
+html[data-palette] .page-header__kicker { color: var(--p-head-accent); }
+html[data-palette] .page-header__title { color: #ffffff; border-color: var(--p-accent); }
+html[data-palette] .menu__link--current { background: var(--p-tint-strong); }
+html[data-palette] .menu__link--current .menu__title, html[data-palette] .menu__link--current .menu__code { color: var(--p-text); }
+html[data-palette] .menu-group__summary--current, html[data-palette] .menu__link:hover { background: var(--p-tint); }
+html[data-palette] code, html[data-palette] .highlighter-rouge code, html[data-palette] code.highlighter-rouge { color: var(--p-accent-text); background: var(--p-code); border-color: var(--p-border); }
+html[data-palette] kbd { color: var(--p-text); background: var(--p-bg); border-color: var(--p-border); }
+html[data-palette] .theory, html[data-palette] .analysis, html[data-palette] .example, html[data-palette] .definition { border-color: var(--p-border); }
+html[data-palette] .goal, html[data-palette] .check { background: var(--p-good); border-color: var(--p-good-line); }
+html[data-palette] .task, html[data-palette] .final-task, html[data-palette] .capstone { border-color: var(--p-accent-line); }
+html[data-palette] .callout--hint { background: var(--p-tint); border-color: var(--p-accent-line); border-left-color: var(--p-accent); }
+html[data-palette] .callout--warning { background: var(--p-warn); border-color: var(--p-warn-line); }
+html[data-palette] .callout--important { background: var(--p-bad); border-color: var(--p-bad-line); }
+html[data-palette] .then, html[data-palette] .page-files { background: var(--p-file); border-color: var(--p-file-line); }
+html[data-palette] .folder-tree.highlighter-rouge { border-color: var(--p-file-line); }
+html[data-palette] .overview { background: var(--p-tint); border-color: var(--p-accent-line); }
+html[data-palette] .view-banner { background: var(--p-tint); border-color: var(--p-accent-line); }
+html[data-palette] .level--1 { color: var(--p-l1-text); background: var(--p-l1); }
+html[data-palette] .level--2 { color: var(--p-l2-text); background: var(--p-l2); }
+html[data-palette] .level--3 { color: var(--p-l3-text); background: var(--p-l3); }
+html[data-palette] .level--5 { color: var(--p-l5-text); background: var(--p-l5); }
+html[data-palette] .tool-btn, html[data-palette] .files__link { color: var(--p-accent-text); background: transparent; border-color: var(--p-accent-line); }
+html[data-palette] .tool-btn:hover { background: var(--p-tint); }
+html[data-palette] .tool-btn--main, html[data-palette] .btn, html[data-palette] .pyrun__btn:not(.pyrun__btn--secondary),
+html[data-palette] .mv .tool-btn.is-active { color: var(--p-on-accent); background: var(--p-accent); border-color: var(--p-accent); }
+html[data-palette] .tool-btn--main:hover, html[data-palette] .btn:hover { color: var(--p-on-accent); background: var(--p-accent); filter: brightness(1.08); }
+html[data-palette] .pyrun__btn--secondary { color: var(--p-text); background: var(--p-bg); border-color: var(--p-border); }
+html[data-palette] .pyrun__head { background: var(--p-deep); }
+html[data-palette] .pyrun__title, html[data-palette] .pyrun__gutter, html[data-palette] .pyrun__outlabel { color: var(--p-text2); }
+html[data-palette] .content div.highlighter-rouge, html[data-palette] .output.highlighter-rouge, html[data-palette] .gv__line { background: var(--p-deep); border-color: var(--p-border); }
+html[data-palette] .content div.highlighter-rouge pre, html[data-palette] .output.highlighter-rouge pre { color: var(--p-code-text); background: transparent; }
+html[data-palette] input:not([type="range"]):not([type="radio"]):not([type="checkbox"]), html[data-palette] select, html[data-palette] textarea:not(.pyrun__code) { color: var(--p-text); background: var(--p-bg); border-color: var(--p-border); }
+html[data-palette] figure.figure-src, html[data-palette] .table-scroll, html[data-palette] table, html[data-palette] th, html[data-palette] td { border-color: var(--p-border); }
+html[data-palette] th { background: var(--p-bg); }
+html[data-palette] .set-pop, html[data-palette] .search-dlg { background: var(--p-surface); border-color: var(--p-border); }
+html[data-palette] figure.diagram, html[data-palette] .anim, html[data-palette] .mdemo, html[data-palette] .demo, html[data-palette] .calc, html[data-palette] .gv { border-color: var(--p-border); }
+html[data-palette] .gv__ok { background: var(--p-good); border-color: var(--p-good-line); }
+html[data-palette] .task, html[data-palette] .final-task, html[data-palette] .capstone, html[data-palette] .definition, html[data-palette] .analysis,
+html[data-palette] .example, html[data-palette] figure.diagram, html[data-palette] figure.figure-src, html[data-palette] .syntax, html[data-palette] .gv,
+html[data-palette] .gv__canvas-wrap, html[data-palette] .pyrun__outwin, html[data-palette] .pyrun__expected, html[data-palette] .quiz label { background-color: var(--p-surface); }
+html[data-palette] .theory { background-color: var(--p-bg); }
+html[data-palette] tbody tr { background: transparent; }
+html[data-palette] tbody tr:nth-child(even) { background: var(--p-bg); }
+html[data-palette] .syntax { border-color: var(--p-border); }
+html[data-palette] .pyrun .pyrun__head .pyrun__title, html[data-palette] .pyrun .pyrun__head { color: var(--p-text2); }
+html[data-palette] .gv__line { color: var(--p-code-text); }
+/* подписи блоков кода и вывода: полоса над блоком в цветах профиля; хорошо / плохо сохраняют оттенок */
+html[data-palette] .content div.highlighter-rouge::before, html[data-palette] .output.highlighter-rouge::before { color: var(--p-text2); background: var(--p-bar); border-bottom-color: var(--p-border); }
+html[data-palette] .code-block--good.highlighter-rouge::before { color: var(--p-text); background: var(--p-good); }
+html[data-palette] .code-block--bad.highlighter-rouge::before { color: var(--p-text); background: var(--p-bad); }
+html[data-palette] .output--file.highlighter-rouge::before { color: var(--p-text); background: var(--p-file); }
+html[data-palette] .content div.highlighter-rouge .highlight, html[data-palette] .content div.highlighter-rouge pre { background: transparent; }
+html[data-palette] .content div.highlighter-rouge pre { color: var(--p-code-text); }
+
+/* окно «Начать заново?» (settings.js) */
+.rs-dlg { width: min(34rem, calc(100vw - 2rem)); padding: 1.3rem 1.4rem 1.2rem; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3); }
+.rs-dlg::backdrop { background: rgba(10, 15, 20, 0.45); }
+.rs-dlg h3 { margin: 0 2.5rem 0.6rem 0; font-size: 1.25rem; }
+.rs-dlg p, .rs-dlg li { font-size: 0.95rem; }
+.rs-dlg ul { margin: 0 0 0.9rem; }
+.rs-dlg li { color: var(--c-text-soft); }
+.rs-dlg li b { color: var(--c-text); }
+.rs-x { position: absolute; top: 0.9rem; right: 0.9rem; width: 2.2rem; height: 2.2rem; }
+.rs-warn { padding: 0.6rem 0.8rem; color: var(--c-bad); background: var(--c-bad-bg); border-radius: 6px; font-size: 0.88rem !important; }
+.rs-acts { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.9rem; }
+.rs-flex { flex: 1; }
+.rs-dlg .rs-yes { color: var(--c-bad); border-color: var(--c-bad); font-weight: 700; }
+html[data-palette] .rs-dlg { background: var(--p-surface); border-color: var(--p-border); }
+html[data-palette] .rs-warn { background: var(--p-bad); }
+html[data-palette] .rs-dlg .rs-yes { color: var(--c-bad); background: transparent; border-color: var(--c-bad); }
+html[data-palette] .ex-item.is-here { background: var(--p-tint-strong); }
+html[data-palette] .ex-item__code { color: var(--p-accent-text); }
+html[data-palette] .task-status--done, html[data-palette] .gcheck__ok, html[data-palette] .pyrun__verdict--ok { border-color: var(--p-good-line); }
+html[data-palette] .task-status--done { background: var(--p-good); }
+html[data-palette] .page-header code { color: #ffffff; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); }
+/* главная страница и калькулятор */
+html[data-palette] .topbar { background: color-mix(in srgb, var(--p-surface) 92%, transparent); border-color: var(--p-border); }
+html[data-palette] .card__cover, html[data-palette] .hero__avatar--emoji { background: var(--p-header); }
+html[data-palette] .card__code { color: var(--p-head-accent); }
+html[data-palette] .card__link, html[data-palette] .pill, html[data-palette] .site-footer, html[data-palette] .calc { background-color: var(--p-surface); border-color: var(--p-border); }
+html[data-palette] .tag { color: var(--p-accent-text); background: var(--p-tint); }
+html[data-palette] .mv .tool-btn.is-active { color: var(--p-on-accent); }
+/* блоки, найденные проверкой профилей (check_palettes.py Skill) */
+html[data-palette] .gv__warns li.gv__ok { background: var(--p-good); border-color: var(--p-good-line); }
+html[data-palette] .overview__label { color: var(--p-accent-text); background: var(--p-tint-strong); }
+html[data-palette] .overview__ref { color: var(--p-text2); }
+html[data-palette] .flow__step { color: var(--p-text); background: var(--p-bg); border-color: var(--p-border); }
+html[data-palette] .demo { background: var(--p-surface); border-color: var(--p-border); }
+html[data-palette] .gv__bar .tool-btn:not(.tool-btn--main) { border-color: var(--p-accent-line); }
+/* подсветка кода Rouge (блоки ```python): цвета токенов профиля */
+html[data-palette] .highlight { color: var(--p-code-text); }
+html[data-palette] .highlight .k, html[data-palette] .highlight .kn, html[data-palette] .highlight .kd, html[data-palette] .highlight .kc,
+html[data-palette] .highlight .kr, html[data-palette] .highlight .ow { color: var(--hl-kw); }
+html[data-palette] .highlight .s, html[data-palette] .highlight .s1, html[data-palette] .highlight .s2, html[data-palette] .highlight .sa,
+html[data-palette] .highlight .se, html[data-palette] .highlight .sh, html[data-palette] .highlight .si, html[data-palette] .highlight .sx,
+html[data-palette] .highlight .sr, html[data-palette] .highlight .sd { color: var(--hl-str); }
+html[data-palette] .highlight .m, html[data-palette] .highlight .mi, html[data-palette] .highlight .mf, html[data-palette] .highlight .mh { color: var(--hl-num); }
+html[data-palette] .highlight .c, html[data-palette] .highlight .c1, html[data-palette] .highlight .cm, html[data-palette] .highlight .cp { color: var(--hl-com); }
+html[data-palette] .highlight .nb, html[data-palette] .highlight .bp { color: var(--hl-bi); }
+html[data-palette] .highlight .nf, html[data-palette] .highlight .fm, html[data-palette] .highlight .nc { color: var(--hl-fn); }
+html[data-palette] .highlight .o, html[data-palette] .highlight .p, html[data-palette] .highlight .n, html[data-palette] .highlight .nn { color: var(--p-code-text); }
+html[data-palette] .tool-btn:disabled, html[data-palette] .tool-btn:disabled:hover { color: var(--p-text2); background: transparent; border-color: var(--p-border); }
+html[data-palette] .pbar { background: color-mix(in srgb, var(--p-surface) 97%, transparent); border-color: var(--p-border); }
+html[data-palette] .rings__step span { background: var(--p-surface); }
+html[data-palette] .rings__step.is-full span { color: var(--p-on-accent); background: var(--p-accent); }

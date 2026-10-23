@@ -399,6 +399,7 @@ svg {
 .content {
   width: 100%;
   max-width: var(--content-w);
+  overflow-wrap: break-word;   /* длинный адрес ссылки переносится, страница не прокручивается вбок */
   margin: 0 auto;
   padding: 2.5rem 2rem 2rem;
 }
@@ -1376,59 +1377,24 @@ td .user-input {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* На узком экране меню выезжает слева по кнопке «☰» панели страницы (dark.css, раздел 9а) */
   .sidebar {
-    position: static;
-    height: auto;
-    padding: 1rem 1rem 0.75rem;
-    border-right: 0;
-    border-bottom: 1px solid var(--c-border);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 70;
+    width: min(21rem, 88vw);
+    height: 100vh;
+    padding: 1.2rem 1rem 2rem;
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition: transform 0.2s, visibility 0s 0.2s;
   }
 
-  .sidebar__brand {
-    margin-bottom: 0.75rem;
-  }
-
-  .menu-panel__summary {
-    padding: 0.35rem 0;
-    font-size: 0.85rem;
-  }
-
-  /* На узком экране меню — компактный ряд кнопок с кодами страниц;
-     полные названия остаются доступны программам экранного доступа */
-  .menu__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .menu__item,
-  .menu__item--sub,
-  .menu__item--extra {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  .menu__link {
-    padding: 0.3rem 0.6rem;
-    background: #ffffff;
-    border: 1px solid var(--c-border);
-  }
-
-  .menu__link--current,
-  .menu__link--current:hover {
-    background: #1f2a24;
-    border-color: #1f2a24;
-  }
-
-  .menu__title {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  .menu-open .sidebar {
+    transform: none;
+    visibility: visible;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s;
   }
 
   .page-header {

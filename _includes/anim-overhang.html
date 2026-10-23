@@ -1,0 +1,51 @@
+{%- comment -%} Анимация нависания (task 3-2, раздел 1): дорожки слоев стенки с наклоном α; дорожка, которая опирается на нижнюю меньше чем половиной ширины, падает. {%- endcomment -%}
+<div class="anim" id="anim-over">
+<svg viewBox="0 0 480 285" role="img" aria-label="Разрез наклонной стенки: дорожки укладываются слой за слоем со сдвигом; дорожки без достаточной опоры окрашены красным и падают.">
+<rect class="d-plate" x="20" y="226" width="440" height="10"/>
+<g id="aov-roads"></g>
+<text class="d-text d-text--small" x="240" y="256" text-anchor="middle">зеленое — дорожка опирается на нижнюю</text>
+<text class="d-text d-text--small" x="240" y="276" text-anchor="middle">не меньше чем половиной ширины; красное — падает</text>
+</svg>
+<div class="anim__panel">
+<label>Угол стенки к горизонтали α: <input type="range" id="aov-a" min="15" max="90" step="5" value="60"> <output id="aov-av">60°</output></label>
+<label>Толщина слоя l: <input type="range" id="aov-l" min="0.1" max="0.3" step="0.05" value="0.2"> <output id="aov-lv">0,20 мм</output></label>
+<div id="aov-out"></div>
+<button type="button" class="tool-btn" id="aov-pause">Пауза</button>
+</div>
+<p class="anim__caption">Разрез стенки, наклоненной к горизонтали на угол α; ширина дорожки 0,4 мм. Каждый следующий слой сдвинут наружу на l / tg α. Дорожка держится, пока опирается на дорожку ниже хотя бы половиной ширины (такую проверку дорожек Livesu et al., 2017, p. 546, приводят по работе Deng et al., 2014 [DHL14]). При l = 0,2 мм и ширине 0,4 мм это условие нарушается при α меньше 45°: дальше без поддержек материал падает. Уменьшите толщину слоя: допустимый угол становится меньше.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-over"), g = document.getElementById("aov-roads");
+  var aIn = document.getElementById("aov-a"), lIn = document.getElementById("aov-l");
+  var aOut = document.getElementById("aov-av"), lOut = document.getElementById("aov-lv"), out = document.getElementById("aov-out");
+  var NS = "http://www.w3.org/2000/svg", PX = 100, W = 0.4, X0 = 70, Y0 = 226, K = 9;   // 1 мм = 100 px
+  var paused = false, phase = 0, last = null, period = 7000;
+  function fmt(x, d) { return x.toFixed(d).replace(".", ","); }
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function set(p) {
+    phase = p;
+    var a = +aIn.value, l = +lIn.value, d = a === 90 ? 0 : l / Math.tan(a * Math.PI / 180), ok = d <= W / 2 + 1e-9;
+    aOut.textContent = a + "°"; lOut.textContent = fmt(l, 2) + " мм";
+    var crit = Math.atan(l / (W / 2)) * 180 / Math.PI;
+    out.innerHTML = "сдвиг слоя l / tg α = " + fmt(d, 3) + " мм<br>опора: " + (d >= W ? "0" : fmt(Math.max(0, (W - d) / W * 100), 0)) + " % ширины" +
+      "<br>допустимый угол при этой толщине: " + fmt(crit, 0) + "°";
+    g.innerHTML = "";
+    var n = Math.min(K, Math.floor(p * K * 1.3) + 1), fallen = false;
+    for (var k = 0; k < n; k++) {
+      var x = X0 + k * d * PX, y = Y0 - (k + 1) * l * PX, bad = k > 0 && (!ok || fallen);
+      var drop = 0;
+      if (bad) { fallen = true; var t = Math.min(1, (p * K * 1.3 - k) * 1.5); drop = Math.max(0, t) * (Y0 - y - l * PX); }
+      if (x + W * PX > 470) break;
+      g.appendChild(el("rect", {x: x, y: y + drop, width: W * PX, height: l * PX, rx: l * PX / 2, "class": bad ? "d-mface d-mface--bad" : "d-mface"}));
+      if (bad) break;
+    }
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  aIn.addEventListener("input", function () { set(phase); });
+  lIn.addEventListener("input", function () { set(phase); });
+  var pb = document.getElementById("aov-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  set(0); requestAnimationFrame(frame);
+  box.__anim = {set: set, moving: function () { return [g]; }};
+})();
+</script>

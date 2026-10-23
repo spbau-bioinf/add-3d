@@ -12,6 +12,9 @@ title: "G-код слайсера как данные"
 Слайсер показывает оценку времени печати и расхода материала. Эти числа получены из самого G-кода: в нем записаны все слои, все отрезки и вся подача нити. Значит, эти показатели можно посчитать самостоятельно — и проверить слайсер.
 
 Такой анализ — обычная часть производства. Программы управления аддитивным производством принимают G-код, показывают сгенерированные команды и послойную разбивку скорости построения, чтобы перед запуском проверить, что файл печатаем. Типичная деталь состоит из тысяч слоев с собственными траекториями, и вручную проверить их невозможно.
+{: .th-full}
+
+На следующем занятии так же, как данные, разбирается файл модели STL, из которого слайсер строит G-код ([task 2-0](../task_2/task_2-0.html)).
 
 </section>
 
@@ -146,9 +149,13 @@ def gcode_stats(path, d_fil=1.75, rho=1.24):    # rho — плотность PLA
             "путь печати, м": round(ext_len / 1000, 2), "холостые, м": round(trav_len / 1000, 2)}
 
 if __name__ == "__main__":
-    for p in sys.argv[1:]:
+    # без имен файлов в командной строке (кнопка Run в редакторе) — файлы task 1-4
+    for p in sys.argv[1:] or ["square.gcode", "scaffold.gcode"]:
         print(p, gcode_stats(p))
-{% endcapture %}{% include pyrun.html file="stats.py" code=code note="Без имен файлов в командной строке программа ничего не печатает; на странице она нужна как модуль: задания импортируют из нее gcode_stats. Пример вызова из терминала ниже." %}
+{% endcapture %}{% capture expected %}
+square.gcode {'слоев': 10, 'нить, мм': 89.9, 'масса, г': 0.27, 'путь печати, м': 2.7, 'холостые, м': 0.62}
+scaffold.gcode {'слоев': 20, 'нить, мм': 59.9, 'масса, г': 0.18, 'путь печати, м': 1.8, 'холостые, м': 0.59}
+{% endcapture %}{% include pyrun.html file="stats.py" code=code expected=expected note="Программа запускается и без имен файлов в командной строке (кнопкой Run в редакторе): тогда она разбирает <code>square.gcode</code> и <code>scaffold.gcode</code> из task 1-4, которые должны лежать рядом. Задания импортируют из нее функцию <code>gcode_stats</code>." %}
 
 ```text
 > @@python stats.py square.gcode scaffold.gcode@@
@@ -183,6 +190,9 @@ scaffold.gcode {'слоев': 20, 'нить, мм': 59.9, 'масса, г': 0.18
 Файл: <span class="task__file">task\_1-6\_1.py</span>
 {: .task__meta}
 
+Файлы курса для задания: [stats.py](../assets/files/stats.py){: download=""}, [scaffold.gcode](../assets/files/scaffold.gcode){: download=""}, [square.gcode](../assets/files/square.gcode){: download=""}.
+{: .task__deps}
+
 Импортируйте `gcode_stats` из `stats.py` и выведите таблицу для файлов `square.gcode` и `scaffold.gcode` из [task 1-4](task_1-4.html):
 
 ```text
@@ -191,6 +201,10 @@ square.gcode        10      89.9      0.27
 scaffold.gcode      20      59.9      0.18
 ```
 {: .output data-label="Требуемый вывод"}
+
+**Округление и ширина колонок.** Нить — 1 знак после точки, масса — 2 знака. Имя файла — поле 16 символов по левому краю, слои, нить и масса — поля 6, 10 и 10 символов по правому краю: `f"{path:<16}{layers:>6}{fil:>10.1f}{mass:>10.2f}"`.
+
+Числа требуемого вывода в программе не записываются: они получаются вычислением.
 
 Столбцы выровнены f-строками с шириной поля: 16, 6, 10 и 10 символов.
 
@@ -221,6 +235,10 @@ square.gcode: 1.8 мин без учета разгона и торможени�
 scaffold.gcode: 1.1 мин без учета разгона и торможения
 ```
 {: .output data-label="Требуемый вывод"}
+
+**Округление.** Время — в минутах, 1 знак после точки (`:.1f`).
+
+Числа требуемого вывода в программе не записываются: они получаются вычислением.
 
 {% capture code %}
 import math
@@ -343,6 +361,7 @@ scaffold.gcode: 1.1 мин без учета разгона и торможен�
 1. Нажмите «Экспорт G-кода / Export G-code» (<kbd>Ctrl</kbd>+<kbd>G</kbd>) и сохраните файл под именем из задания. Для второго варианта повторите шаги 8–10.
 
 Подробнее о программе: статьи базы знаний Prusa на английском ([help.prusa3d.com/category/prusaslicer](https://help.prusa3d.com/category/prusaslicer_204)); на русском цикл статей «PrusaSlicer» на 3deshnik.ru ([«Начало»](https://3deshnik.ru/blogs/dark184/prusaslicer-nachalo), [«Нарезка модели»](https://3deshnik.ru/blogs/dark184/prusaslicer-narezka-modeli)). Видео: на английском [PrusaSlicer Beginner Tutorial](https://www.youtube.com/watch?v=_kIqMPNQNSw) (3D Rev), на русском [обзор PrusaSlicer](https://www.youtube.com/watch?v=oaObq1L7h-U) (снят для версии 2.0; расположение настроек с тех пор почти не изменилось).
+{: .th-full}
 
 </section>
 
@@ -352,6 +371,9 @@ scaffold.gcode: 1.1 мин без учета разгона и торможен�
 
 Файлы: <span class="task__file">variant\_a.gcode</span>, <span class="task__file">variant\_b.gcode</span>, <span class="task__file">task\_1-6\_compare.py</span>, <span class="task__file">task\_1-6\_report.txt</span>
 {: .task__meta}
+
+Файлы курса для задания: [stats.py](../assets/files/stats.py){: download=""}.
+{: .task__deps}
 
 **Ситуация.** Нужно решить, как печатать кронштейн: с поддержками под полкой или без них. Решение принимается до печати, по данным G-кода.
 
@@ -432,6 +454,7 @@ ivanov_ii/
 ## Источники
 {: .section__title}
 
+1. Лекция 3 «Цифровой конвейер аддитивного производства», блок 6 (слайды 74–75, 79) и блок 7 (слайд 85).
 1. Gibson I., Rosen D., Stucker B., Khorasani M. Additive Manufacturing Technologies. 3rd ed. Springer, 2021 — п. 6.2.5 (разгон и торможение головки), п. 17.4 и 17.10 (программы предпросмотра и управления производством, p. 504, 518–519).
 1. Leary M. Design for Additive Manufacturing. Elsevier, 2020 — п. 3.3.6 (p. 75): тысячи уникальных слоев.
 1. Antar I., Al Nahari B., Zarbane K., El Oumami M. An enhanced topology optimization method for the additive manufacturing of self-supporting structures. Int. J. Adv. Manuf. Technol., 2026, 143:163–182. DOI (digital object identifier, цифровой идентификатор публикации): [10.1007/s00170-025-17252-6](https://doi.org/10.1007/s00170-025-17252-6) — п. 5, Fig. 15 (p. 175–177). Исправление к статье (DOI: 10.1007/s00170-026-17889-x) касается формул и табл. 4 и рисунок 15 не затрагивает.

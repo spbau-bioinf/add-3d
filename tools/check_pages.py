@@ -7,7 +7,9 @@
 Для каждой страницы:
   * страница открывается без ошибок JavaScript;
   * в тексте нет необработанных тегов Liquid ({% … %}, {{ … }});
-  * окна запуска Python (.pyrun__code) показаны целиком, без полосы прокрутки;
+  * окна запуска Python (.pyrun__code) показаны целиком, без полосы прокрутки; у контейнера окна
+    (.pyrun__scroll) нет полос прокрутки, если строки помещаются в окно;
+    у слоя подсветки (.pyrun__hl) своих полос нет, и текст в нем не шире поля;
   * в анимированных схемах (.anim) движущиеся элементы ни в один момент
     цикла не накладываются на подписи: анимации CSS прокручиваются по времени,
     анимации на JavaScript — через метод el.__anim.set(phase), phase от 0 до 1;
@@ -25,7 +27,14 @@
     окном Python выстроен столбиком;
   * интерактивные блоки (.anim, .demo, .mdemo) не скачут: до 12 щелчков по каждой кнопке
     блока не меняют его высоту и место нажатой кнопки (кнопки внутри [data-resize],
-    тестов и окон Python не проверяются).
+    тестов и окон Python не проверяются);
+  * доступность (версия 16 Skill): при ширине окна 320 px страница не прокручивается вбок
+    (WCAG 1.4.10; широкие таблицы и схемы прокручиваются внутри своего блока); кнопки, поля,
+    ползунки и ссылки меню не меньше 24 × 24 px, а меньшие стоят так, что круг 24 px вокруг
+    их центра не задевает соседние цели (WCAG 2.5.8; флажок в подписи — вся подпись, ссылка-слой —
+    весь пункт), при ширине 1280 и 320 px; анимации с кнопкой «Пауза» при «уменьшить движение»
+    (prefers-reduced-motion) стоят на месте, а схемы ниже первого экрана не движутся, пока их
+    не видно (settings.js, раздел 5).
 Коды выхода: 0 — замечаний нет, 1 — есть замечания.
 """
 import asyncio
@@ -57,7 +66,7 @@ async () => {
     if (t && !/^task \\d+(-\\d+[a-z]?)?$/.test(t)) out.links.push(t.slice(0, 40));
   });
   // щелчок по названию пункта меню и по карточке попадает в ссылку
-  const hits = [...document.querySelectorAll('.menu-group__list .menu__title, .submenu__text, .card__title')].filter(e => e.checkVisibility ? e.checkVisibility() : e.offsetParent !== null);
+  const hits = [...document.querySelectorAll('.menu-group__list .menu__title, .submenu__text, .card__title')].filter(e => !e.closest('.card--soon')).filter(e => e.checkVisibility ? e.checkVisibility() : e.offsetParent !== null);   // карточка «Скоро» не ссылка
   hits.forEach(e => {
     e.scrollIntoView({block: 'center'});
     const r = e.getBoundingClientRect(), x = r.left + Math.min(r.width / 2, 20), y = r.top + r.height / 2;
@@ -76,6 +85,12 @@ async () => {
   }
   document.querySelectorAll('.pyrun__code').forEach((t, i) => {
     if (t.scrollHeight > t.clientHeight + 2) out.pyrun.push(i);
+    // контейнер окна: полосы прокрутки только у строк длиннее окна (поле с шириной 100% — строки помещаются)
+    const sc = t.closest('.pyrun__scroll');
+    if (sc && (sc.scrollHeight > sc.clientHeight + 1 || (t.style.width === '100%' && sc.scrollWidth > sc.clientWidth + 1))) out.pyrun.push(i + ' (' + (t.closest('.pyrun').dataset.file || '') + ': лишняя полоса прокрутки)');
+    // слой подсветки (pre.pyrun__hl): своих полос прокрутки нет, и текст в нем не шире поля (иначе вторая полоса или обрезанный конец строки)
+    const hl = sc && sc.querySelector('.pyrun__hl');
+    if (hl && (getComputedStyle(hl).overflowX !== 'hidden' || hl.scrollWidth - parseFloat(getComputedStyle(hl).paddingRight) > hl.clientWidth + 1 || hl.scrollHeight > hl.clientHeight + 1)) out.pyrun.push(i + ' (' + (t.closest('.pyrun').dataset.file || '') + ': слой подсветки с полосой прокрутки или шире поля)');
   });
   const hit = (a, b) => !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
   for (const box of document.querySelectorAll('.anim')) {
@@ -157,6 +172,62 @@ async () => {
 }
 """
 
+# цели меньше 24 × 24 px, у которых рядом другие цели (WCAG 2.2, 2.5.8)
+JS_TARGETS = """
+() => {
+  // WCAG 2.2, 2.5.8: цель не меньше 24 × 24 px или круг 24 px вокруг ее центра не задевает другие цели
+  const sel = 'button, select, input:not([type=hidden]), summary, [role=button], .sidebar a, .submenu a, .pbar a, .cards a, .hdr-tools a';
+  const vis = e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(e).visibility !== 'hidden' && !e.closest('[hidden], [inert]'); };
+  const T = [...document.querySelectorAll(sel)].filter(vis).map(e => {
+    // флажок в подписи: цель — вся подпись; ссылка-слой (::after на весь пункт): цель — пункт
+    const af = getComputedStyle(e, '::after'), layer = af.content !== 'none' && af.position === 'absolute' && e.offsetParent;
+    const lab = (e.matches('input[type=checkbox], input[type=radio]') && e.closest('label')) || (layer ? e.offsetParent : e);
+    return {e, b: lab.getBoundingClientRect()};
+  });
+  const small = t => t.b.width < 23.5 || t.b.height < 23.5;
+  const cen = t => [t.b.left + t.b.width / 2, t.b.top + t.b.height / 2];
+  const dist = (p, b) => Math.hypot(Math.max(b.left - p[0], 0, p[0] - b.right), Math.max(b.top - p[1], 0, p[1] - b.bottom));
+  const out = [];
+  for (const a of T.filter(small)) {
+    const ca = cen(a);
+    const near = T.some(o => o !== a && o.e !== a.e && !o.e.contains(a.e) && !a.e.contains(o.e) &&
+      (small(o) ? Math.hypot(ca[0] - cen(o)[0], ca[1] - cen(o)[1]) < 24 : dist(ca, o.b) < 12));
+    if (near) out.push((a.e.id ? '#' + a.e.id : a.e.tagName.toLowerCase() + '.' + String(a.e.className).split(' ')[0]) + ' ' + Math.round(a.b.width) + '×' + Math.round(a.b.height));
+  }
+  return [...new Set(out)];
+}
+"""
+
+# страница при ширине 320 px: что выходит за правый край вне блоков с собственной прокруткой
+JS_REFLOW = """
+() => {
+  const W = document.documentElement.clientWidth, r = [];
+  if (document.documentElement.scrollWidth <= W + 1) return r;
+  for (const e of document.querySelectorAll('body *')) {
+    const b = e.getBoundingClientRect();
+    if (!b.width || b.right <= W + 1) continue;
+    let p = e.parentElement, inner = false;
+    while (p) { const o = getComputedStyle(p).overflowX; if (o !== 'visible') { inner = true; break; } p = p.parentElement; }
+    if (!inner) r.push(e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '.' + String(e.className.baseVal ?? e.className).split(' ')[0] + ' до ' + Math.round(b.right) + ' px');
+  }
+  return [(document.documentElement.scrollWidth - W) + ' px: ' + r.slice(0, 3).join(', ')];
+}
+"""
+
+# анимации с кнопкой «Пауза» стоят: all=true — все (уменьшить движение), иначе — те, что ниже первого экрана
+JS_STILL = """
+async (all) => {
+  const boxes = [...document.querySelectorAll('.anim')].filter(b => b.querySelector('button[id$="-pause"]'))
+    .filter(b => all || b.getBoundingClientRect().top > innerHeight + 50);
+  if (!boxes.length) return [];
+  // идет: кнопка показывает «Пауза», работает анимация CSS или схема изменилась за 0,7 с (шаговые схемы меняются реже)
+  const snap = () => boxes.map(b => (b.querySelector('svg') || b).innerHTML);
+  const s0 = snap(); await new Promise(r => setTimeout(r, 700)); const s1 = snap();
+  return boxes.filter((b, i) => b.querySelector('button[id$="-pause"]').textContent.trim() === 'Пауза' || s0[i] !== s1[i] ||
+    b.getAnimations({subtree: true}).some(a => a.playState === 'running')).map(b => b.id);
+}
+"""
+
 
 async def main():
     from playwright.async_api import async_playwright
@@ -174,13 +245,21 @@ async def main():
         kw = {"executable_path": CHROMIUM} if CHROMIUM else {}
         b = await p.chromium.launch(**kw)
         pg = await b.new_page(viewport={"width": 1280, "height": 900})
+        narrow = await (await b.new_context(viewport={"width": 320, "height": 800}, reduced_motion="reduce")).new_page()
         errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)))
         for page in pages:
             errs.clear()
             await pg.goto(page.as_uri())
             await pg.wait_for_timeout(300)
+            away = await pg.evaluate(JS_STILL, False)
+            small = await pg.evaluate(JS_TARGETS)
             r = await pg.evaluate(JS_CHECK)
+            await narrow.goto(page.as_uri())
+            await narrow.wait_for_timeout(300)
+            reflow = await narrow.evaluate(JS_REFLOW)
+            small += [s + " (320 px)" for s in await narrow.evaluate(JS_TARGETS)]
+            moving = await narrow.evaluate(JS_STILL, True)
             notes = []
             if errs: notes.append("ошибки JS: " + "; ".join(errs)[:200])
             if r["liquid"]: notes.append("необработанный Liquid")
@@ -191,6 +270,10 @@ async def main():
             if r["links"]: notes.append("текст в ссылках или промах щелчка: " + "; ".join(r["links"][:4]))
             if r["submenu"]: notes.append("подменю: " + "; ".join(r["submenu"]))
             if r["jump"]: notes.append("блок скачет при щелчках: " + "; ".join(r["jump"][:3]))
+            if reflow: notes.append("при ширине 320 px страница прокручивается вбок на " + reflow[0])
+            if small: notes.append("цели меньше 24 px рядом с другими: " + "; ".join(small[:4]))
+            if moving: notes.append("анимация движется при «уменьшить движение»: " + ", ".join(moving))
+            if away: notes.append("анимация движется вне экрана: " + ", ".join(away))
             rel = page.relative_to(site)
             if notes:
                 bad += 1

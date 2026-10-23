@@ -1,0 +1,23 @@
+{%- comment -%}
+  Демонстрация task 3-0a: пять случаев сечения треугольника плоскостью и правило ε. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg id="ct3d" viewBox="0 0 460 320" role="img" aria-label="Треугольник и горизонтальная секущая плоскость; желтым показан результат сечения: точка, отрезок, ребро или вся грань"></svg>
+  <div id="ctout" class="mdemo-calc"></div>
+  <form class="panel" id="ctform">
+    <label>Треугольник
+      <select id="cttri">
+        <option value="general" selected>общий случай</option>
+        <option value="vertex">вершина на плоскости</option>
+        <option value="touch">вершина касается плоскости</option>
+        <option value="edge">ребро в плоскости</option>
+        <option value="flat">грань в плоскости</option>
+      </select>
+    </label>
+    <label>Высота плоскости <input id="ctz" type="range" min="0" max="2" step="0.05" value="1"> <output id="ctzv">1,00</output></label>
+    <label><input id="cteps" type="checkbox"> правило ε (Minetto et al.)</label>
+    <label>Масштаб <input id="ctzoom" type="range" min="50" max="300" step="10" value="100"> <output id="ctzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="ctreset" type="button">Сбросить</button>
+  </form>
+  <div class="caption">Треугольник и плоскость поворачиваются мышью, колесо мыши или ползунок «Масштаб» меняют размер, кнопка «Сбросить» возвращает исходный вид и параметры. У вершин подписаны высоты. Выберите треугольник и двигайте плоскость: при высоте 1,00 у четырех нижних вариантов вершины лежат точно на плоскости, и получаются особые случаи Gibson et al. Включите правило ε: высоты вершин округляются до четных кратных ε = 0,005, высота плоскости — до нечетных, и ни одна вершина больше не лежит на плоскости. Остаются только случаи 1 и 5.</div>
+</div>

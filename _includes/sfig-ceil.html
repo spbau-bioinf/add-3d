@@ -1,0 +1,46 @@
+{%- comment -%}
+  Схема task 3-1, раздел 3: число слоев N = ⌈H / τ⌉ и неполный верхний слой. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-ceil">
+  <svg id="ceil-svg" viewBox="0 0 480 250" role="img" aria-label="Разрез детали высотой H: слои толщиной τ, плоскости слоев через их середины; верхний слой выделен, если он неполный"></svg>
+  <div id="ceil-stats"></div>
+  <form class="panel" id="ceil-form">
+    <label>Высота модели <i>H</i> <input id="ceil-h" type="range" min="1.5" max="2.4" step="0.1" value="2"> <output id="ceil-hv">2,0 мм</output></label>
+    <label>Толщина слоя τ <input id="ceil-t" type="range" min="0.2" max="0.4" step="0.1" value="0.3"> <output id="ceil-tv">0,3 мм</output></label>
+  </form>
+  <div class="caption">Разрез детали сбоку, высоты увеличены. Черная рамка — модель высотой <i>H</i>, зеленые полосы — слои толщиной τ, точки — плоскости слоев на их серединах (<i>z</i> = (<i>i</i> + 0,5) · τ, раздел 3 task 3-0). Если <i>H</i> не делится на τ нацело, над последним полным слоем остается часть модели тоньше слоя. Формула <i>N</i> = ⌈<i>H</i> / τ⌉ отводит под нее еще один слой той же толщины — неполный верхний слой, он выделен желтым. Если остаток больше половины слоя (<i>H</i> = 2,0 мм, τ = 0,3 мм: остаток 0,2 мм), плоскость этого слоя проходит через модель, у слоя есть контур, и он печатается; деталь выходит выше модели на 0,1 мм. Если остаток меньше половины (<i>H</i> = 1,9 мм: остаток 0,1 мм), плоскость оказывается выше модели и сечение пустое: такой слой ничего не печатает, хотя формула его считает.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("ceil-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", PX = 80, Y0 = 220, X0 = 90, WD = 150;   // 1 мм = 80 px
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  function f(x, d) { return x.toFixed(d).replace(".", ","); }
+  var g = el("g", {}, svg);
+  function draw() {
+    var H = +document.getElementById("ceil-h").value, t = +document.getElementById("ceil-t").value;
+    document.getElementById("ceil-hv").textContent = f(H, 1) + " мм"; document.getElementById("ceil-tv").textContent = f(t, 1) + " мм";
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var q = Math.round(H / t * 1e9) / 1e9, N = Math.ceil(q), full = Math.floor(q);
+    el("line", {x1: 40, y1: Y0, x2: 440, y2: Y0, style: "stroke: var(--md-stroke); stroke-width: 2"}, g);   // стол
+    for (var i = 0; i < N; i++) {
+      var y = Y0 - (i + 1) * t * PX, part = i >= full;
+      el("rect", {x: X0, y: y, width: WD, height: t * PX, style: "fill: " + (part ? "var(--md-hl)" : "var(--md-face)") + "; fill-opacity: " + (part ? 0.45 : 0.8) + "; stroke: var(--md-stroke); stroke-opacity: 0.4"}, g);
+      el("circle", {cx: X0 + WD + 14, cy: Y0 - (i + 0.5) * t * PX, r: 3.5, style: "fill: var(--md-plane)"}, g);
+    }
+    el("rect", {x: X0, y: Y0 - H * PX, width: WD, height: H * PX, style: "fill: none; stroke: var(--md-stroke); stroke-width: 2"}, g);   // модель
+    tx({x: X0 - 10, y: Y0 - H * PX + 4, "text-anchor": "end", "class": "svg-mono"}, "H = " + f(H, 1), g);
+    if (N > full) {
+      var rest = H - full * t, inside = (N - 0.5) * t < H;
+      tx({x: X0 + WD + 26, y: Y0 - (N - 0.5) * t * PX - 4, "class": "svg-muted"}, "неполный слой: " + f(rest, 2) + " мм из " + f(t, 1), g);
+      tx({x: X0 + WD + 26, y: Y0 - (N - 0.5) * t * PX + 12, "class": "svg-muted"}, inside ? "плоскость в модели: контур есть" : "плоскость выше модели: пусто", g);
+    }
+    tx({x: X0 + WD + 26, y: Y0 - 0.5 * t * PX + 4, "class": "svg-muted"}, "z = " + f(0.5 * t, 2) + " мм", g);
+    document.getElementById("ceil-stats").innerHTML = "<span class='stat'><i>H</i> / τ = " + f(H, 1) + " / " + f(t, 1) + " = " + f(q, 2) +
+      "</span><span class='stat'>полных слоев " + full + "</span><span class='stat'><i>N</i> = ⌈" + f(q, 2) + "⌉ = " + N + "</span>";
+  }
+  document.getElementById("ceil-form").addEventListener("input", draw);
+  draw();
+})();
+</script>

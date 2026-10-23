@@ -1,0 +1,60 @@
+{
+ "task_2-3_1.py": {
+  "tests": [
+   {
+    "note": "holed.stl из условия",
+    "output": "Граней у ребра -> число ребер: {1: 9, 2: 1641}"
+   },
+   {
+    "note": "на месте holed.stl исправная модель (finger.stl)",
+    "files": {
+     "holed.stl": "finger.stl"
+    },
+    "output": "Граней у ребра -> число ребер: {2: 1656}"
+   },
+   {
+    "note": "на месте holed.stl два куба (two_cubes.stl)",
+    "files": {
+     "holed.stl": "two_cubes.stl"
+    },
+    "output": "Граней у ребра -> число ребер: {2: 34, 4: 1}"
+   }
+  ]
+ },
+ "task_2-3_2.py": {
+  "tests": [
+   {
+    "note": "two_cubes.stl из условия",
+    "output": "Сингулярное ребро: (10.0, 10.0, 10.0) - (10.0, 10.0, 0.0), граней: 4"
+   },
+   {
+    "note": "на месте two_cubes.stl модель без сингулярных ребер (holed.stl): ничего не печатается",
+    "files": {
+     "two_cubes.stl": "holed.stl"
+    },
+    "output": ""
+   }
+  ]
+ },
+ "task_2-3_holes.py": {
+  "order": "any",
+  "tests": [
+   {
+    "note": "holed.stl из условия",
+    "output": "Дыр: 2\nДыра 1: ребер 3, периметр 5.75 мм\nДыра 2: ребер 6, периметр 12.95 мм"
+   },
+   {
+    "note": "на месте holed.stl модель без дыр (finger.stl)",
+    "files": {
+     "holed.stl": "finger.stl"
+    },
+    "output": "Дыр: 0"
+   },
+   {
+    "note": "функция holes: сколько вершин в контурах дыр holed.stl",
+    "call": "print(sorted(len(h) for h in holes(index_mesh(read_stl('holed.stl'))[1])))",
+    "output": "[3, 6]"
+   }
+  ]
+ }
+}

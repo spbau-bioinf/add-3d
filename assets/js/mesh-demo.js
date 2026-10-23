@@ -1,6 +1,8 @@
 /* Интерактивные демонстрации task 2-0a: нормаль, связность, срезы сетки. */
 (function () {
   "use strict";
+  // пока тянут мышью, текст страницы не выделяется (в Firefox одного preventDefault мало)
+  function noSelect(on) { document.documentElement.classList.toggle("no-select", on); if (on && window.getSelection) window.getSelection().removeAllRanges(); }
 
   var NS = "http://www.w3.org/2000/svg";
   function el(tag, attrs, parent) {
@@ -47,14 +49,14 @@
     };
     v.away = function (n) { var y1 = n[0] * Math.sin(v.yaw) + n[1] * Math.cos(v.yaw); return y1 * Math.cos(v.pitch) - n[2] * Math.sin(v.pitch) > 0; };
     var drag = null;
-    svg.addEventListener("pointerdown", function (e) { drag = {x: e.clientX, y: e.clientY, yaw: v.yaw, pitch: v.pitch}; });
+    svg.addEventListener("pointerdown", function (e) { e.preventDefault(); noSelect(true); drag = {x: e.clientX, y: e.clientY, yaw: v.yaw, pitch: v.pitch}; });   // при повороте не выделяется текст страницы
     window.addEventListener("pointermove", function (e) {
       if (!drag) return;
       v.yaw = drag.yaw - (e.clientX - drag.x) * 0.01;
       v.pitch = Math.max(-1.45, Math.min(1.45, drag.pitch + (e.clientY - drag.y) * 0.01));
       o.redraw();
     });
-    window.addEventListener("pointerup", function () { drag = null; });
+    window.addEventListener("pointerup", function () { if (drag) noSelect(false); drag = null; });
     var zin = o.zoom && document.getElementById(o.zoom), zout = zin && document.getElementById(o.zoom + "v");
     v.setZoom = function (k) { if (!zin) return; zin.value = k; v.zoom = zin.value / 100; zout.textContent = zin.value + "\u00a0%"; };
     if (zin) {
@@ -222,9 +224,9 @@
     O2 = [Math.max(-0.9, Math.min(3.8, Math.round(x * 10) / 10)), Math.max(-0.35, Math.min(2.4, Math.round(y * 10) / 10))];
     drawArea();
   }
-  a2.addEventListener("pointerdown", function (e) { aDrag = true; aPos(e); });
+  a2.addEventListener("pointerdown", function (e) { e.preventDefault(); noSelect(true); aDrag = true; aPos(e); });
   window.addEventListener("pointermove", function (e) { if (aDrag) aPos(e); });
-  window.addEventListener("pointerup", function () { aDrag = false; });
+  window.addEventListener("pointerup", function () { if (aDrag) noSelect(false); aDrag = false; });
   drawArea();
 
   document.getElementById("flip").addEventListener("click", function () { var f = F[sel], t = f[1]; f[1] = f[2]; f[2] = t; update(); });

@@ -1,0 +1,55 @@
+{%- comment -%}
+  Схема task 3-3: секущая плоскость z = const на кронштейне t_bracket.stl (вид сбоку) и ее сечение (вид сверху).
+  Грани — из файла t_bracket.stl; плоскость с правилом ε (раздел 2). Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-zconst">
+  <svg id="zc-svg" viewBox="0 0 480 230" role="img" aria-label="Слева кронштейн сбоку и горизонтальная секущая плоскость; справа сечение сверху: отрезки от пересеченных граней"></svg>
+  <div id="zc-stats"></div>
+  <form class="panel" id="zc-form">
+    <label>Высота плоскости <i>z</i> <input id="zc-z" type="range" min="1" max="21.5" step="0.5" value="10"> <output id="zc-zv">10,0 мм</output></label>
+  </form>
+  <div class="caption">Слева — кронштейн <code>t_bracket.stl</code> сбоку: стойка 12 × 12 × 18 мм, сверху перекладина 36 × 12 × 4 мм, ее выступы по 12 мм слева и справа от стойки — полки. Синяя линия — секущая плоскость: все ее точки на одной высоте <i>z</i>, отсюда запись <i>z</i> = const. Плоскость пересекает только грани, у которых есть вершины и выше, и ниже нее. Справа — то же сечение сверху: каждая пересеченная грань дает отрезок, концы отрезков — точки. Ниже 18 мм плоскость режет стойку (квадрат 12 × 12 мм), выше — перекладину (прямоугольник 36 × 12 мм).</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("zc-svg"); if (!svg) return;
+  var BRACKET = [[[12,0,0],[24,0,0],[24,0,18]],[[12,12,0],[24,12,18],[24,12,0]],[[12,0,0],[24,0,18],[12,0,18]],[[12,12,0],[12,12,18],[24,12,18]],[[36,0,22],[0,0,22],[0,0,18]],[[36,12,22],[0,12,18],[0,12,22]],[[36,0,22],[0,0,18],[12,0,18]],[[36,12,22],[12,12,18],[0,12,18]],[[36,0,22],[12,0,18],[24,0,18]],[[36,12,22],[24,12,18],[12,12,18]],[[36,0,22],[24,0,18],[36,0,18]],[[36,12,22],[36,12,18],[24,12,18]],[[12,0,0],[12,12,0],[24,12,0]],[[12,0,0],[24,12,0],[24,0,0]],[[24,0,0],[24,12,0],[24,12,18]],[[24,0,0],[24,12,18],[24,0,18]],[[24,0,18],[24,12,18],[36,12,18]],[[24,0,18],[36,12,18],[36,0,18]],[[36,0,18],[36,12,18],[36,12,22]],[[36,0,18],[36,12,22],[36,0,22]],[[36,0,22],[36,12,22],[0,12,22]],[[36,0,22],[0,12,22],[0,0,22]],[[0,0,22],[0,12,22],[0,12,18]],[[0,0,22],[0,12,18],[0,0,18]],[[0,0,18],[0,12,18],[12,12,18]],[[0,0,18],[12,12,18],[12,0,18]],[[12,0,18],[12,12,18],[12,12,0]],[[12,0,18],[12,12,0],[12,0,0]]];
+  var NS = "http://www.w3.org/2000/svg", EPS = 0.005, S = 7.5, X0 = 20, Y0 = 200, TX = 290, TY = 150;
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  function f(x, d) { return x.toFixed(d).replace(".", ","); }
+  var g = el("g", {}, svg);
+  function draw() {
+    var z = +document.getElementById("zc-z").value; document.getElementById("zc-zv").textContent = f(z, 1) + " мм";
+    var zp = Math.floor(Math.round(z / (2 * EPS) * 1e6) / 1e6) * 2 * EPS + EPS, segs = [];
+    BRACKET.forEach(function (tri) {
+      var pts = [];
+      for (var i = 0; i < 3; i++) {
+        var a = tri[i], b = tri[(i + 1) % 3], za = Math.round(a[2] / (2 * EPS)) * 2 * EPS, zb = Math.round(b[2] / (2 * EPS)) * 2 * EPS;
+        if ((za < zp) !== (zb < zp)) { var t = (zp - za) / (zb - za); pts.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]); }
+      }
+      if (pts.length === 2) segs.push(pts);
+    });
+    while (g.firstChild) g.removeChild(g.firstChild);
+    el("line", {x1: X0 - 10, y1: Y0, x2: X0 + 36 * S + 10, y2: Y0, style: "stroke: var(--md-stroke); stroke-width: 2"}, g);
+    el("polygon", {points: [[12, 0], [24, 0], [24, 18], [36, 18], [36, 22], [0, 22], [0, 18], [12, 18]].map(function (p) { return (X0 + p[0] * S) + "," + (Y0 - p[1] * S); }).join(" "), "class": "d-mface", style: "fill-opacity: 0.6; stroke: var(--md-stroke); stroke-width: 1.5"}, g);
+    tx({x: X0 + 18 * S, y: Y0 - (zp > 6 ? 3 : 14) * S, "text-anchor": "middle", "class": "svg-muted"}, "стойка", g);
+    tx({x: X0 + 6 * S, y: Y0 - 24 * S, "text-anchor": "middle", "class": "svg-muted"}, "полка", g);
+    tx({x: X0 + 30 * S, y: Y0 - 24 * S, "text-anchor": "middle", "class": "svg-muted"}, "полка", g);
+    el("line", {x1: X0 - 10, y1: Y0 - zp * S, x2: X0 + 36 * S + 10, y2: Y0 - zp * S, style: "stroke: var(--md-plane); stroke-width: 2.5"}, g);
+    tx({x: X0, y: Y0 - zp * S - 6, "class": "svg-mono"}, "z = " + f(zp, 3), g);
+    tx({x: TX + 12 * 6, y: 22, "text-anchor": "middle", "class": "svg-muted"}, "сечение сверху", g);
+    el("rect", {x: TX, y: TY - 12 * 6, width: 36 * 6, height: 12 * 6, style: "fill: none; stroke: var(--c-border); stroke-dasharray: 3 3"}, g);
+    segs.forEach(function (sg) {
+      el("line", {x1: TX + sg[0][0] * 6, y1: TY - sg[0][1] * 6, x2: TX + sg[1][0] * 6, y2: TY - sg[1][1] * 6, style: "stroke: var(--md-hl); stroke-width: 3; stroke-linecap: round"}, g);
+      sg.forEach(function (p) { el("circle", {cx: TX + p[0] * 6, cy: TY - p[1] * 6, r: 3, style: "fill: var(--md-stroke)"}, g); });
+    });
+    tx({x: TX, y: TY + 22, "class": "svg-muted"}, "пунктир — габарит 36 × 12 мм", g);
+    var stem = zp < 18;
+    document.getElementById("zc-stats").innerHTML = "<span class='stat'>пересечено граней: " + segs.length + " из 28</span><span class='stat'>отрезков: " + segs.length +
+      "</span><span class='stat'>контур: " + (segs.length ? (stem ? "квадрат стойки 12 × 12 мм" : "прямоугольник перекладины 36 × 12 мм") : "нет") + "</span>";
+  }
+  document.getElementById("zc-form").addEventListener("input", draw);
+  draw();
+})();
+</script>

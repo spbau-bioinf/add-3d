@@ -59,3 +59,4 @@ if __name__ == "__main__":
     open("square.gcode", "w").write(square_part())
     open("scaffold.gcode", "w").write(
         square_part(x0=95, y0=95, size=10, n_layers=20, infill=W / 1.2, outline=False))
+    print("Записаны square.gcode и scaffold.gcode")

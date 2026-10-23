@@ -26,6 +26,20 @@
 </head>
 <body>
   <a class="skip-link" href="#content">Перейти к содержанию</a>
+  {%- comment -%} Панель страницы: появляется, когда шапка уходит с экрана; заполняет settings.js (раздел 4) {%- endcomment %}
+  <div class="pbar" id="pbar"{% if work %} data-work="{{ page.work }}"{% endif %}>
+    <div class="pbar__left">
+      <button class="pbar__menu" type="button" aria-label="Меню" aria-controls="sidebar" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="pbar__label">
+        <span class="pbar__sub">{% if work %}Практика {{ page.work }}<span class="pbar__count"></span>{% elsif page.tool %}Инструменты{% endif %}</span>
+        <span class="pbar__title">{{ page.title | strip_html }}</span>
+      </div>
+    </div>
+    <div class="rings" aria-label="Страницы практики"></div>
+    <div class="pbar__tools"></div>
+    <div class="pbar__line" aria-hidden="true"><i></i></div>
+  </div>
+  <div class="menu-shade"></div>
 
   <div class="layout">
 
@@ -33,12 +47,15 @@
 
     <div class="page">
       <header class="page-header">
-        {% include theme-toggle.html %}
+        {% include hdr-tools.html %}
         <p class="page-header__kicker">{% if page.kicker %}{{ page.kicker }}{% else %}{{ work.title }} · {{ page.code }}{% endif %}</p>
         <h1 class="page-header__title">{{ page.title }}</h1>
       </header>
 
       <main id="content" class="content">
+{%- if work %}
+{% include page-tools.html %}
+{%- endif %}
 {%- comment -%}
   Обработка текста страницы:
   1) каждая таблица оборачивается в прокручиваемый блок;
@@ -87,5 +104,10 @@
   <script src="{{ root }}assets/js/pyrun.js" defer></script>
   <script src="{{ root }}assets/js/copycode.js" defer></script>
   <script src="{{ root }}assets/js/submenu.js" defer></script>
+  <script src="{{ root }}assets/js/gcheck.js" defer></script>
+  <script src="{{ root }}assets/js/search.js" defer></script>
+  <script src="{{ root }}assets/js/tasks-index.js" defer></script>
+  <script src="{{ root }}assets/js/settings.js" defer></script>
+  <script>window.ADD3D_FILES = [{% for f in site.static_files %}{% if f.path contains "/assets/files/" %}"{{ f.name }}",{% endif %}{% endfor %}];</script>
 </body>
 </html>

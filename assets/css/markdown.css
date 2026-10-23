@@ -145,6 +145,9 @@ div.highlighter-rouge[data-label]::before {
   vertical-align: top;
   border-bottom: 1px solid var(--c-border);
 }
+/* таблица с классом table-mid: первый столбец по центру по вертикали (короткие названия рядом с длинными пояснениями) */
+.content table.table-mid td:first-child, .content table.table-mid th:first-child { vertical-align: middle; }
+
 
 .content table thead th {
   font-size: 0.85rem;
@@ -171,7 +174,7 @@ div.highlighter-rouge[data-label]::before {
 
 .highlight .c, .highlight .c1, .highlight .cm, .highlight .ch,
 .highlight .cs, .highlight .cp, .highlight .cpf {
-  color: #6e7781;
+  color: #626a73;
   font-style: italic;
 }
 

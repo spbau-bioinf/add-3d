@@ -152,7 +152,7 @@ write_bin(f"{OUT}/bone_b.stl", "bone_b exported", tb)
 
 
 # встроенные модели для просмотрщика сеток (страницы, открытые с диска)
-keys = ["finger", "holed", "flipped", "two_cubes", "shells", "ring", "bone_a", "bone_b"]
+keys = ["finger", "holed", "flipped", "two_cubes", "shells", "ring", "bone_a", "bone_b", "scan_sphere"]
 files = {k: base64.b64encode(open(f"{OUT}/{k}.stl", "rb").read()).decode() for k in keys}
 js = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "js", "mesh-files.js")
 with open(js, "w") as f:

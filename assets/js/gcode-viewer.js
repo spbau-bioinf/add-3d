@@ -54,7 +54,10 @@
     for (var i = 0; i < Math.max(n, 1); i++) byLayer.push([]);
     M.segs.forEach(function (s) { if (s.layer >= 0 && s.layer < byLayer.length) byLayer[s.layer].push(s); });
     var ext = M.segs.filter(function (s) { return s.ext; });
-    var src = ext.length ? ext : M.segs;
+    // в файле слайсера на первом слое есть линия прочистки и юбка далеко от детали:
+    // при трех слоях и больше рамка вида строится по слоям со второго, иначе деталь мелкая и смещена
+    var upper = n > 2 ? ext.filter(function (s) { return s.layer > 0; }) : [];
+    var src = upper.length ? upper : ext.length ? ext : M.segs;
     if (src.length) {
       var b = {x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity};
       src.forEach(function (s) {
@@ -213,7 +216,8 @@
     ctx.stroke();
     ctx.fillStyle = C.muted; ctx.font = "12px sans-serif";
     ctx.fillText("масштаб Z ×" + fmt(zk, 0), 8, h - 8);
-    var lw = Math.max(1, Math.min(rw * sc * 0.85, 6));
+    var layerPx = (M.hLayer || 0.2) * zk * sc;                  // расстояние между слоями на экране
+    var lw = Math.max(1, Math.min(rw * sc * 0.85, layerPx * 0.9, 6));
     ctx.lineCap = "round"; ctx.lineJoin = "round";
     for (var k = 0; k < li; k++) strokeSegs(byLayer[k], byLayer[k].length, isExt, T, k % 2 ? C.alt : C.alt2, lw);
     strokeSegs(L, pr, isExt, T, C.road, lw);

@@ -7,7 +7,7 @@
   вне ссылки и не подчеркивается браузерами с принудительным подчеркиванием ссылок (Firefox, Zen).
   Так же устроен блок с названием сайта: ссылка — пустой слой поверх него.
 {%- endcomment -%}
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar__brand">
     <div class="sidebar__home">
       <span class="sidebar__brand-title">{{ site.brand_title }}</span>
@@ -15,6 +15,9 @@
       <a class="sidebar__home-link" href="{{ root | default: './' }}" aria-label="{{ site.brand_title }}: главная страница"></a>
     </div>
   </div>
+  {%- if page.work %}
+  <div class="rings sidebar__rings" aria-label="Страницы практики"></div>
+  {%- endif %}
   <nav class="menu" aria-label="Практические работы">
     <ul class="menu__list menu__list--groups">
 {%- for w in site.data.nav %}

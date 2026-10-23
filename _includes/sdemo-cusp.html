@@ -1,0 +1,21 @@
+{%- comment -%}
+  Демонстрация task 3-0a: высота ступеньки по граням при повороте модели. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg id="cu3d" viewBox="0 0 460 330" role="img" aria-label="Модель на столе принтера; цвет грани показывает высоту ступеньки: зеленый — нет ступени, желтый — ступенька равна толщине слоя"></svg>
+  <div id="custats"></div>
+  <form class="panel" id="cuform">
+    <label>Модель
+      <select id="cumodel">
+        <option value="finger" selected>фаланга finger.stl</option>
+        <option value="ramp">клин ramp.stl</option>
+        <option value="bracket">кронштейн t_bracket.stl</option>
+      </select>
+    </label>
+    <label>Наклон модели <input id="cutilt" type="range" min="0" max="90" step="5" value="0"> <output id="cutiltv">0°</output></label>
+    <label>Толщина слоя <input id="cul" type="range" min="0.1" max="0.3" step="0.05" value="0.2"> <output id="culv">0,20 мм</output></label>
+    <label>Масштаб <input id="cuzoom" type="range" min="50" max="300" step="10" value="100"> <output id="cuzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="cureset" type="button">Сбросить</button>
+  </form>
+  <div class="caption">Модель поворачивается мышью, колесо мыши или ползунок «Масштаб» меняют ее размер, кнопка «Сбросить» возвращает исходный вид и параметры. Цвет грани показывает высоту ступеньки <i>h</i> = <i>l</i> · |cos θ|: зеленый — ступени нет (вертикальная или горизонтальная грань), желтый — ступенька почти равна толщине слоя. Ползунок «Наклон модели» поворачивает модель вокруг горизонтальной оси: при 0° фаланга стоит, при 90° лежит. Под моделью — высота, число слоев и средняя ступенька с весом по площади граней. В круге справа вверху — разрез у «средней» грани, у которой |cos θ| равен среднему по модели, при текущем наклоне и толщине слоя: зеленое — слои, черная линия — поверхность модели, желтый отрезок — высота ступеньки <i>h</i>.</div>
+</div>

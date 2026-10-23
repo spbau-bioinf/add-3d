@@ -1,0 +1,28 @@
+{%- comment -%}
+  Демонстрация task 3-0a: грани, которым нужны поддержки, при разной ориентации и пороге. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg id="ov3d" viewBox="0 0 460 330" role="img" aria-label="Модель на столе принтера; красным выделены грани, обращенные вниз круче порога, под которыми нужны поддержки"></svg>
+  <div id="ovstats"></div>
+  <form class="panel" id="ovform">
+    <label>Модель
+      <select id="ovmodel">
+        <option value="bracket" selected>кронштейн t_bracket.stl</option>
+        <option value="finger">фаланга finger.stl</option>
+        <option value="ramp">клин ramp.stl</option>
+      </select>
+    </label>
+    <label>Вверх смотрит ось
+      <select id="ovup">
+        <option value="+Z" selected>+Z</option><option value="-Z">−Z</option>
+        <option value="+X">+X</option><option value="-X">−X</option>
+        <option value="+Y">+Y</option><option value="-Y">−Y</option>
+      </select>
+    </label>
+    <label>Порог нависания <input id="ovth" type="range" min="0" max="90" step="5" value="45"> <output id="ovthv">45°</output></label>
+    <label><input id="ovsup" type="checkbox" checked> показать поддержки</label>
+    <label>Масштаб <input id="ovzoom" type="range" min="50" max="300" step="10" value="100"> <output id="ovzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="ovreset" type="button">Сбросить</button>
+  </form>
+  <div class="caption">Модель показана снизу, чтобы были видны грани, обращенные вниз; она поворачивается мышью, колесо мыши или ползунок «Масштаб» меняют ее размер, кнопка «Сбросить» возвращает исходный вид и параметры. Красным выделены грани, нормаль которых смотрит вниз, а угол к горизонтали не больше порога: под ними нужны поддержки. Грани, лежащие на столе, не считаются. Розовые призмы — поддержки: каждая такая грань выдавлена вниз до стола. Объем поддержек оценен по этим призмам: площадь проекции грани на стол умножена на высоту ее центра. Поверните модель другой осью вверх или измените порог: призмы и их объем меняются вместе с ориентацией. Порог 0° означает «поддержки только под горизонтальными гранями», 90° — «под всеми гранями, обращенными вниз».</div>
+</div>

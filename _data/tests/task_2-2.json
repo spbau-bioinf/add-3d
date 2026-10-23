@@ -1,0 +1,50 @@
+{
+ "task_2-2_1.py": {
+  "tests": [
+   {
+    "note": "finger.stl из условия",
+    "output": "Записей вершин в STL: 3312 | уникальных вершин: 554\nКаждая вершина записана в среднем 5.98 раза, F / V = 1.99"
+   },
+   {
+    "note": "на месте finger.stl другая модель (ring.stl)",
+    "files": {
+     "finger.stl": "ring.stl"
+    },
+    "output": "Записей вершин в STL: 3456 | уникальных вершин: 576\nКаждая вершина записана в среднем 6.00 раза, F / V = 2.00"
+   }
+  ]
+ },
+ "task_2-2_2.py": {
+  "tests": [
+   {
+    "note": "модели из условия",
+    "output": "finger.stl: V - E + F = 2, род g = 0\nring.stl: V - E + F = 0, род g = 1"
+   },
+   {
+    "note": "модели поменяны местами",
+    "files": {
+     "finger.stl": "ring.stl",
+     "ring.stl": "finger.stl"
+    },
+    "output": "finger.stl: V - E + F = 0, род g = 1\nring.stl: V - E + F = 2, род g = 0"
+   }
+  ]
+ },
+ "task_2-2_euler.py": {
+  "tests": [
+   {
+    "note": "пять моделей из условия",
+    "output": "finger.stl     V= 554 E=1656 F=1104 V-E+F= 2  2E = 3F\nring.stl       V= 576 E=1728 F=1152 V-E+F= 0  2E = 3F\nholed.stl      V= 553 E=1650 F=1097 V-E+F= 0  2E != 3F: есть края или сингулярные ребра\nflipped.stl    V= 554 E=1656 F=1104 V-E+F= 2  2E = 3F\ntwo_cubes.stl  V=  14 E=  35 F=  24 V-E+F= 3  2E != 3F: есть края или сингулярные ребра"
+   },
+   {
+    "note": "другие модели под теми же именами",
+    "files": {
+     "finger.stl": "two_cubes.stl",
+     "holed.stl": "ring.stl",
+     "two_cubes.stl": "pyramid.stl"
+    },
+    "output": "finger.stl     V=  14 E=  35 F=  24 V-E+F= 3  2E != 3F: есть края или сингулярные ребра\nring.stl       V= 576 E=1728 F=1152 V-E+F= 0  2E = 3F\nholed.stl      V= 576 E=1728 F=1152 V-E+F= 0  2E = 3F\nflipped.stl    V= 554 E=1656 F=1104 V-E+F= 2  2E = 3F\ntwo_cubes.stl  V=   4 E=   6 F=   4 V-E+F= 2  2E = 3F"
+   }
+  ]
+ }
+}

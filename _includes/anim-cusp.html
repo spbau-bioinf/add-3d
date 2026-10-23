@@ -1,0 +1,73 @@
+{%- comment -%} Анимация высоты ступеньки (task 3-1, раздел 1): слои толщиной l под поверхностью с наклоном θ, h = l·|cos θ|. {%- endcomment -%}
+<div class="anim" id="anim-cusp">
+<svg viewBox="0 0 480 285" role="img" aria-label="Разрез детали: наклонная поверхность модели и ступени слоев под ней. Желтый отрезок — высота ступеньки, наибольшее расстояние от поверхности до слоев.">
+<defs>
+<marker id="acu-h" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="d-arrowhead" d="M0,0 L10,5 L0,10 z"/></marker>
+<clipPath id="acu-clip"><rect x="60" y="20" width="400" height="210"/></clipPath>
+</defs>
+<line class="d-arrow" x1="30" y1="225" x2="30" y2="40" marker-end="url(#acu-h)"/>
+<text class="d-text d-text--small" x="30" y="30" text-anchor="middle">z</text>
+<g clip-path="url(#acu-clip)">
+<g id="acu-steps"></g>
+<line id="acu-surf" class="d-medge" style="stroke-width: 2.5"/>
+<line id="acu-hl" style="stroke: #c79a1e; stroke-width: 4; stroke-linecap: round"/>
+</g>
+<text class="d-text d-text--small" x="240" y="256" text-anchor="middle">зеленое — уложенные слои; линия — поверхность модели;</text>
+<text class="d-text d-text--small" x="240" y="276" text-anchor="middle">желтый отрезок — высота ступеньки h</text>
+</svg>
+<div class="anim__panel">
+<label>Угол θ между нормалью и осью z: <input type="range" id="acu-th" min="0" max="90" step="5" value="30"> <output id="acu-thv">30°</output></label>
+<label>Толщина слоя l: <input type="range" id="acu-l" min="0.1" max="0.4" step="0.05" value="0.2"> <output id="acu-lv">0,20 мм</output></label>
+<div id="acu-out"></div>
+<button type="button" class="tool-btn" id="acu-pause">Пауза</button>
+</div>
+<p class="anim__caption">Разрез детали плоскостью, проходящей через ось z. Слои укладываются снизу вверх, у каждого вертикальный край, поэтому наклонная поверхность передается ступенями. Угол θ между нормалью поверхности и осью z равен наклону поверхности к горизонтали. При θ = 90° поверхность вертикальна, ступеней нет. Чем меньше θ, тем шире ступени и тем ближе высота ступеньки h = l·|cos θ| к толщине слоя. При θ = 0° поверхность параллельна слоям и совпадает с верхом слоя: по формуле Livesu et al. в этом случае h = 0.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-cusp"), gS = document.getElementById("acu-steps");
+  var surf = document.getElementById("acu-surf"), hl = document.getElementById("acu-hl");
+  var thIn = document.getElementById("acu-th"), lIn = document.getElementById("acu-l");
+  var thOut = document.getElementById("acu-thv"), lOut = document.getElementById("acu-lv"), out = document.getElementById("acu-out");
+  var NS = "http://www.w3.org/2000/svg", X0 = 60, Y0 = 225, PX = 100;    // 1 мм = 100 px
+  var paused = false, phase = 0, last = null, period = 6000;
+  function fmt(x, d) { return x.toFixed(d).replace(".", ","); }
+  function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+  function set(p) {
+    phase = p;
+    var th = +thIn.value, l = +lIn.value, L = l * PX, c = Math.cos(th * Math.PI / 180);
+    var flat = th === 0, vert = th === 90, run = flat ? 1e9 : (vert ? 0 : L / Math.tan(th * Math.PI / 180));
+    thOut.textContent = th + "°"; lOut.textContent = fmt(l, 2) + " мм";
+    var h = flat ? 0 : l * Math.abs(c);
+    out.innerHTML = "|cos θ| = " + fmt(Math.abs(c), 3) + "<br>h = " + (flat ? "0 (поверхность параллельна слою)" : fmt(l, 2) + " · " + fmt(Math.abs(c), 3) + " = " + fmt(h, 3) + " мм");
+    var K = flat ? 4 : Math.min(40, Math.ceil(205 / L)), shown = Math.max(1, Math.round(p * K * 1.25));
+    gS.innerHTML = "";
+    var top = Y0;
+    for (var k = 0; k < Math.min(K, shown); k++) {
+      var y = Y0 - (k + 1) * L, xr = flat ? 470 : X0 + (k + 1) * run;   // слой k кончается там, где поверхность на его верхней грани
+      gS.appendChild(el("rect", {x: X0, y: y, width: Math.max(0, xr - X0), height: L, "class": "d-mface", style: "fill-opacity: 0.55"}));
+      top = y;
+    }
+    if (flat) { surf.setAttribute("x1", X0); surf.setAttribute("y1", Y0 - 4 * L); surf.setAttribute("x2", 470); surf.setAttribute("y2", Y0 - 4 * L); }
+    else if (vert) { surf.setAttribute("x1", X0 + 120); surf.setAttribute("y1", Y0); surf.setAttribute("x2", X0 + 120); surf.setAttribute("y2", 20); }
+    else { surf.setAttribute("x1", X0); surf.setAttribute("y1", Y0); surf.setAttribute("x2", X0 + 2 * 205 / Math.tan(th * Math.PI / 180)); surf.setAttribute("y2", Y0 - 410); }
+    if (vert) {   // ступеней нет: слои до стенки
+      gS.innerHTML = "";
+      for (k = 0; k < Math.min(K, shown); k++) gS.appendChild(el("rect", {x: X0, y: Y0 - (k + 1) * L, width: 120, height: L, "class": "d-mface", style: "fill-opacity: 0.55"}));
+    }
+    // высота ступеньки: от нижнего угла первой ступени, лежащего вне поверхности, перпендикулярно к ней
+    if (!flat && !vert && shown >= 1) {
+      var ax = X0 + run, ay = Y0, ux = Math.cos(th * Math.PI / 180), uy = -Math.sin(th * Math.PI / 180);
+      var t = (ax - X0) * ux + (ay - Y0) * uy;
+      hl.setAttribute("x1", ax); hl.setAttribute("y1", ay); hl.setAttribute("x2", X0 + t * ux); hl.setAttribute("y2", Y0 + t * uy);
+      hl.style.display = "";
+    } else hl.style.display = "none";
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  thIn.addEventListener("input", function () { set(phase); });
+  lIn.addEventListener("input", function () { set(phase); });
+  var pb = document.getElementById("acu-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  set(0); requestAnimationFrame(frame);
+  box.__anim = {set: set, moving: function () { return [gS]; }};
+})();
+</script>

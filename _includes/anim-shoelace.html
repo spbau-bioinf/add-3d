@@ -1,0 +1,59 @@
+{%- comment -%} Анимация формулы шнурования (task 3-5, раздел 1): обход многоугольника, треугольники (O, pᵢ, pᵢ₊₁) с площадью со знаком. {%- endcomment -%}
+<div class="anim" id="anim-shoe">
+<svg viewBox="0 0 480 290" role="img" aria-label="Многоугольник и точка O. Для каждой стороны строится треугольник с вершиной O; зеленые треугольники прибавляют площадь, красные вычитают.">
+<g id="ash-tris"></g>
+<polygon id="ash-poly" class="d-medge" style="fill: none; stroke-width: 2.5"/>
+<g id="ash-move"><line id="ash-edge" style="stroke: #c79a1e; stroke-width: 5; stroke-linecap: round"/></g>
+<g id="ash-labels"></g>
+<circle cx="40" cy="225" r="4" class="d-mvert"/>
+<text class="d-text d-text--small" x="32" y="229" text-anchor="end">O</text>
+<text class="d-text d-text--small" x="240" y="264" text-anchor="middle">O — начало координат (0; 0); зеленый треугольник прибавляет</text>
+<text class="d-text d-text--small" x="240" y="282" text-anchor="middle">площадь, красный — вычитает</text>
+</svg>
+<div class="anim__panel">
+<label>Обход: <select id="ash-dir"><option value="ccw">против часовой стрелки</option><option value="cw">по часовой стрелке</option></select></label>
+<div id="ash-out" style="display: grid"></div>
+<button type="button" class="tool-btn" id="ash-pause">Пауза</button>
+</div>
+<p class="anim__caption">Буква L из задания 1 (30 × 40 мм), сдвинутая на 5 мм вправо, чтобы начало координат O оказалось вне ее. Для каждой стороны pᵢpᵢ₊₁ строится треугольник (O, pᵢ, pᵢ₊₁); его площадь со знаком (xᵢ yᵢ₊₁ − xᵢ₊₁ yᵢ) / 2 положительна, если обход O → pᵢ → pᵢ₊₁ идет против часовой стрелки, и отрицательна, если по часовой. Треугольники к дальним сторонам перекрывают и область вне фигуры, но ее вычитают треугольники к ближним сторонам. В сумме остается площадь фигуры: +600 мм² при обходе против часовой и −600 мм² по часовой.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-shoe"), NS = "http://www.w3.org/2000/svg";
+  var L = [[5, 0], [35, 0], [35, 10], [15, 10], [15, 40], [5, 40]], NAMES = ["p0", "p1", "p2", "p3", "p4", "p5"];
+  var sel = document.getElementById("ash-dir"), out = document.getElementById("ash-out");
+  var paused = false, phase = 0, last = null, period = 9000;
+  function X(x) { return 40 + x * 5.2; } function Y(y) { return 225 - y * 5.2; }
+  function el(t, a, s) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (s !== undefined) e.textContent = s; return e; }
+  function fmt(x) { return (x > 0 ? "+" : (x < 0 ? "−" : "")) + Math.abs(x).toFixed(0); }
+  function poly() { return sel.value === "ccw" ? L : L.slice().reverse(); }
+  function draw() {
+    var P = poly(), gL = document.getElementById("ash-labels"); gL.innerHTML = "";
+    document.getElementById("ash-poly").setAttribute("points", P.map(function (p) { return X(p[0]) + "," + Y(p[1]); }).join(" "));
+    L.forEach(function (p, i) {
+      var off = [[0, 18], [8, 16], [8, 4], [8, -10], [8, -6], [-8, -6]][i];   // подписи вне сторон фигуры
+      gL.appendChild(el("text", {x: X(p[0]) + off[0], y: Y(p[1]) + off[1], "text-anchor": off[0] < 0 ? "end" : (off[0] > 0 ? "start" : "middle"), "class": "d-text d-text--small"}, "(" + p[0] + "; " + p[1] + ")"));
+    });
+  }
+  function set(p) {
+    phase = p;
+    var P = poly(), n = P.length, k = Math.min(n, Math.floor(p * n * 1.2) + 1), sum = 0, gT = document.getElementById("ash-tris"), e = document.getElementById("ash-edge");
+    gT.innerHTML = "";
+    for (var i = 0; i < k; i++) {
+      var a = P[i], b = P[(i + 1) % n], s = (a[0] * b[1] - b[0] * a[1]) / 2;
+      sum += s;
+      gT.appendChild(el("polygon", {points: [X(0), Y(0), X(a[0]), Y(a[1]), X(b[0]), Y(b[1])].join(","), "class": s >= 0 ? "d-mface" : "d-mface d-mface--bad", style: "fill-opacity: 0.45"}));
+    }
+    var a2 = P[k - 1], b2 = P[k % n];
+    e.setAttribute("x1", X(a2[0])); e.setAttribute("y1", Y(a2[1])); e.setAttribute("x2", X(b2[0])); e.setAttribute("y2", Y(b2[1]));
+    var cur = (a2[0] * b2[1] - b2[0] * a2[1]) / 2;
+    var msg = "Сторона " + k + " из " + n + ": (" + a2[0] + "; " + a2[1] + ") → (" + b2[0] + "; " + b2[1] + "), треугольник " + fmt(cur) + " мм²<br>Сумма: " + fmt(sum) + " мм²" + (k === n ? " — площадь фигуры" : "");
+    out.innerHTML = "<span style='grid-area: 1 / 1'>" + msg + "</span><span style='grid-area: 1 / 1; visibility: hidden'>Сторона 6 из 6: (15; 40) → (15; 10), треугольник −300 мм²<br>Сумма: −600 мм² — площадь фигуры</span>";
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  sel.addEventListener("change", function () { draw(); set(phase); });
+  var pb = document.getElementById("ash-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  draw(); set(0); requestAnimationFrame(frame);
+  box.__anim = {set: set, moving: function () { return [document.getElementById("ash-move")]; }};
+})();
+</script>

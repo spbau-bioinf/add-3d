@@ -63,6 +63,7 @@
       });
       if (all) {
         status.textContent = "Все ответы верны.";
+        quiz.dispatchEvent(new CustomEvent("add3d:part", {bubbles: true}));   // прогресс (settings.js)
         out.textContent = lines.join("\n");
         result.hidden = false;
       } else {

@@ -1,0 +1,55 @@
+{%- comment -%} Анимация сборки контура (task 3-4, раздел 1): обход по словарю «точка → соседи» для сечения t_bracket.stl на высоте 10 мм. {%- endcomment -%}
+<div class="anim" id="anim-walk">
+<svg viewBox="0 0 480 260" role="img" aria-label="Слева сечение стойки кронштейна: восемь точек с буквами; справа словарь соседей. Обход идет от точки к соседу, которого еще не проходили.">
+<text class="d-text d-text--small" x="125" y="22" text-anchor="middle">сечение стойки на высоте 10 мм</text>
+<text class="d-text d-text--small" x="365" y="22" text-anchor="middle">словарь: точка → соседи</text>
+<g id="awk-segs"></g>
+<g id="awk-move"><g id="awk-path"></g><g id="awk-rowhl"></g></g>
+<g id="awk-pts"></g>
+<g id="awk-rows"></g>
+<text class="d-text d-text--small" x="240" y="250" text-anchor="middle">желтое — пройденный путь; жирным — текущая строка словаря</text>
+</svg>
+<div class="anim__panel">
+<div id="awk-out" style="display: grid"></div>
+<button type="button" class="tool-btn" id="awk-pause">Пауза</button>
+</div>
+<p class="anim__caption">Сечение стойки кронштейна <code>t_bracket.stl</code> на высоте 10 мм дает 8 отрезков: каждая стенка разбита на два треугольника, и каждый треугольник дает свой отрезок. В словаре у каждой точки два соседа. Обход начинается с точки a и ее первого соседа b; на каждом шаге из двух соседей текущей точки берется тот, кого еще не проходили. Контур замыкается, когда следующим оказывается начальная точка. Каждая точка просматривается один раз, поэтому время обхода пропорционально числу отрезков.</p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById("anim-walk"), NS = "http://www.w3.org/2000/svg";
+  var P = {a: [24, 0], b: [18.67, 0], c: [18.67, 12], d: [24, 12], e: [12, 0], f: [12, 12], g: [24, 6.67], h: [12, 5.33]};
+  var NB = {a: "bg", b: "ae", c: "df", d: "cg", e: "bh", f: "ch", g: "da", h: "fe"}, ORDER = "abcdefgh", WALK = "abehfcdga";
+  var paused = false, phase = 0, last = null, period = 9000, out = document.getElementById("awk-out");
+  function X(x) { return 50 + (x - 12) * 13; } function Y(y) { return 205 - y * 13; }
+  function el(t, a, s) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (s !== undefined) e.textContent = s; return e; }
+  var gS = document.getElementById("awk-segs"), gP = document.getElementById("awk-pts"), gR = document.getElementById("awk-rows");
+  ORDER.split("").forEach(function (k, i) {
+    NB[k].split("").forEach(function (m) { if (k < m) gS.appendChild(el("line", {x1: X(P[k][0]), y1: Y(P[k][1]), x2: X(P[m][0]), y2: Y(P[m][1]), "class": "d-medge"})); });
+    gP.appendChild(el("circle", {cx: X(P[k][0]), cy: Y(P[k][1]), r: 4, "class": "d-mvert"}));
+    var dx = P[k][0] === 12 ? -18 : (P[k][0] === 24 ? 18 : 0), dy = P[k][1] === 0 ? 26 : (P[k][1] === 12 ? -15 : 4);
+    gP.appendChild(el("text", {x: X(P[k][0]) + dx, y: Y(P[k][1]) + dy, "text-anchor": "middle", "class": "d-text d-text--small"}, k));
+    gR.appendChild(el("text", {x: 300, y: 52 + i * 22, "class": "d-text d-text--mono"}, k + " → " + NB[k][0] + ", " + NB[k][1]));
+  });
+  function set(p) {
+    phase = p;
+    var n = Math.min(WALK.length - 1, Math.floor(p * WALK.length * 1.15)), gPath = document.getElementById("awk-path"), gH = document.getElementById("awk-rowhl");
+    gPath.innerHTML = ""; gH.innerHTML = "";
+    for (var i = 1; i <= n; i++) {
+      var a = P[WALK[i - 1]], b = P[WALK[i]];
+      gPath.appendChild(el("line", {x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), style: "stroke: #c79a1e; stroke-width: 6; stroke-linecap: round; opacity: 0.85"}));
+    }
+    var cur = WALK[n], row = ORDER.indexOf(cur);
+    Array.prototype.forEach.call(gR.children, function (t, k) { t.style.fontWeight = k === row ? "700" : ""; t.style.fill = k === row ? "#b07d00" : ""; });   // текущая строка словаря
+    gH.appendChild(el("circle", {cx: X(P[cur][0]), cy: Y(P[cur][1]), r: 7, style: "fill: none; stroke: #c79a1e; stroke-width: 3"}));
+    var msg = n === 0 ? "Начало: точка a, первый сосед b, второй сосед g станет последней точкой" :
+      (n === WALK.length - 1 ? "Следующая точка — снова a: контур замкнут, 8 точек" :
+      "Точка " + cur + ": соседи " + NB[cur][0] + " и " + NB[cur][1] + ", дальше — " + WALK[n + 1]);
+    out.innerHTML = "<span style='grid-area: 1 / 1'>" + msg + "</span><span style='grid-area: 1 / 1; visibility: hidden'>Начало: точка a, первый сосед b, второй сосед g станет последней точкой</span>";
+  }
+  function frame(t) { if (!paused) { if (last !== null) phase = (phase + (t - last) / period) % 1; set(phase); } last = t; requestAnimationFrame(frame); }
+  var pb = document.getElementById("awk-pause"); pb.addEventListener("click", function () { paused = !paused; pb.textContent = paused ? "Продолжить" : "Пауза"; });
+  set(0); requestAnimationFrame(frame);
+  box.__anim = {set: set, moving: function () { return [document.getElementById("awk-move")]; }};
+})();
+</script>

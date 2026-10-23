@@ -1,0 +1,32 @@
+{%- comment -%}
+  Демонстрация task 3-0a: сборка контура сечения по словарю «точка → соседи». Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo">
+  <svg id="lp3d" viewBox="0 0 460 240" role="img" aria-label="Кронштейн t_bracket.stl на столе и секущая плоскость; желтым — отрезки сечения на выбранной высоте"></svg>
+  <svg id="lp2d" viewBox="0 0 480 215" role="img" aria-label="Сечение кронштейна плоскостью, вид сверху: отрезки, точки с буквами и путь обхода, выделенный желтым"></svg>
+  <div class="grid2">
+    <div id="lptab"></div>
+    <div id="lplog" class="log"></div>
+  </div>
+  <div class="panel">
+    <label>Высота плоскости
+      <select id="lpz">
+        <option value="10">10 мм (стойка)</option>
+        <option value="18">18 мм (низ полок, правило ε)</option>
+        <option value="20" selected>20 мм (полки)</option>
+      </select>
+    </label>
+    <label>Сетка
+      <select id="lpmode">
+        <option value="ok" selected>корректная</option>
+        <option value="hole">удалена одна грань (дыра)</option>
+      </select>
+    </label>
+    <button class="tool-btn" id="lpstep" type="button">Шаг</button>
+    <button class="tool-btn" id="lpreset" type="button">Сначала</button>
+    <button class="tool-btn" id="lpplay" type="button">Пуск</button>
+    <label>Масштаб <input id="lpzoom" type="range" min="50" max="300" step="10" value="100"> <output id="lpzoomv">100&nbsp;%</output></label>
+    <button class="tool-btn" id="lpall" type="button">Сбросить</button>
+  </div>
+  <div class="caption">Вверху — кронштейн <code>t_bracket.stl</code> и секущая плоскость на выбранной высоте; модель поворачивается мышью, колесо мыши или ползунок «Масштаб» меняют ее размер, «Сбросить» возвращает исходный вид, высоту 20 мм и корректную сетку, «Сначала» — только начало шагов. Внизу — то же сечение сверху. Пунктир — отрезки, которые шаг 2 еще не передал; сплошные линии — отрезки, уже записанные в таблицу. Сначала каждый отрезок записывается в таблицу дважды: его конец <i>u</i> получает соседа <i>v</i>, конец <i>v</i> — соседа <i>u</i>. Затем обход: от начальной точки к соседу, от него к соседу, которого еще не проходили, и так до возврата в начало. Желтым выделен пройденный путь, в таблице — пройденные точки и текущая точка. В режиме «дыра» один отрезок пропал, у двух точек остался один сосед, и обход дает незамкнутую ломаную.</div>
+</div>

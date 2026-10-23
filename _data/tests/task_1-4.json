@@ -1,0 +1,12 @@
+{
+ "task_1-4_1.py": {
+  "tests": [
+   {
+    "note": "три файла плотностей: слои, нить, путь печати, холостые по stats.py",
+    "call": "from stats import gcode_stats\nfor name in (\"square_10.gcode\", \"square_20.gcode\", \"square_80.gcode\"):\n    st = gcode_stats(name)\n    print(name, st['слоев'], st['нить, мм'], st['путь печати, м'], st['холостые, м'])",
+    "output": "square_10.gcode 10 58.0 1.74 0.59\nsquare_20.gcode 10 89.9 2.7 0.62\nsquare_80.gcode 10 268.7 8.08 0.62"
+   }
+  ],
+  "single": "программа пишет три файла по плотностям из условия; других данных у задания нет, тест проверяет сами файлы по stats.py"
+ }
+}

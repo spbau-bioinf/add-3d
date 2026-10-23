@@ -1,0 +1,34 @@
+{
+ "task_1-6_1.py": {
+  "tests": [
+   {
+    "note": "файлы из условия",
+    "output": "файл             слоев  нить, мм  масса, г\nsquare.gcode        10      89.9      0.27\nscaffold.gcode      20      59.9      0.18"
+   },
+   {
+    "note": "содержимое файлов поменяно местами",
+    "files": {
+     "square.gcode": "scaffold.gcode",
+     "scaffold.gcode": "square.gcode"
+    },
+    "output": "файл             слоев  нить, мм  масса, г\nsquare.gcode        20      59.9      0.18\nscaffold.gcode      10      89.9      0.27"
+   }
+  ]
+ },
+ "task_1-6_2.py": {
+  "tests": [
+   {
+    "note": "файлы из условия",
+    "output": "square.gcode: 1.8 мин без учета разгона и торможения\nscaffold.gcode: 1.1 мин без учета разгона и торможения"
+   },
+   {
+    "note": "содержимое файлов поменяно местами",
+    "files": {
+     "square.gcode": "scaffold.gcode",
+     "scaffold.gcode": "square.gcode"
+    },
+    "output": "square.gcode: 1.1 мин без учета разгона и торможения\nscaffold.gcode: 1.8 мин без учета разгона и торможения"
+   }
+  ]
+ }
+}

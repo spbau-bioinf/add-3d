@@ -1,0 +1,54 @@
+{%- comment -%}
+  Схема task 3-0, раздел 4: сколько операций нужно на шагах 2 и 3 простым перебором и алгоритмами Minetto et al.
+  Числа n, k, m — Table 1 (равномерное разбиение), Minetto et al., 2017, p. 7. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-cost">
+  <svg id="cost-svg" viewBox="0 0 480 250" role="img" aria-label="Число операций на шаге пересечений и на шаге сборки контуров: простой перебор и алгоритмы Minetto et al., логарифмическая шкала"></svg>
+  <div id="cost-stats"></div>
+  <form class="panel" id="cost-form">
+    <label>Модель из Table 1
+      <select id="cost-model">
+        <option value="femur">бедренная кость (Femur)</option>
+        <option value="liver">печень (Liver)</option>
+        <option value="skull" selected>череп (Skull)</option>
+      </select>
+    </label>
+  </form>
+  <div class="caption">Длина полосы — число операций на логарифмической шкале: каждое деление в 10 раз больше предыдущего. Оранжевые полосы — простой перебор, синие — алгоритмы Minetto et al. Числа модели — из Table 1 статьи (равномерное разбиение): <i>n</i> треугольников, <i>k</i> плоскостей, <i>m</i> отрезков во всех сечениях. Это оценки порядка величины без постоянных множителей, а не измеренное время.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("cost-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  var M = {femur: {n: 42150, k: 3155, m: 1180994}, liver: {n: 38142, k: 6242, m: 2341955}, skull: {n: 16668257, k: 4680, m: 182441957}};
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  function sup(e) { return String(e).split("").map(function (d) { return SUP[+d]; }).join(""); }
+  function sci(x) { var e = Math.floor(Math.log10(x)), v = x / Math.pow(10, e); return v.toFixed(1).replace(".", ",") + " · 10" + sup(e); }
+  function grp(x) { return String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
+  var L0 = 5, L1 = 13, X0 = 20, X1 = 460;
+  function X(v) { return X0 + (Math.log10(v) - L0) / (L1 - L0) * (X1 - X0); }
+  var g = el("g", {}, svg);
+  function draw() {
+    var d = M[document.getElementById("cost-model").value], n = d.n, k = d.k, m = d.m, q = m / k;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    for (var e = L0; e <= L1; e++) {   // шкала: деления 10^5 … 10^13
+      el("line", {x1: X(Math.pow(10, e)), y1: 18, x2: X(Math.pow(10, e)), y2: 222, style: "stroke: var(--c-border); stroke-width: 1"}, g);
+      tx({x: X(Math.pow(10, e)), y: 240, "text-anchor": "middle", "class": "svg-muted"}, "10" + sup(e), g);
+    }
+    var rows = [["шаг 2, перебор пар: k · n", k * n, "var(--md-p1)"],
+                ["шаг 2, Minetto et al.: n + k + m", n + k + m, "var(--md-p0)"],
+                ["шаг 3, перебор отрезков: m² / (2k)", m * m / (2 * k), "var(--md-p1)"],
+                ["шаг 3, хеш-таблица: m", m, "var(--md-p0)"]];
+    rows.forEach(function (r, i) {
+      var y = 36 + i * 50;
+      tx({x: X0, y: y - 6, "class": "svg-mono"}, r[0] + " ≈ " + sci(r[1]), g);
+      el("rect", {x: X0, y: y, width: Math.max(2, X(r[1]) - X0), height: 16, rx: 2, style: "fill: " + r[2] + "; fill-opacity: 0.75"}, g);
+    });
+    document.getElementById("cost-stats").innerHTML = "<span class='stat'><i>n</i> = " + grp(n) + "</span><span class='stat'><i>k</i> = " + grp(k) +
+      "</span><span class='stat'><i>m</i> = " + grp(m) + "</span><span class='stat'>в одном сечении в среднем <i>q</i> = <i>m</i> / <i>k</i> ≈ " + grp(q) + " отрезков</span>";
+  }
+  document.getElementById("cost-form").addEventListener("change", draw);
+  draw();
+})();
+</script>

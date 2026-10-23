@@ -42,21 +42,30 @@
     });
     box.appendChild(ul);
   }
-  // текущее задание при прокрутке: последнее задание, прошедшее линию на трети экрана.
-  // Разделы не подсвечиваются. После щелчка по пункту выделение закреплено за ним,
-  // пока идет плавная прокрутка: иначе оно мигает на пунктах, которые проезжают мимо.
+  // текущий раздел и текущее задание при прокрутке: последние, прошедшие линию на трети экрана
+  // (раздел — класс is-sec, задание — is-current). После щелчка по заданию выделение закреплено
+  // за ним, пока идет плавная прокрутка: иначе оно мигает на пунктах, которые проезжают мимо.
   var links = Array.prototype.slice.call(box.querySelectorAll(".submenu__link--task")), targets = [];
   links.forEach(function (a) { var el = document.getElementById(a.dataset.href.slice(1)); if (el) targets.push([el, a]); });
+  var secLinks = Array.prototype.slice.call(box.querySelectorAll(".submenu__link:not(.submenu__link--task)")), secs = [];
+  secLinks.forEach(function (a) { var el = document.getElementById(a.dataset.href.slice(1)); if (el) secs.push([el, a]); });
   var ticking = false, lockUntil = 0, locked = null;
   function show(a) { links.forEach(function (l) { l.classList.toggle("is-current", l === a); }); }
+  function last(list) {
+    var line = window.innerHeight * 0.3, best = null;
+    list.forEach(function (p) { var top = p[0].getBoundingClientRect().top; if (top <= line && (best === null || top > best[0].getBoundingClientRect().top)) best = p; });
+    return best ? best[1] : null;
+  }
   function update() {
     ticking = false;
+    var sec = last(secs); secLinks.forEach(function (l) { l.classList.toggle("is-sec", l === sec); });
     if (Date.now() < lockUntil) { show(locked); return; }
-    var line = window.innerHeight * 0.3, best = null;
-    targets.forEach(function (p) { var top = p[0].getBoundingClientRect().top; if (top <= line && (best === null || top > best[0].getBoundingClientRect().top)) best = p; });
-    show(best ? best[1] : null);
+    show(last(targets));
   }
-  if (targets.length) {
+  // боковое меню длиннее окна: текущая страница видна сразу, без прокрутки меню вручную
+  var side = box.closest(".sidebar"), cur = side && side.querySelector(".menu__link--current");
+  if (cur && side.scrollHeight > side.clientHeight) side.scrollTop = Math.max(0, cur.offsetTop - side.clientHeight / 3);
+  if (targets.length || secs.length) {
     window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, {passive: true});
     window.addEventListener("resize", update);
     box.querySelectorAll(".submenu__hit").forEach(function (hit) {

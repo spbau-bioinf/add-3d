@@ -9,7 +9,7 @@ import base64, re, sys
 from pathlib import Path
 
 repo = Path(__file__).resolve().parent.parent
-fix, bad, need = "--fix" in sys.argv, 0, {}
+fix, bad, need = "--fix" in sys.argv, 0, {"gen.py": "pymods", "stats.py": "pymods"}   # модули по умолчанию (_includes/pyrun-modules.html)
 for p in repo.glob("**/*.md"):
     if "_site" in p.parts or "vendor" in p.parts: continue
     s = p.read_text(encoding="utf-8")

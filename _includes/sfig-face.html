@@ -1,0 +1,56 @@
+{%- comment -%}
+  Схема task 3-2, разделы 2–3: грань, обращенная вниз, угол к горизонтали β, порог α и призма поддержки до стола.
+  Грань 20 × 10 мм (площадь 200 мм², как наклонная грань клина ramp.stl). Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-face">
+  <svg id="face-svg" viewBox="0 0 480 270" role="img" aria-label="Вид сбоку: грань, обращенная вниз, под углом β к горизонтали, ее нормаль и призма поддержки до стола"></svg>
+  <div id="face-stats"></div>
+  <form class="panel" id="face-form">
+    <label>Угол грани к горизонтали β <input id="face-b" type="range" min="0" max="90" step="5" value="30"> <output id="face-bv">30°</output></label>
+    <label>Порог α <input id="face-a" type="range" min="0" max="90" step="5" value="45"> <output id="face-av">45°</output></label>
+    <label>Высота центра грани <input id="face-z" type="range" min="12" max="22" step="1" value="16"> <output id="face-zv">16 мм</output></label>
+  </form>
+  <div class="caption">Вид сбоку на грань размером 20 × 10 мм (площадь 200 мм²), которая смотрит вниз — как нижняя сторона нависающей части детали. Черный отрезок — грань, синяя стрелка — ее нормаль <b>n</b>, пунктир — горизонталь, дуга — угол β грани к горизонтали; этот же угол нормаль составляет с направлением вниз, поэтому −<i>n</i><sub>z</sub> = cos β. Если β не больше порога α, грань красная и под ней нужна поддержка: розовая призма от грани до стола. Ее основание — проекция грани на стол длиной 20 · cos β, высота — высота центра грани, поэтому объем <i>V</i> = <i>A</i> · (−<i>n</i><sub>z</sub>) · <i>z</i><sub>c</sub>.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("face-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", S = 9, Y0 = 245, CX = 230, A = 20, WD = 10;   // 1 мм = 9 px
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  function f(x, d) { return x.toFixed(d).replace(".", ","); }
+  var defs = el("defs", {}, svg), mk = el("marker", {id: "face-ah", viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto"}, defs);
+  el("path", {d: "M0,0 L10,5 L0,10 z", style: "fill: var(--md-normal)"}, mk);
+  var g = el("g", {}, svg);
+  function draw() {
+    var b = +document.getElementById("face-b").value, al = +document.getElementById("face-a").value, zc = +document.getElementById("face-z").value;
+    document.getElementById("face-bv").textContent = b + "°"; document.getElementById("face-av").textContent = al + "°"; document.getElementById("face-zv").textContent = zc + " мм";
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var rb = b * Math.PI / 180, c = Math.cos(rb), s = Math.sin(rb), need = c >= Math.cos(al * Math.PI / 180) - 1e-9;
+    var yc = Y0 - zc * S, h = A / 2 * S, x1 = CX - h * c, y1 = yc + h * s, x2 = CX + h * c, y2 = yc - h * s;   // грань идет вверх вправо
+    el("line", {x1: 30, y1: Y0, x2: 450, y2: Y0, style: "stroke: var(--md-stroke); stroke-width: 2"}, g);
+    tx({x: 445, y: Y0 + 18, "text-anchor": "end", "class": "svg-muted"}, "стол, z = 0", g);
+    el("polygon", {points: [x1, y1, x2, y2, x2, Y0, x1, Y0].join(" "), style: need ? "fill: var(--md-normal-bad); fill-opacity: 0.16; stroke: var(--md-normal-bad); stroke-opacity: 0.6" : "fill: none; stroke: var(--c-muted); stroke-dasharray: 4 4"}, g);
+    el("line", {x1: x1, y1: Y0, x2: x2, y2: Y0, style: "stroke: var(--md-hl); stroke-width: 5; stroke-linecap: round"}, g);   // проекция на стол
+    el("line", {x1: x1 - 40, y1: y1, x2: x2 + 30, y2: y1, style: "stroke: var(--c-muted); stroke-dasharray: 5 4"}, g);   // горизонталь
+    if (b > 0) {   // дуга угла β у нижнего конца грани
+      var r = 34, ex = x1 + r * c, ey = y1 - r * s;
+      el("path", {d: "M" + (x1 + r) + "," + y1 + " A" + r + "," + r + " 0 0,0 " + ex.toFixed(1) + "," + ey.toFixed(1), style: "fill: none; stroke: var(--md-stroke)"}, g);
+      tx({x: x1 + r + 6, y: y1 - 6, "class": "svg-mono"}, "β", g);
+    }
+    el("line", {x1: x1, y1: y1, x2: x2, y2: y2, style: "stroke: " + (need ? "var(--md-normal-bad)" : "var(--md-stroke)") + "; stroke-width: 4; stroke-linecap: round"}, g);
+    var nx = s, ny = c;   // нормаль вниз: в координатах экрана y растет вниз
+    el("line", {x1: CX, y1: yc, x2: CX + 42 * nx, y2: yc + 42 * ny, style: "stroke: var(--md-normal); stroke-width: 2.5", "marker-end": "url(#face-ah)"}, g);
+    tx({x: CX + 46 * nx + 6, y: yc + 46 * ny + 4, "class": "svg-mono"}, "n", g);
+    el("line", {x1: CX, y1: yc, x2: CX, y2: Y0, style: "stroke: var(--c-muted); stroke-width: 1"}, g);
+    tx({x: CX - 6, y: (yc + Y0) / 2, "text-anchor": "end", "class": "svg-muted"}, "zc = " + zc, g);
+    var proj = A * c, V = A * WD * c * zc;
+    document.getElementById("face-stats").innerHTML = "<span class='stat'>−<i>n</i><sub>z</sub> = cos " + b + "° = " + f(c, 3) + "</span><span class='stat'>cos α = " + f(Math.cos(al * Math.PI / 180), 3) + "</span>" +
+      "<span class='stat'>" + (need ? "β ≤ α: нужна поддержка" : "β > α: поддержка не нужна") + "</span>" +
+      "<span class='stat'>проекция 20 · " + f(c, 3) + " = " + f(proj, 1) + " мм</span>" +
+      (need ? "<span class='stat'><i>V</i> = 200 · " + f(c, 3) + " · " + zc + " = " + f(V, 0) + " мм³</span>" : "");
+  }
+  document.getElementById("face-form").addEventListener("input", draw);
+  draw();
+})();
+</script>
