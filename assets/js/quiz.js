@@ -39,8 +39,17 @@
     });
     var btn = quiz.querySelector(".quiz__check"), status = quiz.querySelector(".quiz__status");
     var result = quiz.querySelector(".quiz__result"), out = quiz.querySelector(".quiz__comment");
+    // data-sign: фамилия, дата и число проверок попадают в первую строку результата (тест сдается файлом)
+    var sign = null, tries = 0;
+    if (quiz.hasAttribute("data-sign")) {
+      var sp = document.createElement("p"); sp.className = "quiz__sign"; sp.textContent = "Фамилия и инициалы: ";
+      sign = document.createElement("input"); sign.type = "text"; sign.maxLength = 60;
+      sign.setAttribute("aria-label", "Фамилия и инициалы");
+      sp.appendChild(sign); btn.parentNode.parentNode.insertBefore(sp, btn.parentNode);
+    }
     btn.addEventListener("click", function () {
       var lines = [], all = true, missing = 0;
+      tries++;
       Array.prototype.forEach.call(qs, function (q) {
         Array.prototype.forEach.call(q.querySelectorAll("label"), function (l) { l.classList.remove("is-ok", "is-bad"); });
         var exp = q.querySelector(".quiz__exp"), why = q.querySelector(".quiz__exp--why");
@@ -61,8 +70,10 @@
         lines.push(wrap(question, mark + " ", 78));
         lines.push(wrap(answer, mark + "   ", 78));
       });
+      var who = sign ? sign.value.trim() : "";
+      if (all && sign) lines.unshift(mark + " " + (who || "фамилия не указана") + "; " + new Date().toLocaleString("ru-RU") + "; проверок: " + tries);
       if (all) {
-        status.textContent = "Все ответы верны.";
+        status.textContent = sign && !who ? "Все ответы верны. Впишите фамилию и инициалы и нажмите «Проверить» еще раз." : "Все ответы верны.";
         quiz.dispatchEvent(new CustomEvent("add3d:part", {bubbles: true}));   // прогресс (settings.js)
         out.textContent = lines.join("\n");
         result.hidden = false;

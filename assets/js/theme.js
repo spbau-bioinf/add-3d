@@ -2,7 +2,7 @@
    Подключается в <head> без defer, чтобы атрибуты и цвета стояли до отрисовки.
 
    Настройка   значения (первое — по умолчанию)        что делает
-   theme       light, dark                              data-theme="dark" у <html>
+   theme       dark (по умолчанию), light               data-theme="dark" у <html>
    pl, pd      default или ключ профиля из PALETTES      цветовой профиль для светлой (pl) и темной (pd) темы:
                                                         переменные цветов ставятся в style у <html>
    theory      full, brief                              data-theory="brief": блоки .th-full скрыты («Кратко»)
@@ -48,7 +48,8 @@
   function valid(k, v) { return OPTS[k].indexOf(v) >= 0; }
   function stored(k) { try { return localStorage.getItem("add3d-" + k); } catch (e) { return null; } }
   function store(k, v) { try { localStorage.setItem("add3d-" + k, v); } catch (e) { /* хранилище недоступно */ } }
-  function current(k) { return vals[k] || OPTS[k][0]; }
+  function dflt(k) { return k === "theme" ? "dark" : OPTS[k][0]; }   // без сохраненного выбора сайт открывается в темной теме
+  function current(k) { return vals[k] || dflt(k); }
   function paint() {                                               // профиль текущей темы
     var key = current(current("theme") === "dark" ? "pd" : "pl"), p = null;
     PALETTES.forEach(function (x) { if (x[0] === key) p = x; });
@@ -101,7 +102,7 @@
   Object.keys(OPTS).forEach(function (k) {
     var v = params && params.get(k);
     if (v && valid(k, v)) { store(k, v); apply(k, v); clean = true; }
-    else if (valid(k, stored(k))) apply(k, stored(k));
+    else apply(k, valid(k, stored(k)) ? stored(k) : dflt(k));
   });
   paint();
   if (clean) {
@@ -119,7 +120,7 @@
   window.add3dSetting = set;
   window.add3dGet = current;
   window.add3dResetSettings = function () {
-    Object.keys(OPTS).forEach(function (k) { try { localStorage.removeItem("add3d-" + k); } catch (e) { /* нет хранилища */ } apply(k, OPTS[k][0]); });
+    Object.keys(OPTS).forEach(function (k) { try { localStorage.removeItem("add3d-" + k); } catch (e) { /* нет хранилища */ } apply(k, dflt(k)); });
     paint(); mark(); document.dispatchEvent(new CustomEvent("viewchange", {detail: {}}));
   };
   function mark() {                                                // нажатые кнопки групп

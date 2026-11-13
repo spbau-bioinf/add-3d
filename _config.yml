@@ -47,6 +47,9 @@ tools:
   - url: mesh-viewer.html
     code: "tool"
     title: "Просмотрщик сеток"
+  - url: stl-check.html
+    code: "tool"
+    title: "Проверка STL"
   - url: pycheck.html
     code: "tool"
     title: "Проверка кода Python"

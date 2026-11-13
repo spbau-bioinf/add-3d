@@ -62,6 +62,12 @@ a.tag--ext:hover {
   margin: 0 auto;
 }
 
+.figure-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .figure-src__caption {
   margin-top: 0.6rem;
   font-size: 0.9rem;
@@ -712,3 +718,20 @@ a.tag--ext:hover {
 .demo__out .gv__stat {
   min-height: 4.2rem;
 }
+/* Панель управления роликом (assets/js/video-speed.js): цвета темы, чтобы читалась в любой палитре */
+.vspeed { background: var(--c-bg); }
+.vspeed video { cursor: pointer; }
+.vspeed__bar { display: flex; align-items: center; gap: 10px; padding: 6px 8px; color: var(--c-text); background: var(--c-bg-soft);
+  border: 1px solid var(--c-border); border-top: 0; font-size: 0.9rem; }
+.vspeed__btn { min-width: 36px; min-height: 32px; padding: 2px 8px; font: inherit; color: var(--c-text); background: var(--c-bg);
+  border: 1px solid var(--c-border); border-radius: 6px; cursor: pointer; }
+.vspeed__btn:hover, .vspeed__btn:focus-visible, .vspeed__rate select:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 1px; }
+.vspeed__seek { flex: 1; min-width: 60px; accent-color: var(--c-accent); }
+.vspeed__time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vspeed__rate { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.vspeed__rate select { min-height: 32px; font: inherit; color: var(--c-text); background: var(--c-bg); border: 1px solid var(--c-border); border-radius: 6px; }
+.vspeed__close { display: none; position: absolute; top: 12px; right: 12px; z-index: 2; min-width: 44px; min-height: 44px; font-size: 1.3rem; }
+.vspeed:fullscreen { display: flex; flex-direction: column; }
+.vspeed:fullscreen .vspeed__close { display: block; }
+.vspeed:fullscreen video { flex: 1; min-height: 0; object-fit: contain; }
+@media (max-width: 520px) { .vspeed__rate { font-size: 0; } .vspeed__rate select { font-size: 0.9rem; } }
