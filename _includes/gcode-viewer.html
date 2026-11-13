@@ -24,5 +24,5 @@
 <div class="gv__fil"><span>Для массы:</span><label>диаметр нити, мм <input type="number" id="gv-fd" value="1.75" step="0.05" min="0.5"></label><label>плотность, г/см³ <input type="number" id="gv-rho" value="1.24" step="0.01" min="0.5"></label><span class="gv__note">1,24 г/см³ — плотность PLA по техническому паспорту <a href="https://www.prusa3d.com/product/prusament-pla-filament" target="_blank" rel="noopener">Prusament PLA</a></span></div>
 <ul class="gv__warns" id="gv-warns"></ul>
 </div>
-<script src="{{ root }}assets/js/gcode-core.js"></script>
-<script src="{{ root }}assets/js/gcode-viewer.js"></script>
+<script src="{{ root }}assets/js/gcode-core.js?v={{ site.time | date: '%s' }}"></script>
+<script src="{{ root }}assets/js/gcode-viewer.js?v={{ site.time | date: '%s' }}"></script>

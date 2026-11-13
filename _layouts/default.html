@@ -17,12 +17,12 @@
   <link rel="icon" href="{{ root }}assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="{{ root }}assets/img/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="{{ root }}assets/img/apple-touch-icon.png">
-  <link rel="stylesheet" href="{{ root }}assets/css/style.css">
-  <link rel="stylesheet" href="{{ root }}assets/css/markdown.css">
-  <link rel="stylesheet" href="{{ root }}assets/css/site.css">
-  <link rel="stylesheet" href="{{ root }}assets/css/tools.css">
-  <link rel="stylesheet" href="{{ root }}assets/css/dark.css">
-  <script src="{{ root }}assets/js/theme.js"></script>
+  <link rel="stylesheet" href="{{ root }}assets/css/style.css?v={{ site.time | date: '%s' }}">
+  <link rel="stylesheet" href="{{ root }}assets/css/markdown.css?v={{ site.time | date: '%s' }}">
+  <link rel="stylesheet" href="{{ root }}assets/css/site.css?v={{ site.time | date: '%s' }}">
+  <link rel="stylesheet" href="{{ root }}assets/css/tools.css?v={{ site.time | date: '%s' }}">
+  <link rel="stylesheet" href="{{ root }}assets/css/dark.css?v={{ site.time | date: '%s' }}">
+  <script src="{{ root }}assets/js/theme.js?v={{ site.time | date: '%s' }}"></script>
 </head>
 <body>
   <a class="skip-link" href="#content">Перейти к содержанию</a>
@@ -100,16 +100,16 @@
     </div>
 
   </div>
-  <script src="{{ root }}assets/js/quiz.js" defer></script>
-  <script src="{{ root }}assets/js/pyrun.js" defer></script>
-  <script src="{{ root }}assets/js/copycode.js" defer></script>
-  <script src="{{ root }}assets/js/submenu.js" defer></script>
-  <script src="{{ root }}assets/js/gcheck.js" defer></script>
-  <script src="{{ root }}assets/js/search.js" defer></script>
-  <script src="{{ root }}assets/js/lightbox.js" defer></script>
-  <script src="{{ root }}assets/js/tasks-index.js" defer></script>
-  <script src="{{ root }}assets/js/settings.js" defer></script>
-  <script src="{{ root }}assets/js/video-speed.js" defer></script>
+  <script src="{{ root }}assets/js/quiz.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/pyrun.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/copycode.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/submenu.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/gcheck.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/search.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/lightbox.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/tasks-index.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/settings.js?v={{ site.time | date: '%s' }}" defer></script>
+  <script src="{{ root }}assets/js/video-speed.js?v={{ site.time | date: '%s' }}" defer></script>
   <script>window.ADD3D_FILES = [{% for f in site.static_files %}{% if f.path contains "/assets/files/" %}"{{ f.name }}",{% endif %}{% endfor %}];</script>
 </body>
 </html>

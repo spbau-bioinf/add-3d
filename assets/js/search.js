@@ -11,7 +11,8 @@
   function load() {
     if (window.ADD3D_SEARCH) return Promise.resolve();
     if (!loading) loading = new Promise(function (ok, bad) {
-      var s = document.createElement("script"); s.src = root + "assets/js/search-index.js";
+      var s = document.createElement("script"); var me = document.querySelector('script[src*="assets/js/search.js"]'), q = me && me.src.split("?")[1];   // версия сборки из ссылки на сам скрипт: индекс не берется из старого кэша
+      s.src = root + "assets/js/search-index.js" + (q ? "?" + q : "");
       s.onload = ok; s.onerror = function () { loading = null; bad(); }; document.head.appendChild(s);
     });
     return loading;

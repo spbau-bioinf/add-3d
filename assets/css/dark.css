@@ -763,45 +763,45 @@ html[data-palette] .rings__step.is-full span { color: var(--p-on-accent); backgr
 [data-theme="dark"] .shot--dark { display: inline; }
 [data-theme="dark"] .shot--light { display: none; }
 
-/* Просмотр иллюстраций (assets/js/lightbox.js) */
+/* Просмотр иллюстраций (assets/js/lightbox.js): все управление у снимка.
+   Сверху строка шириной со снимок: подпись по левому краю, крестик справа; снизу ‹ N из M ›. */
 .figure-src img { cursor: zoom-in; }
 .figure-src img:focus-visible { outline: 3px solid var(--c-accent-bright); outline-offset: 3px; }
 .lb-open { overflow: hidden; }
-.lb { width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: #e8edf2; background: #0c1016; display: none; flex-direction: column; overscroll-behavior: contain; }
+.lb { width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: #e8edf2; background: #0c1016; display: none; overscroll-behavior: contain; }
 .lb[open] { display: flex; }
+.lb:focus { outline: none; }
 /* Быстрые нажатия по кнопкам не должны выделять текст и снимок; подпись выделяется, чтобы ее можно было скопировать */
 .lb { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .lb__cap { -webkit-user-select: text; user-select: text; }
 .lb::backdrop { background: #0c1016; }
-.lb__bar { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; padding-top: max(0.5rem, env(safe-area-inset-top)); }
-.lb__count { font-size: 0.95rem; font-variant-numeric: tabular-nums; color: #aeb8c3; }
-/* Сцена занимает все место между шапкой и подписью; ее размер не зависит от снимка */
-.lb__stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0.25rem 4.5rem; touch-action: pan-y pinch-zoom; }
-.lb__img { max-width: 100%; max-height: 100%; object-fit: contain; background: #fff; border-radius: 4px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 32px rgba(0, 0, 0, 0.55); transition: opacity 0.15s ease; }
-.lb__img--load { opacity: 0; }
-/* Подпись: высота по самой длинной подписи страницы (задает скрипт), не больше 30 % экрана, дальше прокрутка */
-.lb__cap { flex: none; box-sizing: border-box; width: fit-content; max-width: min(60rem, 100%); max-height: 30vh; overflow-y: auto; margin: 0 auto; padding: 0.75rem 1.25rem; padding-bottom: max(1rem, env(safe-area-inset-bottom)); font-size: 0.95rem; line-height: 1.5; text-align: left; color: #d3dae2; }
+/* Сцена: подпись, снимок и кнопки одной колонкой по центру экрана; нажатие по пустому месту сцены закрывает окно */
+.lb__stage { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); touch-action: pan-y pinch-zoom; }
+.lb__head { flex: none; box-sizing: border-box; max-width: 100%; display: flex; align-items: flex-end; gap: 1rem; }
+.lb__cap { flex: 1; min-width: 0; max-height: 30vh; overflow-y: auto; display: flex; flex-direction: column; font-size: 0.95rem; line-height: 1.5; text-align: left; color: #d3dae2; }
+.lb__capin { margin-top: auto; }   /* короткая подпись прижата к снимку, запас высоты остается сверху */
 .lb__cap--more { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent); }
 .lb__cap a { color: #6fe08a; }
 .lb__cap a:focus-visible { outline: 2px solid #6fe08a; outline-offset: 2px; }
-.lb__close, .lb__nav { display: flex; align-items: center; justify-content: center; padding: 0; color: #fff; background: rgba(32, 40, 50, 0.85); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; cursor: pointer; transition: background-color 0.15s ease; -webkit-tap-highlight-color: transparent; }
+/* Размер снимка задает скрипт (fit): не крупнее своего размера и не выше места между подписью и кнопками */
+.lb__img { flex: none; max-width: 100%; min-height: 0; object-fit: contain; background: #fff; border-radius: 4px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 32px rgba(0, 0, 0, 0.55); transition: opacity 0.15s ease; }
+.lb__img--load { opacity: 0; }
+/* Полоса кнопок на всю ширину: промах мимо кнопки не закрывает окно */
+.lb__ctrl { flex: none; align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+.lb__count { min-width: 4.5rem; text-align: center; font-size: 0.95rem; font-variant-numeric: tabular-nums; color: #aeb8c3; }
+.lb__close, .lb__nav { flex: none; display: flex; align-items: center; justify-content: center; padding: 0; color: #fff; background: rgba(32, 40, 50, 0.85); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; cursor: pointer; transition: background-color 0.15s ease; -webkit-tap-highlight-color: transparent; }
 .lb__close svg, .lb__nav svg { display: block; flex: none; }
 .lb__close { width: 2.75rem; height: 2.75rem; }
-.lb__nav { position: absolute; top: 50%; width: 3rem; height: 3rem; transform: translateY(-50%); }
-.lb__prev { left: 0.75rem; } .lb__next { right: 0.75rem; }
+.lb__nav { width: 3.5rem; height: 3.5rem; }
 .lb__close:hover, .lb__nav:hover { background: rgba(70, 82, 96, 0.95); }
 .lb__close:focus-visible, .lb__nav:focus-visible { outline: 2px solid var(--c-accent-bright); outline-offset: 2px; }
-.lb--single .lb__nav, .lb--single .lb__count { visibility: hidden; }
+.lb--single .lb__ctrl { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) { .lb__img, .lb__close, .lb__nav { transition: none; } }
-/* Низкий экран (телефон или ноутбук боком): подпись компактнее */
-@media (max-height: 500px) { .lb__cap { max-height: 22vh; padding-top: 0.4rem; font-size: 0.85rem; line-height: 1.4; } .lb__bar { padding-top: 0.25rem; padding-bottom: 0.25rem; } }
-/* Телефон: снимок во всю ширину, кнопки листания в постоянном месте внизу сцены */
-@media (max-width: 640px) {
-  .lb__stage { padding: 0.25rem 0.5rem 4.25rem; }
-  .lb__nav { top: auto; bottom: 0.5rem; transform: none; }
-  .lb__prev { left: calc(50% - 3.75rem); } .lb__next { right: calc(50% - 3.75rem); }
-  .lb__cap { font-size: 0.9rem; padding-left: 1rem; padding-right: 1rem; }
-}
+/* Низкий экран (телефон или ноутбук боком): все компактнее */
+@media (max-height: 500px) { .lb__stage { gap: 0.4rem; padding-top: 0.4rem; padding-bottom: 0.4rem; } .lb__cap { max-height: 22vh; font-size: 0.85rem; line-height: 1.4; } .lb__nav { width: 2.75rem; height: 2.75rem; } .lb__close { width: 2.25rem; height: 2.25rem; } }
+/* Телефон: снимок во всю ширину */
+@media (max-width: 640px) { .lb__stage { padding-left: 0.5rem; padding-right: 0.5rem; } .lb__cap { font-size: 0.9rem; } }
 
 /* Полоса прокрутки бокового меню: тонкая, видна только при наведении на меню или фокусе внутри него */
 .sidebar { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--c-muted) 55%, transparent) transparent; scrollbar-gutter: stable; }

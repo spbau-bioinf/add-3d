@@ -3,4 +3,4 @@
   Вставка в конце страницы, после всех блоков sdemo-*: {% include sdemo-script.html %}.
 {%- endcomment -%}
 {%- include root.html -%}
-<script src="{{ root }}assets/js/slice-demo.js"></script>
+<script src="{{ root }}assets/js/slice-demo.js?v={{ site.time | date: '%s' }}"></script>

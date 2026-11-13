@@ -28,8 +28,8 @@ show_author: false
 <ul class="gv__warns" id="sc-warns" aria-live="polite"></ul>
 <div class="gv__line" id="sc-line" aria-live="polite">Выберите деталь и откройте свой файл STL.</div>
 </div>
-<script src="{{ root }}assets/js/mesh-core.js"></script>
-<script src="{{ root }}assets/js/stl-check.js"></script>
+<script src="{{ root }}assets/js/mesh-core.js?v={{ site.time | date: '%s' }}"></script>
+<script src="{{ root }}assets/js/stl-check.js?v={{ site.time | date: '%s' }}"></script>
 
 <section class="section" markdown="1">
 
