@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 {%- comment -%}
-  Главная страница: шапка с описанием курса и карточки занятий.
-  Тексты — в _config.yml (раздел home), карточки — из _data/nav.yml.
+  Главная страница: шапка с описанием курса и карточки.
+  Тексты — в _config.yml (раздел home). Карточки занятий — из _data/nav.yml;
+  страница с cards: lectures в шапке показывает карточки лекций из _data/lectures.yml.
 {%- endcomment -%}
 <html lang="ru">
 <head>
@@ -54,6 +55,37 @@
 {%- endif %}
     </section>
 
+{%- if page.cards == "lectures" %}
+    <section class="works" id="works" aria-labelledby="works-title">
+      <h2 class="works__title" id="works-title">{{ site.home.lectures_title | default: "Лекции" }}</h2>
+      <ul class="cards">
+  {%- for w in site.data.lectures %}
+    {%- assign num = w.lecture | prepend: "0" | slice: -2, 2 %}
+        <li class="card{% if w.soon %} card--soon{% endif %}">
+          <div class="card__link">
+            <div class="card__cover">
+              <span class="card__num" aria-hidden="true">{{ num }}</span>
+              <span class="card__code">lecture {{ w.lecture }}</span>
+            </div>
+            <div class="card__body">
+              <h3 class="card__title">Лекция {{ w.lecture }}. {{ w.title }}</h3>
+              <p class="card__meta">{% if w.soon %}Скоро{% else %}{{ w.meta }}{% endif %}</p>
+    {%- if w.description %}
+              <p class="card__desc">{{ w.description }}</p>
+    {%- endif %}
+    {%- if w.tags %}
+              <p class="card__tags">{% for t in w.tags %}<span class="tag">{{ t }}</span>{% endfor %}</p>
+    {%- endif %}
+            </div>
+    {%- unless w.soon %}
+            <a class="card__stretch" href="{{ w.url }}" aria-label="Лекция {{ w.lecture }}: открыть лекцию"></a>
+    {%- endunless %}
+          </div>
+        </li>
+  {%- endfor %}
+      </ul>
+    </section>
+{%- else %}
     <section class="works" id="works" aria-labelledby="works-title">
       <h2 class="works__title" id="works-title">{{ site.home.works_title | default: "Практические занятия" }}</h2>
       <ul class="cards">
@@ -97,6 +129,7 @@
 {%- endfor %}
       </ul>
     </section>
+{%- endif %}
 
   </main>
 
