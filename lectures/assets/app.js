@@ -70,9 +70,9 @@
 
   /* ---------- Настройки «Аа»: сайт и презентация (pylec:prefs) ---------- */
   var PREF_DEF = { theme: "", reading: false, font: "Onest", fs: 16, sb: "hide",
-    vtheme: "light", vfs: 24, lookAuto: true, look: "", bgAuto: true, bg: 0, notes: true, w: 0 };
+    vtheme: "light", notesSize: 0, lookAuto: true, look: "", bgAuto: true, bg: 0, notes: true, w: 0 };
   var SITE_KEYS = ["theme", "reading", "font", "fs", "sb"];
-  var PRES_KEYS = ["vtheme", "vfs", "lookAuto", "look", "bgAuto", "bg", "notes", "w"];
+  var PRES_KEYS = ["vtheme", "notesSize", "lookAuto", "look", "bgAuto", "bg", "notes", "w"];
   var FONTS = [["Onest", "по умолчанию"], ["Manrope", "как на слайдах"], ["Golos Text", ""], ["Inter", ""], ["PT Sans", ""], ["Roboto", ""],
     ["Open Sans", ""], ["IBM Plex Sans", ""], ["Nunito", ""], ["Source Sans 3", ""], ["PT Serif", "с засечками"], ["Literata", "с засечками"]];
   var LOOKS = [["", "Обычный"], ["dim", "Приглуш."], ["warm", "Теплый"], ["night", "Ночной"], ["black", "Черный"]];
@@ -81,7 +81,8 @@
   var prefs = (function () {
     var p = {}, saved = load("prefs", null) || {};
     Object.keys(PREF_DEF).forEach(function (k) { p[k] = saved[k] !== undefined ? saved[k] : PREF_DEF[k]; });
-    if (!p.vfs) p.vfs = PREF_DEF.vfs;  // В прежней версии 0 означал, что отдельный размер не выбран.
+    // Раньше 24 записывалось даже при смене одной темы. Остальные выбранные размеры сохраняем.
+    if (saved.notesSize === undefined && saved.vfs && saved.vfs !== 24) p.notesSize = saved.vfs;
     if (!p.theme) p.theme = load("theme", null) || (function () { try { return localStorage.getItem("add3d-theme"); } catch (e) { return null; } })() || "dark";
     return p;
   })();
@@ -100,11 +101,15 @@
     l.href = "https://fonts.googleapis.com/css2?family=" + name.replace(/ /g, "+") + ":wght@400;500;600;700&display=swap";
     document.head.appendChild(l);
   }
+  function lectureSize() { return prefs.fs + (root.classList.contains("reading") ? 2 : 0); }
   function applyPrefs() {
     root.setAttribute("data-theme", prefs.theme);
     root.classList.toggle("reading", !!prefs.reading && !!document.body && !!document.body.dataset.lecture);
     root.classList.toggle("sb-hide", prefs.sb === "hide");
     root.style.setProperty("--fs", prefs.fs + "px");
+    var size = lectureSize();
+    root.style.setProperty("--lecture-fs", size + "px");
+    root.style.setProperty("--sv-fs", (prefs.notesSize || size) + "px");
     root.style.setProperty("--f-user", '"' + prefs.font + '"');
     loadFont(prefs.font);
     document.dispatchEvent(new CustomEvent("pylec:prefs"));
@@ -199,8 +204,11 @@
         '<div class="pf-looks' + (prefs.lookAuto ? " auto" : "") + '">' + LOOKS.map(function (l) {
           return '<button type="button" data-look="' + l[0] + '" aria-pressed="' + (look === l[0]) + '"><i class="' + (l[0] ? "look-" + l[0] : "") + '"' + (img ? ' style="background-image:url(' + img + ')"' : "") + "></i><span>" + l[1] + "</span></button>";
         }).join("") + "</div></div>";
-      h += '<div class="pf-sec"><h4>' + ICON_P.note + 'Пояснение к слайду</h4><div class="pf-row" style="margin-top:0"><span>Показывать при открытии</span>' + toggle("notes") + "</div>" +
-        '<div class="pf-row"><span>Размер текста</span>' + stepper("vfs", prefs.vfs + " px") + "</div>" +
+      h += '<div class="pf-sec"><h4>' + ICON_P.note + 'Пояснение к слайду</h4><div class="pf-row" style="margin-top:0"><span>Открывать пояснение в полном экране</span>' + toggle("notes") + "</div>" +
+        '<div class="pf-row"><span>Размер текста<small>Авто — как в тексте лекции</small></span><div class="pf-seg">' +
+        '<button type="button" data-size-mode="auto" aria-pressed="' + !prefs.notesSize + '">Авто</button>' +
+        '<button type="button" data-size-mode="manual" aria-pressed="' + !!prefs.notesSize + '">Вручную</button></div></div>' +
+        (prefs.notesSize ? '<div class="pf-row"><span>Размер пояснения</span>' + stepper("notesSize", prefs.notesSize + " px") + "</div>" : "") +
         '<div class="pf-row"><span>Ширина колонки</span>' + stepper("w", prefs.w ? Math.round(WIDTHS[prefs.w] * 100) + "%" : "Авто") + "</div></div>";
       h += '<details' + (panel.more ? " open" : "") + '><summary>Еще</summary><div class="pf-sec"><div class="pf-row" style="margin-top:0"><span>Фон по оформлению<small>белый в светлой теме, темный в остальных</small></span>' + toggle("bgAuto") + "</div>" +
         '<div class="pf-row"><span>Фон вокруг слайда</span><div class="pf-swatches">' + BGS.map(function (b, i) {
@@ -241,13 +249,14 @@
     else if (d.set) prefs[d.set] = d.v;
     else if (d.tg) prefs[d.tg] = !prefs[d.tg];
     else if (d.fs) prefs.fs = Math.max(14, Math.min(22, prefs.fs + +d.fs));
+    else if (d.sizeMode) prefs.notesSize = d.sizeMode === "auto" ? 0 : (prefs.notesSize || lectureSize());
     else if (d.look !== undefined) { prefs.look = d.look; prefs.lookAuto = false; }
     else if (d.bg) { prefs.bg = +d.bg; prefs.bgAuto = false; }
     else if (d.step === "font") {
       var i = FONTS.map(function (f) { return f[0]; }).indexOf(prefs.font);
       prefs.font = FONTS[(i + +d.d + FONTS.length) % FONTS.length][0];
-    } else if (d.step === "vfs") {
-      prefs.vfs = Math.max(13, Math.min(32, prefs.vfs + +d.d));
+    } else if (d.step === "notesSize") {
+      prefs.notesSize = Math.max(13, Math.min(32, prefs.notesSize + +d.d));
     } else if (d.step === "w") { prefs.w = Math.max(0, Math.min(WIDTHS.length - 1, prefs.w + +d.d)); }
     else return;
     changed();
@@ -263,57 +272,64 @@
     "body[data-vtheme=light] :is(#notes,#ov,#help div,#hud,#toast){background:#fff;color:#141b2d;border-color:#e1e5ee}" +
     "body[data-vtheme=light] :is(#ov button,#help kbd){background:#edf1f8;color:#141b2d}" +
     "body[data-vtheme=light] #ov span{color:#47506a}";
-  function initSlides(box) {
+  function initSlides(box, index) {
     var src = box.getAttribute("data-src"), title = box.getAttribute("data-title") || "Слайды лекции", notesSrc = box.getAttribute("data-notes");
+    var notesId = "deck-notes-" + index;
     box.innerHTML = '<div class="slides-bar"><span>' + esc(title) + '</span><button type="button" class="full">Во весь экран</button></div><div class="slides-frame"><div class="sv-stage"><div class="sv-top">' +
       (notesSrc ? '<button type="button" class="sv-btn sv-tnotes" title="Пояснение к слайду (T)">☰ Пояснение</button>' : "") +
       '<button type="button" class="sv-btn sv-prefs" aria-expanded="false" title="Настройки (S)">Аа</button><button type="button" class="sv-btn sv-exit" title="Выйти (Esc)" aria-label="Выйти">×</button></div>' +
       '<iframe loading="lazy" src="' + esc(src) + '" title="' + esc(title) + '" allow="fullscreen" allowfullscreen></iframe></div>' +
-      '<div class="sv-split" title="Потяните, чтобы изменить ширину"></div><aside class="sv-col" aria-label="Пояснение к слайду"><div class="sv-bar"><b>ПОЯСНЕНИЕ</b>' +
+      (notesSrc ? '<div class="sv-inline-bar" hidden><button type="button" class="sv-btn inline-notes" aria-controls="' + notesId + '">Пояснение</button>' +
+        '<button type="button" class="sv-btn inline-answer" hidden>Показать ответ</button></div>' : "") +
+      '<div class="sv-split" title="Потяните, чтобы изменить ширину"></div><aside id="' + notesId + '" class="sv-col" aria-label="Пояснение к слайду"><div class="sv-bar"><b>ПОЯСНЕНИЕ</b>' +
       '<button type="button" class="sv-btn sv-prefs" aria-expanded="false" title="Настройки (S)">Аа</button><button type="button" class="sv-btn sv-tnotes" title="Скрыть пояснение (T)" aria-label="Скрыть пояснение">⇥</button>' +
       '<button type="button" class="sv-btn sv-exit" title="Выйти (Esc)" aria-label="Выйти">×</button></div><div class="sv-text" tabindex="0"></div></aside></div>' +
-      '<p class="slides-hint">Щелчок по правой половине слайда или → — дальше (анимации идут по шагам), по левой или ← — назад. ' +
-      (notesSrc ? "«Во весь экран» открывает слайды с пояснением к каждому. " : "") + "O — все слайды.</p>";
+      '<p class="slides-hint">Щелчок по правой половине слайда или → — следующий шаг; по левой или ← — назад. O — обзор слайдов.</p>';
     var frame = box.querySelector(".slides-frame"), iframe = frame.querySelector("iframe"), col = frame.querySelector(".sv-col"),
-      text = frame.querySelector(".sv-text"), split = frame.querySelector(".sv-split");
-    var sv = { on: false, notes: false, slide: 0, step: 0, frames: {}, data: null, win: null, timer: 0, code: {} };
+      text = frame.querySelector(".sv-text"), split = frame.querySelector(".sv-split"),
+      inlineBar = frame.querySelector(".sv-inline-bar"), notesButton = frame.querySelector(".inline-notes"), answerButton = frame.querySelector(".inline-answer");
+    var sv = { on: false, notes: false, inline: false, slide: 0, step: 0, count: 0, data: null, doc: null, code: {} };
+    var observer = new MutationObserver(syncSlide);
 
     function deck() {   // доступ к HTML-показу (тот же сайт); при открытии файлом браузер запрещает
       try { var w = iframe.contentWindow, d = w.document; if (!d || !d.body || !d.getElementById("deck")) return null; return w; } catch (e) { return null; }
     }
     function hookDeck() {
-      var w = deck(); if (!w || w === sv.win) return w; sv.win = w;
-      var d = w.document, st = d.createElement("style"); st.textContent = DECK_CSS; d.head.appendChild(st);
+      var w = deck(); if (!w || w.document === sv.doc) return;
+      var d = sv.doc = w.document, st = d.createElement("style"); st.textContent = DECK_CSS; d.head.appendChild(st);
       // слайды не предлагаются к сохранению: без контекстного меню и перетаскивания картинок
       d.addEventListener("contextmenu", function (e) { e.preventDefault(); }, true);
       d.addEventListener("dragstart", function (e) { e.preventDefault(); }, true);
       w.addEventListener("keydown", function (e) {
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         var k = e.key.toLowerCase();
-        if (sv.on && (k === "f" || k === "а")) { stop(e); exit(); }
-        else if (sv.on && (k === "t" || k === "е" || k === "n" || k === "т") && sv.data) { stop(e); setNotes(!sv.notes); }
-        else if (k === "s" || k === "ы") { stop(e); togglePrefs("pres", frame.querySelector(sv.notes ? ".sv-bar .sv-prefs" : ".sv-top .sv-prefs"), sv.on ? frame : null); }
+        if (k === "f" || k === "а") { stop(e); if (sv.on) exit(); else enter(); }
+        else if ((k === "t" || k === "е" || k === "n" || k === "т") && sv.data) {
+          stop(e); if (sv.on) setNotes(!sv.notes); else setInline(!sv.inline);
+        }
+        else if (k === "s" || k === "ы") { stop(e); togglePrefs("pres", sv.on ? frame.querySelector(sv.notes ? ".sv-bar .sv-prefs" : ".sv-top .sv-prefs") : box.querySelector(".full"), sv.on ? frame : null); }
         else if (sv.on && k === "escape" && panel.open) { stop(e); togglePrefs(); }
+        else if (sv.on && k === "escape" && !d.body.matches(".ov,.help,.rev")) { stop(e); exit(); }
       }, true);
-      // сколько щелчков у каждого слайда: на вопросах ответ в колонке появляется вместе с ответом на слайде
-      try { JSON.parse(d.getElementById("data").textContent).slides.forEach(function (s) { sv.frames[s.n] = s.f.length; }); } catch (e) { sv.frames = {}; }
-      look(); return w;
+      if (notesSrc) observer.observe(d.getElementById("deck"), {childList: true, subtree: true, attributes: true, attributeFilter: ["class"]});
+      look(); syncSlide();
     }
     function stop(e) { e.preventDefault(); e.stopImmediatePropagation(); }
     function look() {
       var w = deck(), l = vLook();
       box.setAttribute("data-vtheme", vTheme());
+      col.setAttribute("data-vtheme", vTheme());
       // если показ недоступен скрипту (страница открыта файлом или в песочнице), приглушение и теплый вид - фильтром на кадр
       ["dim", "warm"].forEach(function (c) { iframe.classList.toggle("sv-" + c, !w && (c === l || (c === "dim" && (l === "night" || l === "black")))); });
       if (!w) return;
       var b = w.document.body;
       b.dataset.vtheme = vTheme();
-      b.style.setProperty("--sv-fs", prefs.vfs + "px");
+      b.style.setProperty("--sv-fs", root.style.getPropertyValue("--sv-fs"));
       ["dim", "warm", "night", "black"].forEach(function (c) { b.classList.toggle("sv-" + c, c === l); });
       b.classList.toggle("sv-full", sv.on);
       b.style.setProperty("--bg", vBg()); w.document.documentElement.style.background = vBg();
     }
-    iframe.addEventListener("load", function () { sv.win = null; hookDeck(); });
+    iframe.addEventListener("load", function () { observer.disconnect(); sv.doc = null; hookDeck(); });
     document.addEventListener("pylec:prefs", function () { look(); if (sv.on) layout(); renderCard(true); });
 
     function loadNotes(cb) {
@@ -328,20 +344,16 @@
       sv.on = true; frame.classList.add("sv-on");
       var req = frame.requestFullscreen || frame.webkitRequestFullscreen;
       if (req) Promise.resolve(req.call(frame)).catch(function () {});
-      loadNotes(function (data) {
-        sv.data = data; frame.querySelectorAll(".sv-tnotes").forEach(function (b) { b.hidden = !data; });
-        setNotes(!!data && prefs.notes);
-        hookDeck(); poll(); clearInterval(sv.timer); sv.timer = setInterval(poll, 250);
-        setTimeout(function () { iframe.focus(); }, 60);
-      });
+      setNotes(!!sv.data && prefs.notes); hookDeck();
+      iframe.focus();
       layout();
     }
     function exit() {
       if (panel.open && panel.el.parentNode === frame) togglePrefs();
       if (panel.el.parentNode === frame) document.body.appendChild(panel.el);
-      sv.on = false; frame.classList.remove("sv-on", "sv-notes", "prefs-in"); clearInterval(sv.timer);
+      sv.on = false; frame.classList.remove("sv-on", "sv-notes", "prefs-in");
       if (document.fullscreenElement === frame && document.exitFullscreen) document.exitFullscreen().catch(function () {});
-      look();
+      look(); renderCard(); box.querySelector(".full").focus({preventScroll: true});
     }
     document.addEventListener("fullscreenchange", function () { if (sv.on && !document.fullscreenElement) exit(); });
     document.addEventListener("keydown", function (e) {
@@ -352,6 +364,16 @@
       else if (k === "s" || k === "ы") { togglePrefs("pres", frame.querySelector(sv.notes ? ".sv-bar .sv-prefs" : ".sv-top .sv-prefs"), frame); e.preventDefault(); }
     });
     box.querySelector(".full").addEventListener("click", enter);
+    if (notesSrc) {
+      notesButton.addEventListener("click", function () { setInline(!sv.inline); });
+      answerButton.addEventListener("click", function () {
+        var root = sv.doc && sv.doc.getElementById("deck");
+        if (!root || typeof root.selectAnswer !== "function") return;
+        var show = !answered();
+        root.selectAnswer(sv.slide, show);
+        if (show && !sv.inline) setInline(true);
+      });
+    }
     frame.addEventListener("click", function (e) {
       var b = e.target.closest("button"); if (!b) return;
       if (b.classList.contains("sv-exit")) exit();
@@ -369,6 +391,15 @@
       if (panel.open && panel.opener && frame.contains(panel.opener)) panel.opener = frame.querySelector(sv.notes ? ".sv-bar .sv-prefs" : ".sv-top .sv-prefs");
       layout(); renderCard();
     }
+    function setInline(open) {
+      sv.inline = open;
+      frame.classList.toggle("sv-inline-notes", open && !!sv.data);
+      if (notesButton) {
+        notesButton.setAttribute("aria-expanded", String(open));
+        notesButton.textContent = open ? "Скрыть пояснение" : "Показать пояснение";
+      }
+      renderCard();
+    }
     function autoWidth(W, H) {
       var slideW = Math.min(W, H * 16 / 9), free = W - slideW;
       return Math.round(Math.min(W * .45, Math.max(free, 360, W * .22)));
@@ -381,8 +412,6 @@
       w = Math.max(300, Math.min(w, W - 320));
       frame.style.setProperty("--sv-w", w + "px");
       frame.style.setProperty("--sv-bg", vBg());
-      col.setAttribute("data-vtheme", vTheme());
-      col.style.setProperty("--sv-fs", prefs.vfs + "px");
       // текст начинается вровень с верхним краем слайда
       var stW = W - (sv.notes && !narrow ? w + 10 : 0), slideH = Math.min(H, stW * 9 / 16);
       text.style.setProperty("--sv-top", narrow ? "16px" : Math.max(16, Math.round((H - slideH) / 2) - 48) + "px");
@@ -402,27 +431,35 @@
       prefs.w = best; sv.drag = 0; changed();
     });
 
-    function poll() {
-      var w = hookDeck(); if (!w) { if (sv.slide !== -1) { sv.slide = -1; renderCard(); } return; }
-      var m = /^#(\d+)/.exec(w.location.hash), n = m ? +m[1] : 1, k = 0;
-      // номер щелчка: показ не пишет его в адрес, берется из видимого кадра слайда
-      var L = w.document.querySelectorAll("#deck .layer:not(.to-prev):not(.to-next)"), sts = L.length ? L[L.length - 1].querySelectorAll(".st") : [];
-      for (var j = 0; j < sts.length; j++) if (sts[j].classList.contains("on")) k = j;
-      if (n !== sv.slide) { sv.slide = n; sv.step = k; renderCard(); }
-      else if (k !== sv.step) { var was = answered(); sv.step = k; if (answered() !== was) renderCard(true); }
+    function syncSlide() {
+      var d = sv.doc, layer = d && d.getElementById("deck").lastElementChild;
+      while (layer && !layer.classList.contains("layer")) layer = layer.previousElementSibling;
+      if (!layer) return;
+      var n = parseInt(d.location.hash.slice(1), 10) || 1;
+      var states = layer.querySelectorAll(".st"), k = 0;
+      for (var j = 0; j < states.length; j++) if (states[j].classList.contains("on")) k = j;
+      if (n === sv.slide && k === sv.step && states.length === sv.count) return;
+      var same = n === sv.slide; sv.slide = n; sv.step = k; sv.count = states.length; renderCard(same);
     }
-    function answered() { var fr = sv.frames[sv.slide] || 1; return fr > 1 && sv.step >= fr - 1; }
+    function answered() { return sv.count > 1 && sv.step === sv.count - 1; }
     function renderCard(keep) {
-      if (!sv.notes) return;
-      var data = sv.data, c = data && data.slides[String(sv.slide)];
-      if (sv.slide === -1) { text.innerHTML = '<p class="sv-empty">Пояснения появятся, когда сайт открыт по адресу на GitHub Pages или через локальный сервер: при открытии страницы файлом браузер не дает узнать номер слайда.</p>'; return; }
-      if (!c) { text.innerHTML = '<p class="sv-empty">К этому слайду пояснения нет.</p>'; return; }
+      if (!sv.data) return;
+      var c = sv.data.slides[String(sv.slide)];
+      if (answerButton) {
+        answerButton.hidden = !(c && c.a && sv.count === 2);
+        answerButton.setAttribute("aria-pressed", String(answered()));
+        answerButton.textContent = answered() ? "Скрыть ответ" : "Показать ответ";
+      }
+      if (!(sv.on ? sv.notes : sv.inline)) return;
+      if (!c) {
+        text.innerHTML = '<p class="sv-empty">' + (location.protocol === "file:" ? "Для пояснений откройте страницу через локальный сервер или GitHub Pages." : "Пояснение появится после загрузки слайда.") + "</p>";
+        return;
+      }
       var y = keep ? text.scrollTop : 0, h = "<h3>СЛАЙД " + sv.slide + "</h3><h2>" + c.t + "</h2>";
       if (c.m) h += '<div class="sv-k">Главная мысль</div><div class="sv-main">' + c.m + "</div>";
       if (!(c.a && answered())) h += '<div class="sv-k">Пояснение</div>' + c.e.map(function (p) { return "<p>" + p + "</p>"; }).join("");
       if (c.a) {
-        var fr = sv.frames[sv.slide] || 1;
-        if (fr < 2) h += "<details><summary>Показать ответ</summary><p style=\"margin:8px 0 0\">" + c.a + "</p></details>";
+        if (sv.count === 1) h += '<details><summary>Показать ответ</summary><p>' + c.a + "</p></details>";
         else if (answered()) h += '<div class="sv-k">Ответ</div><div class="sv-main">' + c.a + "</div>";
       }
       if (c.code) h += codeBox(c);
@@ -431,6 +468,13 @@
       if (c.sec) h += '<p><a href="#' + c.sec[0] + '" class="sv-sec">Подробнее в разделе «' + esc(c.sec[1]) + "» →</a></p>";
       text.innerHTML = h; text.scrollTop = y;
     }
+    if (notesSrc) loadNotes(function (data) {
+      sv.data = data; inlineBar.hidden = !data;
+      frame.querySelectorAll(".sv-tnotes").forEach(function (b) { b.hidden = !data; });
+      setInline(sv.inline);
+      if (sv.on) setNotes(!!data && prefs.notes);
+    });
+    hookDeck();
     text.addEventListener("scroll", function () { scrolling(text); }, { passive: true });
 
     /* Код на слайде: запуск, шаги (заготовленные или автоматическая трассировка) */
@@ -483,7 +527,7 @@
     });
     text.addEventListener("click", function (e) {
       var a = e.target.closest("a.sv-sec"); if (!a) return;
-      e.preventDefault(); var id = a.getAttribute("href").slice(1); exit();
+      e.preventDefault(); var id = a.getAttribute("href").slice(1); if (sv.on) exit();
       setTimeout(function () { var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: "smooth" }); }, 120);
     });
     function act(a) {

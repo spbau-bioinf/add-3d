@@ -84,7 +84,7 @@ body.clist #clist{display:block}
 #clist .it{border-bottom:1px solid #333;padding:8px 0;font-size:13px}
 #clist .it .h{color:var(--accent);cursor:pointer}
 #clist .it .q{color:var(--muted)}
-.citation:focus-visible{outline:2px solid #3e2985}body.rev .citation{pointer-events:none}</style><style>#notes{font-size:var(--sv-fs,24px)}</style>
+.citation:focus-visible{outline:2px solid #3e2985}body.rev .citation{pointer-events:none}</style><style>#notes{font-size:var(--sv-fs,1rem)}</style>
 </head>
 <body data-effect="slide">
 <div id="stage"><div class="deck" id="deck"></div></div>
@@ -144,6 +144,7 @@ function displayGifs(states,k){
   });
 }
 function notesFor(i,k){var s=S[i],nt=(k>0&&k>=s.f.length-1&&s.notesA)?s.notesA:s.notes;document.getElementById('notes').innerHTML='<b>Слайд '+s.n+'</b>  '+esc(s.t)+'\n\n'+(nt?esc(nt):'Заметок нет.');}
+deck.selectAnswer=function(n,show){if(cur>=0 && n===S[cur].n && S[cur].f.length===2 && !body.matches('.ov,.help,.rev')) setStep(show?1:0);};
 function setStep(k){
   var sts=layer.querySelectorAll('.st');
   for(var j=0;j<sts.length;j++)sts[j].classList.toggle('on',j===k);

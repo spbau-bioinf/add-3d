@@ -16,6 +16,23 @@
   background: var(--surface); color: var(--ink); border-color: var(--line);
 }
 
+/* Тот же текст: на странице под кадром, в полном экране — в штатной колонке. */
+.slides-frame:not(.sv-on) { aspect-ratio: auto; }
+.slides-frame:not(.sv-on) .sv-stage { position: relative; aspect-ratio: 16 / 9; }
+.sv-inline-bar:not([hidden]) {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 9px 16px;
+  background: var(--panel-2); border-block: 1px solid var(--line);
+}
+.sv-on .sv-inline-bar:not([hidden]), .slides-frame:not(.sv-on) .sv-bar { display: none; }
+.sv-inline-bar .sv-btn { min-height: 40px; background: var(--surface); color: var(--ink); border-color: var(--line); }
+.sv-inline-bar .inline-answer { color: var(--accent); border-color: var(--accent); }
+.sv-inline-notes:not(.sv-on) .sv-col { display: block; background: var(--surface); color: var(--ink); }
+.sv-inline-notes:not(.sv-on) .sv-text { padding: 16px 20px; overflow: visible; }
+.sv-on .sv-text { padding-block-start: max(1.5em, var(--sv-top, 18px)); }
+.sv-on .sv-text h2 { margin-block-end: 1.2em; }
+.sv-on .sv-k { margin-block-end: max(.75rem, 1em); }
+.slides .slides-hint { max-width: none; margin: 0; }
+
 /* Рисунок и схема */
 .fig { margin: 0 auto 24px; }
 .fig[id] { scroll-margin-block-start: 5rem; }
@@ -51,6 +68,25 @@
 /* Формула */
 .formula { margin: 0 0 18px; padding: 14px 18px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line);
   font: 600 19px/1.4 var(--f-mono); text-align: center; overflow-x: auto; }
+.lecture table.decision-matrix :is(th, td) { text-align: center; vertical-align: middle; }
+@media (max-width: 520px) {
+  /* В коротких примерах оба варианта должны быть видны одновременно. */
+  .lecture :is(#requirements .decision-matrix, #costs #table-5) :is(th, td) {
+    padding: 8px 4px;
+    hyphens: auto;
+    overflow-wrap: anywhere;
+  }
+  .lecture #requirements .decision-matrix tr > :nth-child(2) { white-space: nowrap; }
+}
+.lecture var, .lecture var + sub { font-family: Georgia, "Times New Roman", serif; }
+.lecture var { font-style: italic; }
+.lecture var + sub { font-size: .75em; font-style: normal; line-height: 0; }
+.formula[id^="eq-"] {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .55em;
+  padding: .65em .8em; font: 1.15em/1.65 Georgia, "Times New Roman", serif;
+}
+.eq-expr { min-width: 0; }
+.eq-num { color: var(--ink-2); font: .8em/1.4 var(--f-mono); white-space: nowrap; }
 
 /* Итоговый тест */
 .exam { margin: 0 0 28px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); overflow: hidden; container-type: inline-size; }
