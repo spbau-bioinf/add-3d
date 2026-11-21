@@ -17,13 +17,14 @@
 }
 
 /* Рисунок и схема */
-.fig { margin: 0 0 24px; }
+.fig { margin: 0 auto 24px; }
+.fig[id] { scroll-margin-block-start: 5rem; }
 .fig img, .fig video { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--line); background: #fff; }
-.fig figcaption { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 68ch; }
+.fig figcaption { margin: 8px auto 0; max-width: 68ch; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .fig figcaption b { color: var(--ink-2); font-weight: 600; }
 .fig--narrow { max-width: 560px; }
 .fig--scheme video { aspect-ratio: 1680 / 948; }
-.fig-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.fig-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
 .fig-tools .btn { padding: 7px 14px; font-size: 13.5px; }
 
 /* Время раздела под заголовком */
@@ -137,3 +138,20 @@ html.exam-running { overflow: hidden; }
 .howto { margin: 0 0 40px; }
 .howto ol { margin: 8px 0 0; }
 .exam [hidden] { display: none !important; }
+
+/* exam-media: рисунок вопроса в мини-тесте, итоговом тесте и разборе.
+   Блок самодостаточен: те же классы создает assets/exam.js; центрируются и рисунок, и подпись,
+   в том числе когда файл не загрузился и браузер показывает alt. */
+.exam-fig { margin: 0 auto 16px; max-width: 720px; text-align: center; }
+.exam-fig img { display: block; max-width: 100%; height: auto; margin: 0 auto; padding: 0; text-align: center;
+  border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
+  color: var(--ink); font-size: 13px; line-height: 1.45; }
+.exam-fig figcaption { margin: 8px auto 0; max-width: 66ch; color: var(--muted); font-size: 13.5px; line-height: 1.5; text-align: center; }
+.exam-fig-data { margin: 8px auto 0; max-width: 66ch; text-align: start; color: var(--ink-2); font-size: 14px; }
+.exam-fig-data summary { cursor: pointer; color: var(--accent); }
+.exam-fig-data p { margin: 6px 0 0; }
+/* В текстовых заданиях высота зарезервирована под длинное условие; рисунок идет сразу за своим вопросом. */
+.exam-card-q:has(.exam-fig) .exam-q { min-height: 0; }
+.exam-stage .exam-fig { margin-bottom: 14px; }
+.exam-stage .exam-fig img { max-height: 46vh; width: auto; }
+.exam-review .exam-fig { margin-top: 10px; }

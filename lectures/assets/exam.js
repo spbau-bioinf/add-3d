@@ -29,6 +29,23 @@
   function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
   function when(ts) { var d = new Date(ts); return d.toLocaleDateString("ru-RU") + " " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); }
   function pct(x) { return String(Math.round(x * 10) / 10).replace(".", ","); }
+  function passText() { return E.pass + " % (" + NEED + " из " + N + ")"; }
+
+  /* Рисунок вопроса: одна декларация q.visual для мини-теста, итогового теста и разбора.
+     Поля: src (только локальный img/...), alt (обязателен), caption (нейтральная подпись),
+     w, h (размеры файла), data (необязательный текст данных для доступа без изображения).
+     Разметка не содержит ссылок на скачивание и не раскрывает верный ответ. */
+  function visualHTML(q) {
+    var v = q && q.visual;
+    if (!v || typeof v.src !== "string" || !/^img\/[A-Za-z0-9._\/-]+$/.test(v.src) || v.src.indexOf("..") >= 0) return "";
+    var w = Number(v.w), h = Number(v.h);
+    return '<figure class="exam-fig">' +
+      '<img src="' + esc(v.src) + '" alt="' + esc(v.alt || "") + '"' +
+      (w > 0 ? ' width="' + Math.round(w) + '"' : "") + (h > 0 ? ' height="' + Math.round(h) + '"' : "") + ' decoding="async">' +
+      (v.caption ? "<figcaption>" + typo(v.caption) + "</figcaption>" : "") +
+      (v.data ? '<details class="exam-fig-data"><summary>Данные рисунка</summary><p>' + typo(v.data) + "</p></details>" : "") +
+      "</figure>";
+  }
 
   /* ---------- мини-тесты разделов ---------- */
   // Раздел автолекции может брать свой набор прямо из банка, без второго списка ID в HTML.
@@ -49,7 +66,7 @@
     var ord = q.ord || shuffle([0, 1, 2, 3], seeded(hash(q.id)));
     box.dataset.id = "mt-" + q.id;
     if (q.slide) box.dataset.slide = q.slide;
-    box.innerHTML = '<p class="quiz-q">' + typo(q.q) + "</p><ul>" + ord.map(function (k) {
+    box.innerHTML = '<p class="quiz-q">' + typo(q.q) + "</p>" + visualHTML(q) + "<ul>" + ord.map(function (k) {
       return "<li" + (k === 0 ? " data-correct" : "") + ">" + typo(q.a[k]) + "</li>";
     }).join("") + '</ul><p class="quiz-why">' + typo(q.why) + "</p>";
   });
@@ -83,11 +100,11 @@
         '<p>Тест проверяет усвоение всей лекции. Перед началом прочитайте условия: начатая попытка расходуется, даже если закрыть страницу.</p>' +
         '<div class="exam-cards"><div class="exam-card"><b>' + N + '</b><span>вопросов, один верный ответ из четырех</span></div>' +
         '<div class="exam-card"><b>' + E.minutes + ' мин</b><span>на одну попытку, таймер вверху экрана</span></div>' +
-        '<div class="exam-card"><b>' + E.attempts + '</b><span>попытки; засчитывается лучшая, зачет от ' + NEED + " верных (" + E.pass + " %)</span></div></div>" + rules();
+        '<div class="exam-card"><b>' + E.attempts + '</b><span>попытки; засчитывается лучшая, зачет от ' + passText() + "</span></div></div>" + rules();
     } else {
       var b = best(), last = d[d.length - 1];
       h += "<h3>" + esc(E.title) + ': <span class="' + (passed() ? "exam-ok" : "exam-bad") + '">' + (passed() ? "зачтено" : "не зачтено") + "</span></h3>" +
-        "<p>Лучший результат: <b>" + b + " из " + N + "</b> (" + pct(b / N * 100) + " %), для зачета нужно " + NEED + ". " +
+        "<p>Лучший результат: <b>" + b + " из " + N + "</b> (" + pct(b / N * 100) + " %), для зачета нужно " + passText() + ". " +
         (passed() ? "Тест зачтен, новые попытки не нужны." : left() > 0 ? "Осталось " + plural(left(), "попытка", "попытки", "попыток") + "." : "Попытки израсходованы.") + "</p>" + triesTable(d);
       var wrong = last.order.map(function (qi, i) { return last.ans[i] === 0 ? 0 : i + 1; }).filter(Boolean);
       h += "<p>Попытка " + d.length + (last.expired ? " (время вышло)" : "") + ": " +
@@ -109,7 +126,7 @@
     return '<ul class="exam-rules">' +
       "<li>Вопросы и варианты ответов идут в случайном порядке. Отвечать можно в любом порядке: кнопки «Назад» и «Далее» или сетка номеров; ответ можно изменить до завершения.</li>" +
       "<li>Время на попытку " + E.minutes + " минут. Когда оно выйдет, тест завершится сам и засчитаются выбранные к этому моменту ответы; вопрос без ответа считается неверным.</li>" +
-      "<li>Попыток " + E.attempts + ", засчитывается лучшая. Начатая попытка расходуется: перезагрузка или закрытие страницы не останавливают таймер.</li>" +
+      "<li>Попыток " + E.attempts + ", засчитывается лучшая; зачет от " + passText() + ". Начатая попытка расходуется: перезагрузка или закрытие страницы не останавливают таймер.</li>" +
       "<li>Во время попытки материалы лекции скрыты. Тест проходят без конспектов, поиска и ИИ; уходы из окна теста записываются в протокол.</li>" +
       "<li>После попытки видны балл и номера вопросов с ошибками. Правильные ответы с разбором откроются после зачета или после последней попытки; после зачета новые попытки не предоставляются.</li>" +
       "<li>После каждой попытки скачайте протокол и передайте его преподавателю. Результаты хранятся только в этом браузере, поэтому все попытки проходите в нем.</li>" +
@@ -128,14 +145,14 @@
     return '<details class="exam-review-wrap"><summary>Разбор попытки ' + n + ": правильные ответы и пояснения</summary><div class=\"exam-review\">" +
       t.order.map(function (qi, i) {
         var q = E.questions[qi], a = t.ans[i], ok = a === 0;
-        return '<div class="rv ' + (ok ? "ok" : "no") + '"><p><b>' + (i + 1) + ".</b> " + typo(q.q) + "</p>" +
+        return '<div class="rv ' + (ok ? "ok" : "no") + '"><p><b>' + (i + 1) + ".</b> " + typo(q.q) + "</p>" + visualHTML(q) +
           "<p>Ваш ответ: " + (a === null ? "нет ответа" : typo(q.a[a])) + (ok ? ' <span class="exam-ok">— верно</span>' : ' <span class="exam-bad">— неверно</span>') + "</p>" +
           (ok ? "" : "<p>Правильный ответ: <b>" + typo(q.a[0]) + "</b></p>") + '<p class="why">' + typo(q.why) + "</p></div>";
       }).join("") + "</div></details>";
   }
   function confirmStart() {
     dialog("Начать попытку " + (S.tries.length + 1) + " из " + E.attempts + "?",
-      "<p>" + N + " вопросов, " + E.minutes + " минут. Таймер пойдет сразу и не остановится при перезагрузке или закрытии страницы. Засчитывается лучшая попытка.</p>",
+      "<p>" + N + " вопросов, " + E.minutes + " минут. Зачет от " + passText() + ". Таймер пойдет сразу и не остановится при перезагрузке или закрытии страницы. Засчитывается лучшая попытка.</p>",
       "Начать", start);
   }
   function dialog(title, html, okText, ok) {
@@ -177,7 +194,7 @@
       '<button type="button" class="btn btn-primary" data-act="finish">Завершить</button></div>' +
       '<div class="exam-body">' + (notice ? '<p class="exam-note">' + esc(notice) + "</p>" : "") +
       '<div class="exam-grid" role="group" aria-label="Вопросы">' + E.questions.map(function (q, i) { return '<button type="button" data-go="' + i + '">' + (i + 1) + "</button>"; }).join("") + "</div>" +
-      '<div class="exam-card-q"><span class="eyebrow exam-num"></span><p class="exam-q"></p><div class="quiz-opts" role="radiogroup"></div>' +
+      '<div class="exam-card-q"><span class="eyebrow exam-num"></span><p class="exam-q"></p><div class="exam-fig-slot"></div><div class="quiz-opts" role="radiogroup"></div>' +
       '<div class="exam-foot"><button type="button" class="btn btn-ghost" data-act="prev">← Назад</button><button type="button" class="btn btn-ghost btn-flag" data-act="flag" aria-pressed="false">Вернуться позже</button>' +
       '<span class="sp"></span><button type="button" class="btn btn-primary" data-act="next">Далее →</button></div>' +
       '<p class="exam-hint"><kbd>1</kbd>–<kbd>4</kbd> ответ · <kbd>←</kbd> <kbd>→</kbd> вопросы · <kbd>F</kbd> вернуться позже</p></div></div>';
@@ -215,6 +232,8 @@
     var t = cur(), i = t.at, q = E.questions[t.order[i]], n = t.ans.filter(function (a) { return a !== null; }).length;
     stage.querySelector(".exam-num").textContent = "Вопрос " + (i + 1) + " из " + N;
     stage.querySelector(".exam-q").innerHTML = typo(q.q);
+    var slot = stage.querySelector(".exam-fig-slot");
+    if (slot.dataset.q !== q.id) { slot.innerHTML = visualHTML(q); slot.dataset.q = q.id; }   // старый рисунок не остается
     stage.querySelector(".quiz-opts").innerHTML = t.perms[i].map(function (k, p) {
       return '<button type="button" role="radio" data-p="' + p + '" aria-checked="' + (t.ans[i] === k) + '"><span class="key">' + (p + 1) + "</span><span>" + typo(q.a[k]) + "</span></button>";
     }).join("");
@@ -270,7 +289,7 @@
     var d = done(), open = reviewOpen(), b = best();
     var L = ["ПРОТОКОЛ ИТОГОВОГО ТЕСТА", "Курс: Аддитивные технологии в биомедицине",
       "Лекция " + E.id + ": " + document.title.split(" · ")[0], "Студент: " + S.name, "",
-      "Условия: " + N + " вопросов, " + E.minutes + " мин на попытку, попыток " + E.attempts + ", зачет от " + NEED + " верных (" + E.pass + " %)",
+      "Условия: " + N + " вопросов, " + E.minutes + " мин на попытку, попыток " + E.attempts + ", зачет от " + passText(),
       "Лучший результат: " + b + " из " + N + " (" + pct(b / N * 100) + " %) - " + (passed() ? "ЗАЧТЕНО" : "НЕ ЗАЧТЕНО"),
       "Использовано попыток: " + d.length + " из " + E.attempts, ""];
     d.forEach(function (t, k) {
