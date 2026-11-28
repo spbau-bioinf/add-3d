@@ -17,10 +17,13 @@ home:
   title: "Цифровой конвейер 3D-производства"
   subtitle: "Кафедра биоинформатики и математической биологии · СПбАУ РАН им. Ж. И. Алферова"
   intro: "Теория, разобранные примеры и задания к практическим занятиям: от трехмерной модели и слайсера до G-кода, траекторий печати и анализа данных, которые получает принтер."
-  # кнопки под описанием; icon: code, chat, mail, play, book или link
+  # кнопки под описанием; icon: code, chat, mail, play, book, board или link
   links:
+    - title: "Лекции"
+      url: "lectures.html"
+      icon: board
     - title: "Занятия"
-      url: "#works"
+      url: "./#works"
       icon: book
     - title: "Просмотрщик G-кода"
       url: "viewer.html"
@@ -31,13 +34,16 @@ home:
       icon: code
   # ссылки в верхней строке
   topnav:
+    - title: "Лекции"
+      url: "lectures.html"
     - title: "Занятия"
-      url: "#works"
+      url: "./#works"
     - title: "Просмотрщик"
       url: "viewer.html"
     - title: "GitHub"
       url: "https://github.com/spbau-bioinf"
   works_title: "Практические занятия"
+  lectures_title: "Лекции"
 
 # Инструменты: отдельный пункт в боковом меню (url — путь от корня сайта)
 tools:
