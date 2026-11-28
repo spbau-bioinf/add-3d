@@ -1,0 +1,9 @@
+/* bambu-check.css — страница «Проверка файлов Bambu Studio» (практика 5):
+   нейтральная строка заключения (показатель без оценки). Остальное — tools.css. */
+.gv__warns li.gv__note {
+  color: inherit;
+  background: transparent;
+  border-color: var(--c-border);
+}
+[data-theme="dark"] .gv__warns li.gv__note { border-color: #4a5260; }
+html[data-palette] .gv__warns li.gv__note { color: var(--p-text); background: var(--p-surface); border-color: var(--p-border); }

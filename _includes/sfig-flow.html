@@ -1,0 +1,45 @@
+{%- comment -%}
+  Схема task 5-3, раздел 5: объемный расход Q = A · v, A = H · (W − 0,215 · H) и предел объемной скорости материала.
+  Значения профиля 0.20mm Standard @BBL A1M и Bambu PLA Matte @BBL A1M (Bambu Studio 2.9.2.62). Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-flow">
+  <svg id="flow-svg" viewBox="0 0 480 200" role="img" aria-label="Столбик объемного расхода и линия предела 22 мм³/с; если расход выше предела, лишняя часть закрашена красным"></svg>
+  <div id="flow-stats" style="min-height: 3lh"></div>
+  <form class="panel" id="flow-form">
+    <label>Тип линии <select id="flow-t"><option value="0.45" selected>разреженное заполнение: W = 0,45 мм</option><option value="0.42">внешняя стенка: W = 0,42 мм</option></select></label>
+    <label>Скорость в настройках v <input id="flow-v" type="range" min="50" max="400" step="10" value="270"> <output id="flow-vv">270 мм/с</output></label>
+    <label>Высота слоя H <input id="flow-h" type="range" min="0.08" max="0.28" step="0.04" value="0.2"> <output id="flow-hv">0,20 мм</output></label>
+  </form>
+  <div class="caption">Столбик — объемный расход <i>Q</i> = <i>A</i> · <i>v</i>, мм³/с, где <i>A</i> = <i>H</i> · (<i>W</i> − 0,215 · <i>H</i>) — сечение дорожки со скругленными краями: сколько пластика сопло должно выдавить за секунду при заданной скорости. Пунктир — предел объемной скорости материала из профиля Bambu PLA Matte: 22 мм³/с. Если расход выше предела, красная часть столбика не может быть выдавлена, и слайсер снижает скорость до <i>v</i><sub>факт</sub> = 22 / <i>A</i>. Двигайте скорость и высоту слоя: выше предела рост скорости в настройках время печати не сокращает.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("flow-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", LIM = 22, X0 = 60, X1 = 440, Y0 = 150, SC = 7;   // 1 мм³/с = 7 px по горизонтали
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  function f(x, d) { return x.toFixed(d).replace(".", ","); }
+  var g = el("g", {}, svg);
+  function draw() {
+    var w = +document.getElementById("flow-t").value, v = +document.getElementById("flow-v").value, h = +document.getElementById("flow-h").value;
+    document.getElementById("flow-vv").textContent = v + " мм/с"; document.getElementById("flow-hv").textContent = f(h, 2) + " мм";
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var a = h * (w - h * (1 - Math.PI / 4)), q = a * v, qa = Math.min(q, LIM), vmax = LIM / a, vf = Math.min(v, vmax);
+    el("line", {x1: X0, y1: Y0 + 20, x2: X1, y2: Y0 + 20, style: "stroke: var(--md-stroke)"}, g);
+    for (var k = 0; k <= 50; k += 10) { var xk = X0 + k * SC; el("line", {x1: xk, y1: Y0 + 16, x2: xk, y2: Y0 + 24, style: "stroke: var(--md-stroke)"}, g); tx({x: xk, y: Y0 + 40, "text-anchor": "middle", "class": "svg-muted"}, String(k), g); }
+    tx({x: X1 + 30, y: Y0 + 12, "text-anchor": "end", "class": "svg-muted"}, "мм³/с", g);
+    el("rect", {x: X0, y: 70, width: qa * SC, height: 60, style: "fill: var(--md-face-sel); stroke: var(--md-stroke)"}, g);
+    if (q > LIM) el("rect", {x: X0 + LIM * SC, y: 70, width: Math.min(q, 54) * SC - LIM * SC, height: 60, style: "fill: var(--md-normal-bad); fill-opacity: 0.35; stroke: var(--md-normal-bad)"}, g);
+    var xl = X0 + LIM * SC;
+    el("line", {x1: xl, y1: 40, x2: xl, y2: Y0 + 20, style: "stroke: var(--md-normal-bad); stroke-width: 2; stroke-dasharray: 6 4"}, g);
+    tx({x: xl, y: 30, "text-anchor": "middle", "class": "svg-mono"}, "предел 22", g);
+    tx({x: X0, y: 30, "class": "svg-mono"}, "Q", g);
+    document.getElementById("flow-stats").innerHTML = "<span class='stat'><i>A</i> = " + f(h, 2) + " · (" + f(w, 2) + " − 0,215 · " + f(h, 2) + ") = " + f(a, 4) + " мм², <i>Q</i> = " + f(a, 4) + " · " + v + " = " + f(q, 1) + " мм³/с</span>" +
+      "<span class='stat'>предел скорости 22 / " + f(a, 4) + " = " + f(vmax, 0) + " мм/с</span>" +
+      "<span class='stat'>" + (q > LIM ? "выше предела: фактическая скорость " + f(vf, 0) + " мм/с" : "ниже предела: скорость " + v + " мм/с не ограничена") + "</span>";
+  }
+  document.getElementById("flow-form").addEventListener("input", draw);
+  document.getElementById("flow-form").addEventListener("change", draw);
+  draw();
+})();
+</script>

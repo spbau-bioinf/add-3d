@@ -50,6 +50,9 @@ tools:
   - url: stl-check.html
     code: "tool"
     title: "Проверка STL"
+  - url: bambu-check.html
+    code: "tool"
+    title: "Проверка файлов Bambu Studio"
   - url: pycheck.html
     code: "tool"
     title: "Проверка кода Python"

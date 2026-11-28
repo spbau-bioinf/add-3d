@@ -1,0 +1,74 @@
+{%- comment -%}
+  Схема task 5-5, раздел 2: брусок из слоев под растяжением, сжатием и изгибом; слои горизонтальны или вертикальны.
+  Нагрузка всегда вдоль длинной оси бруска. Числа в строке — по Ahn et al., 2002 и Redwood et al., 2017. Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-load">
+  <svg id="load-svg" viewBox="0 0 480 250" role="img" aria-label="Вид сбоку на напечатанный брусок: слои и направление нагрузки; швы между слоями, которые раскрываются, выделены красным"></svg>
+  <div id="load-stats" style="min-height: 4lh"></div>
+  <form class="panel" id="load-form">
+    <label>Слои <select id="load-l"><option value="h" selected>горизонтальные: брусок лежал на столе</option><option value="v">вертикальные: брусок стоял на торце</option></select></label>
+    <label>Нагрузка <select id="load-k"><option value="t" selected>растяжение вдоль бруска</option><option value="c">сжатие вдоль бруска</option><option value="b">изгиб: опоры по краям, сила посередине</option></select></label>
+  </form>
+  <div class="caption">Вид сбоку на брусок 160 × 60 мм, напечатанный слоями; серые линии — швы между слоями, подпись под бруском говорит, где был стол. Растяжение и сжатие приложены вдоль длинной стороны бруска; при изгибе брусок лежит на двух опорах, и сила давит на него посередине сверху. Меняйте положение бруска при печати и вид нагрузки. Красным выделены швы, которые нагрузка растягивает поперек: по ним начинается трещина. При изгибе нижняя сторона бруска растянута, верхняя сжата.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("load-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", X0 = 80, Y0 = 70, W = 320, H = 120, N = 10;
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  var defs = el("defs", {}, svg), mk = el("marker", {id: "load-ah", viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto"}, defs);
+  el("path", {d: "M0,0 L10,5 L0,10 z", style: "fill: var(--md-normal)"}, mk);
+  var g = el("g", {}, svg);
+  function arrow(x1, y1, x2, y2) { el("line", {x1: x1, y1: y1, x2: x2, y2: y2, style: "stroke: var(--md-normal); stroke-width: 3", "marker-end": "url(#load-ah)"}, g); }
+  var TXT = {
+    ht: ["Растяжение вдоль слоев: нагрузку несут сами дорожки.", "Так нагружают детали, напечатанные лежа: Ahn et al. (2002) советуют располагать дорожки вдоль растягивающей силы."],
+    vt: ["Растяжение поперек слоев: нагрузку несут только швы, трещина начинается во впадине между слоями.", "В таблице Redwood et al. (2017, п. 11.2) образец, напечатанный лежа, при растяжении почти в 5 раз прочнее напечатанного стоя."],
+    hc: ["Сжатие: слои прижаты друг к другу, швы не раскрываются.", "У Ahn et al. (2002) прочность на сжатие — 80–90 % от литого материала и мало зависит от направления построения."],
+    vc: ["Сжатие вдоль слоев: швы тоже не раскрываются.", "У Ahn et al. (2002) образцы двух направлений на сжатие различались примерно на 15 %, на растяжение — сильнее."],
+    hb: ["Изгиб: нижняя сторона растянута вдоль слоев, верхняя сжата.", "Растянутые дорожки внизу идут вдоль нагрузки — опасных швов нет."],
+    vb: ["Изгиб: нижняя сторона растянута поперек слоев — швы внизу раскрываются.", "Изгиб бруска, напечатанного стоя, сводится к растяжению поперек слоев: трещина пойдет снизу по шву."]
+  };
+  function draw() {
+    var lay = document.getElementById("load-l").value, k = document.getElementById("load-k").value;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var bend = k === "b", sag = bend ? 10 : 0;
+    function yOff(x) { if (!bend) return 0; var u = (x - X0) / W; return sag * 4 * u * (1 - u); }   // прогиб посередине
+    var steps = 40, top = [], bot = [];
+    for (var i = 0; i <= steps; i++) { var x = X0 + W * i / steps; top.push(x.toFixed(1) + "," + (Y0 + yOff(x)).toFixed(1)); bot.push(x.toFixed(1) + "," + (Y0 + H + yOff(x)).toFixed(1)); }
+    el("polygon", {points: top.concat(bot.reverse()).join(" "), style: "fill: var(--md-face); stroke: var(--md-stroke); stroke-width: 2"}, g);
+    var bad = (lay === "v" && (k === "t" || k === "b"));
+    for (var j = 1; j < N; j++) {
+      if (lay === "h") {
+        var y = Y0 + H * j / N, pts = [];
+        for (var i2 = 0; i2 <= steps; i2++) { var x2 = X0 + W * i2 / steps; pts.push(x2.toFixed(1) + "," + (y + yOff(x2)).toFixed(1)); }
+        el("polyline", {points: pts.join(" "), style: "fill: none; stroke: var(--c-muted); stroke-width: 1"}, g);
+      } else {
+        var xv = X0 + W * j / N, yo = yOff(xv), red = bad && (k === "t" || j === N / 2 || j === N / 2 - 1 || j === N / 2 + 1);
+        if (red && k === "b") {   // при изгибе раскрывается нижняя часть шва
+          el("line", {x1: xv, y1: Y0 + yo, x2: xv, y2: Y0 + H * 0.5 + yo, style: "stroke: var(--c-muted); stroke-width: 1"}, g);
+          el("line", {x1: xv, y1: Y0 + H * 0.5 + yo, x2: xv, y2: Y0 + H + yo, style: "stroke: var(--md-normal-bad); stroke-width: 3"}, g);
+        } else {
+          el("line", {x1: xv, y1: Y0 + yo, x2: xv, y2: Y0 + H + yo, style: red ? "stroke: var(--md-normal-bad); stroke-width: 3" : "stroke: var(--c-muted); stroke-width: 1"}, g);
+        }
+      }
+    }
+    var ym = Y0 + H / 2;
+    if (k === "t") { arrow(X0 - 6, ym, X0 - 60, ym); arrow(X0 + W + 6, ym, X0 + W + 60, ym); }
+    if (k === "c") { arrow(X0 - 60, ym, X0 - 8, ym); arrow(X0 + W + 60, ym, X0 + W + 8, ym); }
+    if (k === "b") {
+      el("polygon", {points: [X0, Y0 + H, X0 - 12, Y0 + H + 22, X0 + 12, Y0 + H + 22].join(" "), style: "fill: none; stroke: var(--md-stroke); stroke-width: 2"}, g);
+      el("polygon", {points: [X0 + W, Y0 + H, X0 + W - 12, Y0 + H + 22, X0 + W + 12, Y0 + H + 22].join(" "), style: "fill: none; stroke: var(--md-stroke); stroke-width: 2"}, g);
+      arrow(X0 + W / 2, Y0 - 52, X0 + W / 2, Y0 + sag - 6);
+      tx({x: X0 + W / 2 + 10, y: Y0 + 28 + sag, "class": "svg-muted"}, "сжато", g);
+      tx({x: X0 + W / 2 + 10, y: Y0 + H - 12 + sag, "class": "svg-muted"}, "растянуто", g);
+    }
+    tx({x: X0, y: 245, "class": "svg-muted"}, lay === "h" ? "стол был внизу: слои горизонтальны" : "стол был слева: слои вертикальны", g);
+    var t = TXT[lay + k];
+    document.getElementById("load-stats").innerHTML = "<span class='stat'>" + t[0] + "</span><span class='stat'>" + t[1] + "</span>";
+  }
+  document.getElementById("load-form").addEventListener("input", draw);
+  document.getElementById("load-form").addEventListener("change", draw);
+  draw();
+})();
+</script>

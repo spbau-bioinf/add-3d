@@ -3,7 +3,7 @@
    собственные цвета схем заданы для светлой и темной темы. */
 .mdemo {
   --md-face: #cfe6d6; --md-face-sel: #9fd1ae; --md-face-bad: #f3c4c4; --md-stroke: #2d3a2f;
-  --md-normal: #1f5fbf; --md-normal-bad: #b42f2f; --md-plane: #3b7dd8; --md-hl: #c98a00;
+  --md-normal: #1f5fbf; --md-normal-bad: #b42f2f; --md-plane: #3b7dd8; --md-hl: #c98a00; --md-hl-text: #7a5200;
   --md-warn: #b05f00; --md-bad-soft: #fdeeee;
   --md-p0: #2f6fd6; --md-p1: #d9822b; --md-p2: #8a5cd6; --md-p3: #1f9e8f;
   margin: 1.2rem 0; padding: 14px; background: var(--c-bg-soft);
@@ -11,7 +11,7 @@
 }
 [data-theme="dark"] .mdemo {
   --md-face: #2c4a36; --md-face-sel: #3f7a52; --md-face-bad: #6a3030; --md-stroke: #b9d6c1;
-  --md-normal: #7fb2ff; --md-normal-bad: #ff8a8a; --md-plane: #7fb2ff; --md-hl: #ffd166;
+  --md-normal: #7fb2ff; --md-normal-bad: #ff8a8a; --md-plane: #7fb2ff; --md-hl: #ffd166; --md-hl-text: #ffd166;
   --md-warn: #f0a24a; --md-bad-soft: #3a2224;
   --md-p0: #6f9ff0; --md-p1: #f0a35c; --md-p2: #b393f0; --md-p3: #4fc7b8;
 }
@@ -59,5 +59,5 @@
 .mdemo .svg-text { fill: var(--c-text); font: 13px var(--font-sans, sans-serif); }
 .mdemo .svg-muted { fill: var(--c-muted); font: 12px var(--font-sans, sans-serif); }
 .mdemo .svg-mono { fill: var(--c-text); font: 12px var(--font-mono); }
-.mdemo .svg-hl { fill: var(--md-hl); font: 700 14px var(--font-mono); paint-order: stroke; stroke: var(--c-bg-soft); stroke-width: 4px; }
+.mdemo .svg-hl { fill: var(--md-hl-text); font: 700 14px var(--font-mono); paint-order: stroke; stroke: var(--c-bg-soft); stroke-width: 4px; }
 

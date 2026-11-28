@@ -1,0 +1,44 @@
+{%- comment -%}
+  Схема task 5-3, раздел 3: верхний зазор поддержки по оси Z (support_top_z_distance) при высоте слоя 0,2 мм.
+  Значения списка — как в Bambu Studio 2.9.2.62: 0 (soluble), 0.1 (semi-detachable), 0.2 (detachable). Внутри нет пустых строк.
+{%- endcomment -%}
+<div class="mdemo" id="sfig-zgap">
+  <svg id="zgap-svg" viewBox="0 0 480 230" role="img" aria-label="Вид сбоку: нависающая часть детали, под ней поддержка с контактным слоем и зазор по высоте между ними"></svg>
+  <div id="zgap-stats" style="min-height: 3lh"></div>
+  <form class="panel" id="zgap-form">
+    <label>Верхний зазор по Z <select id="zgap-z"><option value="0">0 мм (soluble)</option><option value="0.1">0,1 мм (semi-detachable)</option><option value="0.2" selected>0,2 мм (detachable)</option></select></label>
+  </form>
+  <div class="caption">Вид сбоку при высоте слоя 0,2 мм, 1 мм = 60 пикселей. Сверху — нижние слои нависающей части детали, снизу — поддержка; ее верхние слои (контактный слой, интерфейс) уложены плотно. Между ними — верхний зазор по оси Z. При зазоре 0 деталь лежит прямо на поддержке: так печатают растворимой поддержкой из другого материала. Чем больше зазор, тем легче отделить поддержку и тем хуже нижняя поверхность детали: ее первый слой над зазором частично висит в воздухе.</div>
+</div>
+<script>
+(function () {
+  var svg = document.getElementById("zgap-svg"); if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg", S = 60, H = 0.2, X0 = 90, X1 = 390, YT = 40;
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var x in a) e.setAttribute(x, a[x]); if (p) p.appendChild(e); return e; }
+  function tx(a, s, p) { var e = el("text", a, p); e.textContent = s; return e; }
+  var g = el("g", {}, svg);
+  var TXT = {"0": ["Зазора нет: деталь сплавляется с поддержкой.", "В списке программы это значение подписано soluble: оно для поддержки из растворимого материала."],
+             "0.1": ["Зазор 0,1 мм — половина слоя.", "В списке программы — semi-detachable: поддержка отделяется с усилием, нижний слой детали опирается на нее лучше, чем при 0,2 мм."],
+             "0.2": ["Зазор 0,2 мм — один слой. Это значение профиля 0.20mm Standard @BBL A1M.", "В списке программы — detachable: поддержка отделяется легче, а нижний слой детали над зазором частично висит."]};
+  function draw() {
+    var z = document.getElementById("zgap-z").value, zg = +z;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    var y = YT;
+    for (var i = 0; i < 3; i++) { el("rect", {x: X0, y: y, width: X1 - X0, height: H * S, rx: 5, style: "fill: var(--md-face); stroke: var(--md-stroke)"}, g); y += H * S; }
+    tx({x: X0 - 8, y: YT + 22, "text-anchor": "end", "class": "svg-muted"}, "деталь", g);
+    var yg = y; y += zg * S;
+    if (zg > 0) {
+      el("line", {x1: X1 + 12, y1: yg, x2: X1 + 12, y2: y, style: "stroke: var(--md-hl); stroke-width: 3"}, g);
+      tx({x: X1 + 20, y: (yg + y) / 2 + 5, "class": "svg-hl"}, z.replace(".", ",") + " мм", g);
+    }
+    for (var k = 0; k < 2; k++) { el("rect", {x: X0 + 10, y: y, width: X1 - X0 - 20, height: H * S, rx: 5, style: "fill: var(--md-p0); fill-opacity: 0.45; stroke: var(--md-stroke)"}, g); y += H * S; }
+    tx({x: X0 - 8, y: y - 8, "text-anchor": "end", "class": "svg-muted"}, "интерфейс", g);
+    for (var c = 0; c < 6; c++) { var xc = X0 + 30 + c * 50; el("rect", {x: xc, y: y, width: 14, height: 200 - y + 10, style: "fill: var(--md-p0); fill-opacity: 0.25; stroke: var(--md-stroke)"}, g); }
+    tx({x: X0 - 8, y: 195, "text-anchor": "end", "class": "svg-muted"}, "поддержка", g);
+    var t = TXT[z];
+    document.getElementById("zgap-stats").innerHTML = "<span class='stat'>" + t[0] + "</span><span class='stat'>" + t[1] + "</span>";
+  }
+  document.getElementById("zgap-form").addEventListener("change", draw);
+  draw();
+})();
+</script>

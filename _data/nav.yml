@@ -166,3 +166,51 @@
     - url: task_4/task_4-8.html
       code: "task 4-8"
       title: "Кейдж: экспорт, проверка STL и сдача работы"
+- work: 5
+  title: "Практическое занятие #5"
+  tasks: 10
+  description: "Слайсинг и печать в Bambu Studio на Bambu Lab A1 mini: позвонок в натуральную величину с поддержками, основные настройки, кейдж в масштабе 2 : 1 с выбором ориентации и поддержек, печать и постобработка."
+  tags: ["слайсер", "Bambu Studio", "печать"]
+  pages:
+    - url: task_5/task_5.html
+      code: "task 5"
+      title: "Практическое занятие #5: навигация"
+      menu_title: "Навигация по занятию"
+    - url: task_5/task_5-10.html
+      code: "task 5-10"
+      title: "Справка: глоссарий, термины, проблемы и решения"
+    - url: task_5/task_5-0.html
+      code: "task 5-0"
+      title: "Установка Bambu Studio и первый запуск"
+    - url: task_5/task_5-1.html
+      code: "task 5-1"
+      title: "Интерфейс Bambu Studio: импорт позвонка и положение на столе"
+    - url: task_5/task_5-2.html
+      code: "task 5-2"
+      title: "Позвонок: поддержки, сохранение и отправка на печать"
+    - url: task_5/task_5-3.html
+      code: "task 5-3"
+      title: "Основные настройки печати"
+    - url: task_5/task_5-4.html
+      code: "task 5-4"
+      title: "Предскажи и проверь: как настройки меняют время и массу"
+    - url: task_5/task_5-5.html
+      code: "task 5-5"
+      title: "Ориентация и прочность: слои под нагрузкой"
+    - url: task_5/task_5-6.html
+      code: "task 5-6"
+      title: "Кейдж 2 : 1: положение на столе, поддержки и подпись"
+    - url: task_5/task_5-7.html
+      code: "task 5-7"
+      title: "Настройки, которые часто меняют"
+    - url: task_5/task_5-8.html
+      code: "task 5-8"
+      title: "Самопроверка файлов и сдача"
+    - url: task_5/task_5-9.html
+      code: "task 5-9"
+      title: "Готовые детали: снятие, удаление поддержек, осмотр и отрезок позвоночника"
+    - url: task_5/task_5-11.html
+      code: "task 5-11"
+      title: "Для чтения: как готовят к печати медицинские изделия"
+      extra: true
+      tag: "чтение"
